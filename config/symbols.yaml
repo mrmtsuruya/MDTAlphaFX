@@ -1,0 +1,79 @@
+# Watchlist and per-symbol broker parameters.
+#
+# Spec Appendix B #23 (starting watchlist) and #24 (broker / demo account).
+#
+# NOTHING IN THIS FILE IS A BROKER VALUE. `digits`, `point`, `tick_value`,
+# `volume_step`, `stops_level` and `freeze_level` are resolved from
+# `symbol_info()` at startup per §7.1 and are never written here. Hardcoding
+# any of them is a financial bug, not a style issue (CLAUDE.md).
+
+# Base names to resolve. §7.1: the broker's actual symbol may carry a suffix
+# (XAUUSD, XAUUSD.m, XAUUSDm) — resolution probes these candidates in order.
+watchlist:
+  - XAUUSD
+  - EURUSD
+  - GBPUSD
+  - BTCUSD
+
+# Exact-name probing found US30.std and US500.std, but both require the
+# unsupported INTEREST_CURRENT swap model. The approved initial profile defers
+# them rather than pricing them as points.
+watchlist_pending: []
+
+# Suffix candidates tried during §7.1 resolution, in order. First exact
+# `symbol_info()` hit wins. Empty string means "no suffix".
+suffix_candidates:
+  - ""
+  - ".m"
+  - "m"
+  - ".raw"
+  - ".ecn"
+  - ".pro"
+  - "."
+  - "_i"
+
+# §7.3: "Current spread ≤ max_spread_points." The spec gives no default and
+# Appendix B does not list it. Per-symbol, because a value sane for EURUSD is
+# nonsense for BTCUSD. See AMBIGUITY-003.
+max_spread_points:
+  XAUUSD: 26
+  EURUSD: 47
+  GBPUSD: 89
+  BTCUSD: 858
+
+# ---------------------------------------------------------------------------
+# Everything below this line is READ ONLY BY `scripts/probe_symbols.py`.
+# Nothing in `backend/` reads it. It shapes a report a human reads; it does not
+# parameterise any trading decision.
+# ---------------------------------------------------------------------------
+
+# Base names the probe reports on but does NOT add to the watchlist. Index CFD
+# naming varies far more than FX across brokers, so `watchlist_pending` stays an
+# operator decision and this list is only the set of names the probe checks for
+# existence. Each is still put through the §7.1 suffix ladder above.
+index_probe_candidates:
+  - US30
+  - NAS100
+  - DJ30
+  - DOW30
+  - WS30
+  - USA30
+  - US30Cash
+  - USTEC
+  - NAS100Cash
+  - USA100
+  - NDX100
+  - NASDAQ100
+  - SPX500
+  - US500
+
+probe:
+  # The probe reports a spread distribution as well as the instantaneous
+  # `symbol_info().spread`, because one sample cannot settle `max_spread_points`
+  # — the value has to survive the wide end of the distribution, not the median.
+  #
+  # These two values were introduced by the implementer, not by the spec. They
+  # size a report, so getting them wrong costs a rerun and nothing else. Change
+  # them freely.
+  spread_sample_timeframe: M1
+  spread_sample_bars: 1440      # one 24h session of M1

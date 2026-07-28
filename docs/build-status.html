@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MDTAlphaFX — Stage 2 build status</title>
+<style>
+:root{color-scheme:dark;--bg:#0d1117;--panel:#161b22;--line:#30363d;--fg:#e6edf3;--dim:#8b949e;--ok:#3fb950;--warn:#d29922;--stop:#f85149;--info:#58a6ff;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}body{margin:0;padding:28px 20px 56px;background:var(--bg);color:var(--fg);font:14px/1.55 system-ui,sans-serif}.wrap{max-width:1040px;margin:auto}h1{margin:0;font-size:22px}.sub{margin:4px 0 24px;color:var(--dim)}h2{margin:28px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--line);font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.card{padding:15px 16px;border:1px solid var(--line);border-left:3px solid var(--info);border-radius:8px;background:var(--panel)}.ok{border-left-color:var(--ok)}.warn{border-left-color:var(--warn)}.stop{border-left-color:var(--stop)}.k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}.v{margin-top:4px;font:600 20px/1.25 var(--mono)}.note{margin-top:7px;color:var(--dim);font-size:12px}.pill{display:inline-block;padding:2px 7px;border-radius:999px;background:#2d260f;color:#e3b341;font:600 10px var(--mono)}code{font-family:var(--mono);color:#bc8cff}.steps{margin:0;padding-left:20px}.steps li{margin:8px 0;color:var(--dim)}.steps b{color:var(--fg)}a{color:var(--info)}.foot{margin-top:30px;color:var(--dim);font-size:12px}@media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main class="wrap">
+<h1>MDTAlphaFX — Stage 2 detector gate</h1>
+<p class="sub">Updated 2026-07-28 · recovery implemented · evaluation-window decision required · no live orders or AUTO authorization</p>
+
+<h2>Current state</h2>
+<section class="grid">
+  <article class="card ok"><div class="k">Stage 2 detector suite</div><div class="v">110 passed</div><div class="note">All non-golden module, boundary, and co-firing-core tests pass after recovery.</div></article>
+  <article class="card ok"><div class="k">Detector library</div><div class="v">28 / 28</div><div class="note">Pure closed-bar modules; ids 1–28 exactly once in the production registry.</div></article>
+  <article class="card ok"><div class="k">Stage 2 history</div><div class="v">135,447 bars</div><div class="note">Four-symbol H1/M15 cohort is transactionally complete and content-verified; eight raw zero-spread rows are preserved.</div></article>
+</section>
+
+<h2>Gate evidence</h2>
+<section class="grid">
+  <article class="card warn"><div class="k">Recorded goldens</div><div class="v">6 STALE</div><div class="note">Authorized collision ranking changed modules 2–6 and 9; regeneration waits for the window decision.</div></article>
+  <article class="card warn"><div class="k">Visual evidence</div><div class="v">PRESERVED</div><div class="note">Pre-recovery 28-chart pack is retained for comparison and is not the current gate.</div></article>
+  <article class="card stop"><div class="k">Measured co-firing</div><div class="v">HELD</div><div class="note">The cohort is ready; execution waits only for the evaluation-window authorization.</div></article>
+</section>
+
+<h2>Verification</h2>
+<section class="grid">
+  <article class="card ok"><div class="k">Config binding</div><div class="v">f58ba49db649</div><div class="note">Approved immutable strategy profile plus the whole current config.</div></article>
+  <article class="card ok"><div class="k">Clean regression</div><div class="v">963 passed</div><div class="note">Combined Stage 0/1/2 suite passes with the six deliberately stale recorded outputs excluded.</div></article>
+  <article class="card ok"><div class="k">History integrity</div><div class="v">63 passed</div><div class="note">Tamper, incomplete-capture, replay-refusal, recorder, and proposal boundary checks pass.</div></article>
+</section>
+
+<h2>Next authorization checkpoint</h2>
+<ol class="steps">
+  <li><b>Approve the common evaluation horizon</b> with <code>APPROVE STAGE 2 EVALUATION WINDOW PROFILE</code>.</li>
+  <li><b>Regenerate goldens and visual evidence</b> under the authorized common-window and no-lookahead H1 policy.</li>
+  <li><b>Run measured co-firing</b> and emit the proposal-only memberships, weights, and pre-HTF distribution. The later proposal-apply authorization will be printed with that evidence.</li>
+</ol>
+
+<p class="foot">Stage 2 handoff: <a href="STAGE2-STATUS.md">STAGE2-STATUS.md</a> · History receipt: <a href="STAGE2-HISTORY-RECEIPT.md">capture</a> · Evaluation window: <a href="PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md">proposal</a> · Recovery addendum: <a href="PROPOSED-STAGE2-RECOVERY-ADDENDUM.md">approved</a> · Preserved visual manifest: <a href="stage2-gate/visual-manifest.md">pre-recovery evidence</a></p>
+</main></body></html>

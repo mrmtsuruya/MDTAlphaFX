@@ -1,0 +1,81 @@
+"""§5 Tier 3 — confluence scoring, validity gates, and provisional levels."""
+
+from .configuration import (
+    Stage1ScoringModel,
+    build_cluster_registry,
+    build_regime_cluster_map,
+    build_scoring_runtime_config,
+)
+from .gate import (
+    VALIDITY_CONDITIONS,
+    assert_thresholds_ordered,
+    combine_timeframes,
+    count_pillars,
+    evaluate_validity,
+    is_auto_eligible,
+    is_displayed,
+)
+from .levels import (
+    OpposingStructure,
+    ProvisionalLevels,
+    Swing,
+    check_poor_rr,
+    derive_entry_zone,
+    derive_stop,
+    derive_targets,
+)
+from .score import (
+    compute_breadth_quality_score,
+    enabled_in,
+    flat_score,
+    resolve_cluster,
+    resolve_clusters,
+    tally,
+)
+from .types import (
+    ClusterDef,
+    ClusterRegistry,
+    ClusterState,
+    FiringCluster,
+    MultiTimeframeDecision,
+    MultiTimeframeInput,
+    MultiTimeframePolicy,
+    MultiTimeframeRoute,
+    ScoreBreakdown,
+)
+
+__all__ = [
+    "VALIDITY_CONDITIONS",
+    "ClusterDef",
+    "ClusterRegistry",
+    "ClusterState",
+    "FiringCluster",
+    "MultiTimeframeDecision",
+    "MultiTimeframeInput",
+    "MultiTimeframePolicy",
+    "MultiTimeframeRoute",
+    "OpposingStructure",
+    "ProvisionalLevels",
+    "ScoreBreakdown",
+    "Stage1ScoringModel",
+    "Swing",
+    "assert_thresholds_ordered",
+    "build_cluster_registry",
+    "build_regime_cluster_map",
+    "build_scoring_runtime_config",
+    "check_poor_rr",
+    "combine_timeframes",
+    "compute_breadth_quality_score",
+    "count_pillars",
+    "derive_entry_zone",
+    "derive_stop",
+    "derive_targets",
+    "enabled_in",
+    "evaluate_validity",
+    "flat_score",
+    "is_auto_eligible",
+    "is_displayed",
+    "resolve_cluster",
+    "resolve_clusters",
+    "tally",
+]

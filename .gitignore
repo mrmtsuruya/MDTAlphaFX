@@ -1,0 +1,37 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+
+# Operational runtime data. The approved Stage 2 analysis-only cohort under
+# data/stage2-history-20260728/ is deliberately versioned for remote handoff.
+data/store/
+data/journal.sqlite
+data/symbol_probe.json
+
+# Golden files are deliberately NOT ignored. §10.3 requires them, and a golden
+# that is not in history cannot fail a review.
+
+# Local build/dependency output.
+frontend/node_modules/
+frontend/node_modules.incomplete-*/
+frontend/.next/
+frontend/.vinext/
+frontend/.wrangler/
+frontend/dist/
+frontend/out/
+frontend/coverage/
+frontend/outputs/
+frontend/work/
+frontend/*.tsbuildinfo
+frontend/.devserver*.log
+frontend/*.tar.gz
+.sites-package-*/
+.codex-stage2/
+*.tar.gz
+
+.DS_Store
+Thumbs.db

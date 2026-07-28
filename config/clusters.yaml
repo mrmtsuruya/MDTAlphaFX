@@ -1,0 +1,104 @@
+# §5.1 Correlation clusters.
+#
+# "The 28 modules are not independent evidence. Several detect the same market
+#  event under different names. A flat per-module vote counts one observation
+#  many times and produces maximum confidence in exactly the conditions where
+#  trend-following is most dangerous."
+#
+# THESE WEIGHTS ARE A HYPOTHESIS, NOT A MEASUREMENT. §5.1: they were "derived
+# from reading the module definitions". Stage 2's co-firing matrix measures the
+# real correlation and replaces this table. Every calibration number in §5.3.1
+# and §5.3.2 is computed against these weights and becomes stale the moment they
+# change — regenerating those tables is part of that task, not an afterthought.
+#
+# ---------------------------------------------------------------------------
+# CLUSTER IDs ARE APPROVED — see docs/PROPOSED-SHIPPING-PROFILE.md.
+#
+# §2 freezes `ClusterResult.cluster_id` with the comment `"A".."H"` — eight
+# letters. §5.1 defines NINE clusters, splitting D into D₁ and D₂. The ids below
+# use the approved ASCII "D1"/"D2" identifiers. Tests continue to assert the
+# structural invariants (nine clusters, weights total 100, modules partition
+# 1–28) in addition to the stable ids.
+#
+# §3.4 additionally names these clusters "BOS continuation" and "CHoCH / QM
+# reversal" where §5.1 calls them "Structure continuation" and "Structure
+# reversal". Same clusters, two names — noted so a reader does not conclude
+# there are more than nine.
+# ---------------------------------------------------------------------------
+
+# Both are startup assertions per §5.1: "a startup assertion checks that cluster
+# membership partitions 1–28 with no gaps and no overlaps, and that the weights
+# total 100."
+invariants:
+  weights_must_total: 100
+  modules_must_partition: [1, 28]
+
+clusters:
+  A:
+    name: Imbalance
+    observation: Low-volume displacement being rebalanced
+    weight: 11
+    modules: [1, 2, 10]
+  B:
+    name: Zone retest
+    observation: Price returning to a flipped/institutional zone
+    weight: 12
+    modules: [3, 4, 9, 12, 13]
+  C:
+    name: Stop hunt & reject
+    observation: Liquidity swept, then rejected
+    weight: 12
+    modules: [5, 6, 14, 15, 16]
+  D1:
+    name: Structure continuation
+    observation: Trend-confirming structural break
+    weight: 11
+    modules: [8]
+  D2:
+    name: Structure reversal
+    observation: Trend-breaking structural shift
+    weight: 11
+    modules: [7, 11]
+  E:
+    name: Trend stack
+    observation: Price is trending, measured five ways
+    weight: 12
+    modules: [17, 18, 19, 21, 22]
+  F:
+    name: Momentum divergence
+    observation: Momentum diverging from price
+    weight: 11
+    modules: [20]
+  G:
+    name: Envelope reversion
+    observation: Price stretched from central tendency
+    weight: 10
+    modules: [24, 25, 26]
+  H:
+    name: Volatility expansion
+    observation: Contraction resolving into expansion
+    weight: 10
+    modules: [23, 27, 28]
+
+# §5.1.1: pillars group by METHOD (4, the §4 headings, organise the UI);
+# clusters group by OBSERVATION (9, carry the weights). They cut across each
+# other deliberately — one market event detected by several methods.
+#
+# §5.3's `min_pillars` counts pillars among FIRING MODULES, not among firing
+# clusters. That distinction is load-bearing: a cluster spanning two pillars
+# contributes only the pillars its firing members actually belong to.
+pillars:
+  1: {name: "SMC / ICT", modules: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+  2: {name: "Price Action & Pivots", modules: [11, 12, 13, 14, 15, 16]}
+  3: {name: "Trend & Momentum", modules: [17, 18, 19, 20, 21, 22]}
+  4: {name: "Volatility & Mean Reversion", modules: [23, 24, 25, 26, 27, 28]}
+
+# §5.1 "Cluster resolution": a cluster fires if ANY enabled member fires. Its
+# direction is the MAJORITY direction of firing members; ties resolve to NONE
+# and the cluster does not fire. Its score is the MAXIMUM score among firing
+# members agreeing with that direction.
+resolution:
+  fires_if: ANY_MEMBER
+  direction: MAJORITY_OF_FIRING_MEMBERS
+  tie_resolves_to: NONE
+  score: MAX_OF_AGREEING_MEMBERS

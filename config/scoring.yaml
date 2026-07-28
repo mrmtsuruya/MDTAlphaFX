@@ -1,0 +1,97 @@
+# §5.2 Score computation and §5.3 signal gate.
+#
+#   available = [c for c in CLUSTERS if enabled_in(regime, c, direction, trend)]
+#   firing    = [c for c in available if c.fired and c.direction == direction]
+#   breadth   = sum(weight for firing) / sum(weight for available)
+#   quality   = sum(score*weight for firing) / sum(weight for firing)   (0 if none)
+#   score     = 100 * (breadth ** ALPHA) * (quality / 100)
+#   score    *= htf_alignment_penalty
+#
+# which reduces to `√breadth × quality` at ALPHA 0.5. The ceiling is exactly
+# 100 — a real bound, not an asymptote — but quality rarely exceeds 93–95, so
+# the practical maximum is about 95, and counter-trend caps at 60 after §3.5's
+# 0.6 penalty.
+
+# Appendix B #6. "Hold through Stage 1, then set from the realised score
+# distribution (§5.3.2)." §5.3.2's tuning table exists for exactly this and
+# states the trade-off: a lower ALPHA means breadth matters less and quality
+# carries more, which erodes the anti-correlation protection the clustering
+# layer exists to provide. At ALPHA 0.2, three clusters score 79 against five
+# clusters' 87 and the distinction the scoring layer was built to draw begins
+# to disappear.
+#
+# Note ALPHA has NO effect on the six-cluster row — 1.0 to any power is 1.0.
+# It only redistributes the partial-agreement band.
+alpha: 0.5
+
+# §5.2.2. CLUSTERED is the default and the recommendation.
+#
+# FLAT weights every module equally and skips the §5.1 collapse, reproducing
+# tools that score by raw module count. It exists so the two can be compared on
+# the same history in the Backtester. It is NOT recommended, mechanically: under
+# FLAT the score rises with the number of DETECTORS pointed at an event, not
+# with the amount of EVIDENCE, and the inflation is largest in a strong extended
+# trend — exactly where trend-continuation entries fail. Until the Stage 2
+# co-firing matrix quantifies it, treat any FLAT score above 90 as an artefact
+# of module count.
+scoring_mode: CLUSTERED        # Appendix B #22 — CLUSTERED | FLAT
+
+# §5.3: validity, visibility and execution are THREE different questions.
+# Conflating them was the central error in v2.
+#
+#   validity gate      -> Signal recorded, never shown, cannot be taken
+#   display_threshold  -> recorded and queryable, hidden from default views
+#   auto_execute_...   -> shown and takeable by hand, never auto-executed
+#
+# A Signal is CONSTRUCTED whenever a direction resolves. Scoring is cheap and
+# the bars are already loaded; a score of 41 is a real observation and belongs
+# in the journal. display_threshold is a FILTER, not a gate — it sets
+# Signal.displayed and never prevents construction. That is what lets the Signal
+# Center answer "what would I have caught at 65?" by re-filtering existing
+# records, with no re-run and no lost history.
+thresholds:
+  # Appendix B #7 — approved at 70. §5.3.1 before changing: the dial has real
+  # travel only between roughly 62 and 93. 62–68 is near-noise and exists mainly
+  # for the journal; 70–78 is the working band; 80–85 is high-conviction; above
+  # 90 the system is effectively off.
+  display_threshold: 70
+
+  # Appendix B #8 — approved at 80, and MUST be >= display_threshold. A config that
+  # inverts them fails validation at startup.
+  #
+  # 80, not 88: at 88 the auto gate is effectively unreachable — 5 of 6 clusters
+  # at quality 95 scores 87.7, so AUTO would require all six firing at >=95
+  # average AND uncontested. 80 corresponds to 5 of 6 at quality 90.
+  auto_execute_threshold: 80
+
+  must_be_ordered: true   # auto_execute_threshold >= display_threshold
+
+# §5.3 validity gate. Structural facts, not preferences — failing any means the
+# setup is not tradeable AT ANY SCORE.
+#
+# EVERY failing condition is recorded, not just the first (rule 8):
+# GateOutcome.failed_conditions carries all of them.
+validity:
+  # Appendix B #9 — approved at 3 / 2.
+  min_clusters: 3
+  min_pillars: 2
+
+  # Conditions 3–6 are unconditional spec rules, listed so a rejection reason
+  # has a stable name in the journal.
+  always_enforced:
+    - REGIME_NOT_VOLATILE_NEWS      # condition 3
+    - MAX_SPREAD                    # condition 4, per-symbol, see symbols.yaml
+    - NO_CONFLICTING_POSITION       # condition 5
+    - BIAS_TIMEFRAMES_NOT_CONFLICTED # condition 6, §5.4
+
+# §5.2.1 vote tally. DISPLAYED, NOT SCORED — it does not modify `score`.
+# Folding opposition into the composite would double-count the regime gate,
+# which has already suppressed the clusters that should not be speaking.
+#
+# What it does do is mark contested=True, and §5.3 uses that: a contested tally
+# makes a signal auto-ineligible REGARDLESS OF SCORE. "If the strongest single
+# reading on the chart argues the other way, that is a decision for a person."
+tally:
+  points_divisor: 10.0            # pts = sum(score * weight) / 10
+  contested_blocks_auto: true
+  tally_modifies_score: false

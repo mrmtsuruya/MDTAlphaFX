@@ -1,0 +1,40 @@
+# Engine-wide settings.
+#
+# Cross-stage engine settings. Model thresholds and weights remain in their
+# dedicated versioned files.
+
+# Timeframes the historical store maintains. M1 is mandatory and is not a
+# analysis timeframe — it exists for §11.1 sub-bar resolution.
+timeframes:
+  analysis:
+    - H4
+    - H1
+    - M15
+    - M5
+  # §11.1 sub-bar walk. Removing this breaks intrabar resolution and silently
+  # forces every ambiguous candle onto the conservative fallback.
+  sub_bar: M1
+
+# Appendix B #4. Approved default H4.
+bias_timeframe: H4
+
+# §5.4: user-selectable, default M15. M5/M1 are used only when Scalping Mode
+# explicitly selects them; their presence in the analysis list must not change
+# the default.
+entry_timeframe: M15
+
+paths:
+  historical_store: data/store
+  fixtures: fixtures
+  journal: data/journal.sqlite
+
+# §10.4 asserted budget: full watchlist scan under 2 seconds.
+performance:
+  watchlist_scan_budget_seconds: 2.0
+
+time:
+  # §10.1: resolved explicitly at startup, never inferred per-call. This is the
+  # tolerance on the startup measurement, not the offset itself.
+  server_offset_measure_tolerance_seconds: 5
+  # Display boundary only (rule 3). Nothing upstream of a renderer reads this.
+  display_timezone: UTC

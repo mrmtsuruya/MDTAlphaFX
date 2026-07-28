@@ -1,0 +1,213 @@
+# Stage 2 strategy detector profile.
+#
+# Approved by:
+#   APPROVE STAGE 2 DETECTOR + HISTORY PROFILE
+# on 2026-07-28. See:
+#   docs/PROPOSED-STAGE2-DETECTOR-HISTORY-PROFILE.md
+#
+# Constructors read this file once and inject immutable values. Strategy
+# evaluate() methods never read config or any other I/O source.
+
+schema_version: 1
+
+common:
+  atr_period: 14
+  volume_median_bars: 20
+  pivot_left_bars: 2
+  pivot_right_bars: 2
+  structure_lookback_bars: 50
+  minimum_pattern_separation_bars: 5
+  maximum_pattern_separation_bars: 50
+  maximum_pattern_age_bars: 20
+  equal_level_tolerance_atr: 0.10
+  touch_tolerance_atr: 0.10
+  break_buffer_atr: 0.05
+  minimum_displacement_body_atr: 0.80
+  minimum_rejection_wick_atr: 0.50
+  high_volume_ratio: 1.20
+  low_volume_ratio: 0.80
+  confidence_base: 65
+  confidence_confirmation_bonus: 10
+  confidence_cap: 95
+  evidence_schema_version: 1
+
+modules:
+  m01:
+    gap_min_atr: 0.10
+    large_gap_atr: 0.25
+    maximum_age_bars: 20
+    fill_midpoint_fraction: 0.50
+  m02:
+    gap_min_atr: 0.10
+    large_gap_atr: 0.25
+    maximum_age_bars: 20
+    fill_midpoint_fraction: 0.50
+  m03:
+    break_buffer_atr: 0.05
+    maximum_age_bars: 20
+    mitigation_midpoint_fraction: 0.50
+  m04:
+    break_buffer_atr: 0.05
+    maximum_age_bars: 20
+    mitigation_midpoint_fraction: 0.50
+  m05:
+    minimum_separation_bars: 5
+    maximum_separation_bars: 50
+    equal_level_tolerance_atr: 0.10
+    minimum_pierce_atr: 0.05
+    close_half_fraction: 0.50
+  m06:
+    minimum_separation_bars: 5
+    maximum_separation_bars: 50
+    equal_level_tolerance_atr: 0.10
+    minimum_pierce_atr: 0.05
+    close_half_fraction: 0.50
+  m07:
+    break_buffer_atr: 0.05
+    strong_break_atr: 0.25
+  m08:
+    break_buffer_atr: 0.05
+    strong_break_atr: 0.25
+  m09:
+    maximum_age_bars: 20
+    mitigation_midpoint_fraction: 0.50
+  m10:
+    gap_min_atr: 0.10
+    large_gap_atr: 0.25
+    low_volume_ratio: 0.80
+    maximum_rebalance_bars: 5
+    minimum_rebalance_fraction: 0.50
+    strong_rebalance_fraction: 0.75
+
+  m11:
+    overextension_atr: 0.50
+    strong_overextension_atr: 1.00
+    shoulder_tolerance_atr: 0.10
+    maximum_return_bars: 20
+  m12:
+    minimum_separation_bars: 5
+    maximum_separation_bars: 50
+    equal_level_tolerance_atr: 0.10
+    break_buffer_atr: 0.05
+    maximum_retest_bars: 20
+  m13:
+    minimum_base_bars: 1
+    maximum_base_bars: 3
+    maximum_base_range_atr: 1.00
+    minimum_impulse_body_atr: 1.50
+    maximum_retest_bars: 20
+  m14:
+    minimum_separation_bars: 5
+    preferred_separation_bars: 10
+    maximum_separation_bars: 50
+    equal_level_tolerance_atr: 0.10
+    second_volume_ratio: 0.80
+    close_away_atr: 0.10
+  m15:
+    key_level_lookback_bars: 50
+    key_level_tolerance_atr: 0.10
+    wick_to_body_ratio: 2.00
+    maximum_body_range_fraction: 0.35
+    close_extreme_fraction: 0.35
+    minimum_range_atr: 1.00
+  m16:
+    minimum_body_atr: 0.80
+    strong_body_atr: 1.20
+    high_volume_ratio: 1.20
+    strong_volume_ratio: 1.50
+    close_extreme_fraction: 0.20
+
+  m17:
+    ema_periods: [20, 50, 200]
+    slope_bars: 3
+    fast_middle_separation_atr: 0.20
+    middle_slow_separation_atr: 0.50
+  m18:
+    ema_periods: [20, 50, 200]
+    touch_tolerance_atr: 0.10
+  m19:
+    fast_ema_period: 12
+    slow_ema_period: 26
+    signal_ema_period: 9
+  m20:
+    rsi_period: 14
+    minimum_separation_bars: 5
+    maximum_separation_bars: 50
+    minimum_price_extension_atr: 0.05
+    minimum_rsi_divergence_points: 5
+    strong_rsi_divergence_points: 10
+    overbought: 70
+    oversold: 30
+  m21:
+    adx_period: 14
+    trigger: 25
+    minimum_rise_points: 3
+    minimum_di_spread_points: 10
+  m22:
+    atr_period: 10
+    multiplier: 3.00
+    minimum_close_beyond_band_atr: 0.25
+
+  m23:
+    period: 20
+    standard_deviations: 2.00
+    bandwidth_percentile_lookback: 100
+    squeeze_percentile: 20
+    minimum_bandwidth_expansion_fraction: 0.25
+    minimum_break_atr: 0.10
+  m24:
+    period: 20
+    standard_deviations: 2.50
+    minimum_overshoot_atr: 0.10
+  m25:
+    minimum_anchor_bars: 8
+    standard_deviations: 2.00
+    minimum_overshoot_atr: 0.10
+    anchor: UTC_DAY
+    price_source: HLC3
+    volume_source: TICK_VOLUME
+  m26:
+    ema_period: 20
+    atr_period: 10
+    multiplier: 2.00
+    momentum_slowdown_bars: 3
+    minimum_overshoot_atr: 0.10
+  m27:
+    atr_period: 14
+    atr_median_lookback_bars: 50
+    expansion_ratio: 1.50
+    strong_expansion_ratio: 2.00
+    breakout_lookback_bars: 20
+    break_buffer_atr: 0.05
+  m28:
+    sessions: [london, new_york]
+    applicable_timeframes: [M5, M15]
+    opening_range_minutes: 30
+    break_buffer_atr: 0.05
+    strong_break_atr: 0.10
+    both_sides_resolve_to: NONE
+    fire_once_per_session: true
+
+history:
+  account_mode: DEMO
+  server: JustMarkets-Demo2
+  symbols: [XAUUSD, EURUSD, GBPUSD, BTCUSD]
+  start: "2025-07-28T00:00:00Z"
+  end: "2026-07-28T00:00:00Z"
+  raw_timeframes: [H1, M15]
+  co_firing_timeframe: M15
+  regime_timeframe: H1
+  destination: data/stage2-history-20260728
+
+co_firing:
+  observation: SYMBOL_TIMEFRAME_BAR_CLOSE
+  agreement: SAME_DIRECTION_SIMULTANEOUS
+  conflict: OPPOSITE_DIRECTION_SIMULTANEOUS
+  minimum_module_fires: 30
+  distance: ONE_MINUS_POSITIVE_PHI
+  linkage: AVERAGE
+  target_cluster_count: 9
+  insufficient_module_policy: RETAIN_CURRENT_MEMBERSHIP
+  weight_policy: EQUAL_INDEPENDENT_EVIDENCE
+  weight_total: 100
+  apply_proposal_to_config: false

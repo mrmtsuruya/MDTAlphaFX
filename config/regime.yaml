@@ -1,0 +1,146 @@
+# §3 Tier 1 — Market Regime Classifier.
+#
+# Runs BEFORE strategy evaluation. Determines context and gates which clusters
+# may contribute. A strategy module never reads any of this (rule 2).
+
+# §3.1 classification inputs. Periods are the spec's, quoted not chosen.
+inputs:
+  adx_period: 14
+  ema_periods: [20, 50, 200]
+  atr_period: 14
+  atr_percentile_lookback: 100
+  r_squared_bars: 50
+
+# §3.2 classification rules, evaluated IN ORDER — first match wins.
+#
+#   IF within news_blackout_window        -> VOLATILE_NEWS
+#   ELIF atr_percentile > 90              -> VOLATILE_NEWS
+#   ELIF adx > adx_trend_enter
+#        AND ema_stack_aligned
+#        AND r_squared > 0.60             -> TRENDING_BULLISH | TRENDING_BEARISH
+#   ELIF adx < adx_range_enter
+#        AND atr_percentile < 60          -> RANGING
+#   ELSE                                  -> TRANSITIONAL
+#
+# The ADX bands are Appendix B #1 and #2. The operator approved the shipping
+# profile on 2026-07-27, settling them at 27/22 and 20/25.
+#
+# Specification tests still declare their own values so a calibration assertion
+# stays pinned to the numbers the published table was computed with.
+classification:
+  atr_percentile_volatile_above: 90
+  r_squared_trend_above: 0.60
+  atr_percentile_range_below: 60
+
+# §3.3 Hysteresis — required. Both mechanisms are mandatory.
+#
+# "A regime flipping every few bars swaps half the strategy library in and out
+#  and makes signals appear and vanish."
+hysteresis:
+  # Asymmetric thresholds. Enter TRENDING above adx_trend_enter, exit only below
+  # adx_trend_exit. Enter RANGING below adx_range_enter, exit above
+  # adx_range_exit. The dead band between prevents oscillation.
+  adx_trend_enter: 27
+  adx_trend_exit: 22
+  adx_range_enter: 20
+  adx_range_exit: 25
+
+  # A new classification must hold this many consecutive CLOSED bars before it
+  # takes effect. Until confirmed the previous regime remains active and
+  # regime_confidence decays toward 0.
+  regime_confirm_bars: 3
+
+  # "TRANSITIONAL is exempt from confirmation — degrading to uncertain should be
+  #  immediate." Not configurable; a spec rule, recorded so it is testable.
+  transitional_exempt_from_confirmation: true
+
+# §3.4 Regime -> cluster enablement. THREE states, not two.
+#
+# "Implementing it as a boolean loses the distinction and silently mis-scores
+#  every trending signal."
+#
+#   ENABLED       may contribute in either direction
+#   COUNTER_ONLY  may contribute ONLY against the trend direction, as an
+#                 early-reversal warning. Cannot add conviction to a with-trend
+#                 signal, and is EXCLUDED from that signal's scoring
+#                 denominator (§5.2).
+#   SUPPRESSED    members return fired=False regardless of pattern
+cluster_map:
+  TRENDING:
+    A: ENABLED
+    B: ENABLED
+    C: ENABLED
+    D1: ENABLED
+    D2: COUNTER_ONLY
+    E: ENABLED
+    F: COUNTER_ONLY
+    G: SUPPRESSED
+    H: ENABLED
+  RANGING:
+    A: ENABLED
+    B: ENABLED
+    C: ENABLED
+    D1: SUPPRESSED
+    D2: ENABLED
+    E: SUPPRESSED
+    F: ENABLED
+    G: ENABLED
+    H: SUPPRESSED
+  VOLATILE_NEWS:
+    A: SUPPRESSED
+    B: SUPPRESSED
+    C: SUPPRESSED
+    D1: SUPPRESSED
+    D2: SUPPRESSED
+    E: SUPPRESSED
+    F: SUPPRESSED
+    G: SUPPRESSED
+    H: SUPPRESSED
+  TRANSITIONAL:
+    A: ENABLED
+    B: ENABLED
+    C: ENABLED
+    D1: SUPPRESSED
+    D2: ENABLED
+    E: SUPPRESSED
+    F: ENABLED
+    G: SUPPRESSED
+    H: SUPPRESSED
+
+# Denominators these produce under the §5.1 weights, stated in §5.2 and asserted
+# at startup. Recorded so a weight change that silently breaks the §5.3.1
+# calibration table is caught rather than discovered in a backtest.
+#   TRENDING with-trend    = 68   (A B C D1 E H)
+#   TRENDING counter-trend = 22   (D2 F)
+#   RANGING                = 67   (A B C D2 F G)
+#   TRANSITIONAL           = 57   (A B C D2 F)
+expected_denominators:
+  TRENDING_WITH_TREND: 68
+  TRENDING_COUNTER_TREND: 22
+  RANGING: 67
+  TRANSITIONAL: 57
+
+regime_policy:
+  # §3.4: "VOLATILE_NEWS generates no new signals at all. Existing positions are
+  # managed; pending orders are cancelled (§7.5)."
+  volatile_news_generates_signals: false
+
+  # §3.4 / §5.3: TRANSITIONAL applies a threshold uplift and a size multiplier.
+  # v2.4 lowered the uplift 8 -> 5: at +8 the smaller denominator (57 vs 68)
+  # made the gate accidentally stricter than intended.
+  transitional_threshold_uplift: 5
+  transitional_size_multiplier: 0.5
+
+# §3.5 Per-timeframe classification.
+#
+# "Regime is classified independently on each timeframe. An H4 uptrend routinely
+#  contains a ranging M15."
+per_timeframe:
+  # The bias timeframe does NOT veto lower timeframes. A signal opposing the
+  # bias-timeframe regime takes a weight penalty instead — counter-trend setups
+  # stay available at reduced conviction rather than being banned, which matters
+  # because cluster F is the most orthogonal signal in the library and is
+  # inherently counter-trend.
+  bias_timeframe: H4
+  counter_bias_penalty: 0.6
+  aligned_multiplier: 1.0

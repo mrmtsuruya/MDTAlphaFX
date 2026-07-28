@@ -1,0 +1,42 @@
+# §10.1: "Session windows defined in UTC in config."
+#
+# UTC ONLY. A `timezone:` or `tz:` key on any window is rejected by the loader.
+# Defining a session in a local zone reintroduces exactly the DST bug §10.1
+# exists to prevent — and it fails silently, which is why the loader refuses
+# rather than converting.
+#
+# These windows are used by metrics segmentation (§11.4 "session") in Stage 0.
+# Module 28 (Session ORB) also depends on them, but that is Stage 2.
+#
+# NOTE: the boundaries below track the exchange sessions through *northern
+# summer*. Because they are pinned in UTC they do NOT shift when London or New
+# York change clocks — which is the intended behaviour, and also means the
+# operator may want a second set for winter. The spec does not say which.
+# See AMBIGUITY-005.
+
+sessions:
+  sydney:
+    start: "21:00"
+    end: "06:00"
+  tokyo:
+    start: "00:00"
+    end: "09:00"
+  london:
+    start: "07:00"
+    end: "16:00"
+  new_york:
+    start: "12:00"
+    end: "21:00"
+
+# Overlaps are derived, not declared — a bar is tagged with every session whose
+# window contains it. A bar in both London and New York carries both.
+tag_overlaps: true
+
+# §10.1 required test: session boundaries across a DST transition.
+# These are the instants the test asserts against. UTC-pinned windows must NOT
+# move across them.
+dst_transition_test_dates:
+  - "2026-03-08"   # US spring forward
+  - "2026-03-29"   # EU spring forward
+  - "2026-10-25"   # EU fall back
+  - "2026-11-01"   # US fall back

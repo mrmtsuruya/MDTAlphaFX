@@ -1,0 +1,4780 @@
+{
+  "analysis_only": true,
+  "capture": {
+    "account_login": 1100509764,
+    "account_mode": "DEMO",
+    "account_server": "JustMarkets-Demo2",
+    "analysis_only": true,
+    "availability_gap_semantics": "NO_BAR_OBSERVED; NOT CLASSIFIED AS MARKET_CLOSED_OR_MISSING",
+    "config_version": "f58ba49db649",
+    "cost_valid": false,
+    "generated_at_utc": "2026-07-28T15:23:26.645857+00:00",
+    "requested_end_exclusive": "2026-07-28T00:00:00+00:00",
+    "requested_start": "2025-07-28T00:00:00+00:00",
+    "server_offset_minutes": 180,
+    "symbols": {
+      "BTCUSD": {
+        "resolved_symbol": "BTCUSD.m",
+        "series": {
+          "H1": {
+            "availability_gaps": [
+              {
+                "end_utc": "2026-02-21T23:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-21T22:00:00+00:00"
+              }
+            ],
+            "bars_written": 8759,
+            "coverage_first": "2025-07-28T00:00:00+00:00",
+            "coverage_last": "2026-07-27T23:00:00+00:00",
+            "gap_count": 1,
+            "gap_rows_sha256": "604746a4eb4c31f33929a9832b2f3270d5d3cf75abd6f863bae6fe48cc257739"
+          },
+          "M15": {
+            "availability_gaps": [
+              {
+                "end_utc": "2025-10-05T22:45:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-05T22:30:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-29T20:30:00+00:00",
+                "missing_slot_count": 2,
+                "start_utc": "2025-12-29T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-21T23:00:00+00:00",
+                "missing_slot_count": 5,
+                "start_utc": "2026-02-21T21:45:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-22T15:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-22T14:45:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-29T01:45:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-29T00:45:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-27T22:30:00+00:00",
+                "missing_slot_count": 2,
+                "start_utc": "2026-06-27T22:00:00+00:00"
+              }
+            ],
+            "bars_written": 35025,
+            "coverage_first": "2025-07-28T00:00:00+00:00",
+            "coverage_last": "2026-07-27T23:45:00+00:00",
+            "gap_count": 6,
+            "gap_rows_sha256": "24b6bcee0cd81110b9162616e0e618c9d79c6a8c459233dac963b04841889b1f"
+          }
+        }
+      },
+      "EURUSD": {
+        "resolved_symbol": "EURUSD.m",
+        "series": {
+          "H1": {
+            "availability_gaps": [
+              {
+                "end_utc": "2025-08-03T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-10T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-17T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-24T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-31T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-07T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-09-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-14T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-09-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-21T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-09-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-28T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-09-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-05T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-10-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-12T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-10-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-19T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-10-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-26T20:00:00+00:00",
+                "missing_slot_count": 47,
+                "start_utc": "2025-10-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-27T00:00:00+00:00",
+                "missing_slot_count": 3,
+                "start_utc": "2025-10-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-02T21:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-10-31T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-09T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-11-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-16T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-11-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-23T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-11-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-30T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-11-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-07T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-12-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-14T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-12-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-21T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-12-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-25T21:00:00+00:00",
+                "missing_slot_count": 24,
+                "start_utc": "2025-12-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-28T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-12-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-01T21:00:00+00:00",
+                "missing_slot_count": 24,
+                "start_utc": "2025-12-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-04T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-11T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-18T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-25T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-01T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-08T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-02-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-15T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-02-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-22T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-02-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-01T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-02-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-08T20:00:00+00:00",
+                "missing_slot_count": 47,
+                "start_utc": "2026-03-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-15T20:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-03-13T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-22T20:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-03-20T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-29T21:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-03-27T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-05T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-04-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-12T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-04-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-19T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-04-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-26T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-04-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-03T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-10T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-17T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-24T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-31T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-07T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-06-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-14T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-06-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-21T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-06-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-28T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-06-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-05T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-07-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-12T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-07-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-19T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-07-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-26T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-07-24T21:00:00+00:00"
+              }
+            ],
+            "bars_written": 6213,
+            "coverage_first": "2025-07-28T00:00:00+00:00",
+            "coverage_last": "2026-07-27T23:00:00+00:00",
+            "gap_count": 55,
+            "gap_rows_sha256": "faf66db5682d108cd3ca371ca9d64b4e4e856431234981fde6212c0ac5d9e209"
+          },
+          "M15": {
+            "availability_gaps": [
+              {
+                "end_utc": "2025-08-03T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-10T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-17T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-24T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-31T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-07T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-09-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-14T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-09-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-21T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-09-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-28T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-09-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-05T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-10-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-05T22:45:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-05T22:30:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-12T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-10-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-19T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-10-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-26T20:00:00+00:00",
+                "missing_slot_count": 188,
+                "start_utc": "2025-10-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-27T00:00:00+00:00",
+                "missing_slot_count": 12,
+                "start_utc": "2025-10-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-02T21:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-10-31T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-09T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-11-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-16T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-11-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-23T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-11-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-30T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-11-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-07T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-12-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-14T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-12-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-21T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-12-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-25T21:00:00+00:00",
+                "missing_slot_count": 96,
+                "start_utc": "2025-12-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-28T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-12-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-29T20:30:00+00:00",
+                "missing_slot_count": 2,
+                "start_utc": "2025-12-29T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-01T21:00:00+00:00",
+                "missing_slot_count": 96,
+                "start_utc": "2025-12-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-04T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-11T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-18T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-25T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-01T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-08T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-02-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-15T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-02-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-22T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-02-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-01T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-02-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-08T20:00:00+00:00",
+                "missing_slot_count": 188,
+                "start_utc": "2026-03-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-15T20:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-03-13T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-22T20:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-03-20T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-29T21:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-03-27T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-05T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-04-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-12T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-04-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-19T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-04-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-26T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-04-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-03T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-10T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-17T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-24T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-31T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-07T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-06-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-14T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-06-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-21T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-06-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-28T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-06-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-05T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-07-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-12T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-07-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-19T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-07-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-26T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-07-24T21:00:00+00:00"
+              }
+            ],
+            "bars_written": 24849,
+            "coverage_first": "2025-07-28T00:00:00+00:00",
+            "coverage_last": "2026-07-27T23:45:00+00:00",
+            "gap_count": 57,
+            "gap_rows_sha256": "1dbcf5c973f01687e1f096df03f3642a2435105277ef456b635e32de9eafe860"
+          }
+        }
+      },
+      "GBPUSD": {
+        "resolved_symbol": "GBPUSD.m",
+        "series": {
+          "H1": {
+            "availability_gaps": [
+              {
+                "end_utc": "2025-08-03T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-10T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-17T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-24T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-31T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-08-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-07T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-09-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-14T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-09-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-21T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-09-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-28T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-09-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-05T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-10-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-12T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-10-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-19T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-10-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-26T20:00:00+00:00",
+                "missing_slot_count": 47,
+                "start_utc": "2025-10-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-27T00:00:00+00:00",
+                "missing_slot_count": 3,
+                "start_utc": "2025-10-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-02T21:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-10-31T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-09T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-11-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-16T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-11-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-23T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-11-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-30T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-11-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-07T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-12-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-14T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-12-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-21T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-12-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-25T21:00:00+00:00",
+                "missing_slot_count": 24,
+                "start_utc": "2025-12-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-28T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-12-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-01T21:00:00+00:00",
+                "missing_slot_count": 24,
+                "start_utc": "2025-12-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-04T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-11T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-18T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-25T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-01T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-01-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-08T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-02-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-15T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-02-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-22T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-02-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-01T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-02-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-08T20:00:00+00:00",
+                "missing_slot_count": 47,
+                "start_utc": "2026-03-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-15T20:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-03-13T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-22T20:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-03-20T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-29T21:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-03-27T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-05T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-04-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-12T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-04-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-19T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-04-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-26T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-04-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-03T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-10T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-17T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-24T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-31T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-05-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-07T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-06-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-14T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-06-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-21T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-06-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-28T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-06-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-05T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-07-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-12T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-07-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-19T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-07-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-26T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-07-24T21:00:00+00:00"
+              }
+            ],
+            "bars_written": 6213,
+            "coverage_first": "2025-07-28T00:00:00+00:00",
+            "coverage_last": "2026-07-27T23:00:00+00:00",
+            "gap_count": 55,
+            "gap_rows_sha256": "faf66db5682d108cd3ca371ca9d64b4e4e856431234981fde6212c0ac5d9e209"
+          },
+          "M15": {
+            "availability_gaps": [
+              {
+                "end_utc": "2025-08-03T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-10T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-17T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-24T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-31T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-08-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-07T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-09-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-14T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-09-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-21T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-09-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-28T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-09-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-05T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-10-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-05T22:45:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-05T22:30:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-12T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-10-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-19T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-10-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-26T20:00:00+00:00",
+                "missing_slot_count": 188,
+                "start_utc": "2025-10-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-27T00:00:00+00:00",
+                "missing_slot_count": 12,
+                "start_utc": "2025-10-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-02T21:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-10-31T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-09T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-11-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-16T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-11-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-23T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-11-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-30T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-11-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-07T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-12-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-14T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-12-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-21T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-12-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-25T21:00:00+00:00",
+                "missing_slot_count": 96,
+                "start_utc": "2025-12-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-28T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-12-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-29T20:30:00+00:00",
+                "missing_slot_count": 2,
+                "start_utc": "2025-12-29T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-01T21:00:00+00:00",
+                "missing_slot_count": 96,
+                "start_utc": "2025-12-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-04T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-11T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-18T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-25T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-01T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-01-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-08T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-02-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-15T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-02-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-22T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-02-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-01T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-02-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-08T20:00:00+00:00",
+                "missing_slot_count": 188,
+                "start_utc": "2026-03-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-15T20:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-03-13T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-22T20:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-03-20T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-29T21:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-03-27T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-05T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-04-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-12T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-04-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-19T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-04-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-26T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-04-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-03T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-10T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-17T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-24T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-31T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-05-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-07T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-06-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-14T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-06-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-21T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-06-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-28T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-06-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-05T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-07-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-12T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-07-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-19T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-07-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-26T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-07-24T21:00:00+00:00"
+              }
+            ],
+            "bars_written": 24849,
+            "coverage_first": "2025-07-28T00:00:00+00:00",
+            "coverage_last": "2026-07-27T23:45:00+00:00",
+            "gap_count": 57,
+            "gap_rows_sha256": "1dbcf5c973f01687e1f096df03f3642a2435105277ef456b635e32de9eafe860"
+          }
+        }
+      },
+      "XAUUSD": {
+        "resolved_symbol": "XAUUSD.m",
+        "series": {
+          "H1": {
+            "availability_gaps": [
+              {
+                "end_utc": "2025-07-28T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-07-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-07-29T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-07-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-07-30T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-07-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-07-31T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-07-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-03T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-08-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-04T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-05T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-06T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-07T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-10T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-08-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-11T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-12T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-13T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-14T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-17T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-08-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-18T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-19T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-20T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-21T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-24T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-08-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-25T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-26T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-27T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-28T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-08-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-31T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-08-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-01T22:00:00+00:00",
+                "missing_slot_count": 3,
+                "start_utc": "2025-09-01T19:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-02T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-03T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-04T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-07T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-09-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-08T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-09T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-10T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-11T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-14T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-09-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-15T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-16T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-17T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-18T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-21T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-09-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-22T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-23T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-24T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-25T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-28T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-09-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-29T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-30T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-09-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-01T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-02T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-05T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-10-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-06T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-07T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-08T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-09T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-12T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-10-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-13T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-14T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-15T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-16T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-19T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-10-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-20T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-21T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-22T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-23T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-26T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2025-10-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-27T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-27T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-28T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-28T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-29T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-29T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-30T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-30T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-02T22:00:00+00:00",
+                "missing_slot_count": 50,
+                "start_utc": "2025-10-31T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-03T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-04T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-05T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-06T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-09T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-11-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-10T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-11T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-12T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-13T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-16T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-11-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-17T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-18T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-19T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-20T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-23T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-11-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-24T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-25T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-26T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-27T22:00:00+00:00",
+                "missing_slot_count": 3,
+                "start_utc": "2025-11-27T19:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-30T22:00:00+00:00",
+                "missing_slot_count": 51,
+                "start_utc": "2025-11-28T19:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-01T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-02T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-03T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-04T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-07T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-12-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-08T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-09T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-10T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-11T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-14T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-12-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-15T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-16T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-17T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-18T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-21T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-12-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-22T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-23T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-25T22:00:00+00:00",
+                "missing_slot_count": 28,
+                "start_utc": "2025-12-24T18:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-28T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2025-12-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-29T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-30T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-12-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-01T22:00:00+00:00",
+                "missing_slot_count": 25,
+                "start_utc": "2025-12-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-04T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-01-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-05T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-06T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-07T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-08T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-11T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-01-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-12T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-13T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-14T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-15T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-18T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-01-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-19T22:00:00+00:00",
+                "missing_slot_count": 3,
+                "start_utc": "2026-01-19T19:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-20T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-21T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-22T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-25T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-01-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-26T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-27T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-28T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-29T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-01-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-01T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-01-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-02T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-03T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-04T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-05T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-08T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-02-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-09T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-10T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-11T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-12T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-15T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-02-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-16T22:00:00+00:00",
+                "missing_slot_count": 3,
+                "start_utc": "2026-02-16T19:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-17T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-18T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-19T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-22T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-02-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-23T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-24T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-25T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-26T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-02-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-01T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-02-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-02T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-03T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-04T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-05T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-08T21:00:00+00:00",
+                "missing_slot_count": 48,
+                "start_utc": "2026-03-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-09T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-09T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-10T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-10T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-11T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-11T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-12T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-12T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-15T21:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-03-13T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-16T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-16T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-17T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-17T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-18T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-18T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-19T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-19T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-22T21:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-03-20T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-23T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-23T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-24T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-24T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-25T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-25T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-26T21:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-26T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-29T22:00:00+00:00",
+                "missing_slot_count": 50,
+                "start_utc": "2026-03-27T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-30T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-31T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-03-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-01T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-05T22:00:00+00:00",
+                "missing_slot_count": 73,
+                "start_utc": "2026-04-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-06T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-07T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-08T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-09T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-12T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-04-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-13T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-14T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-15T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-16T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-19T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-04-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-20T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-21T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-22T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-23T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-26T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-04-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-27T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-28T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-29T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-30T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-04-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-03T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-05-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-04T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-05T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-06T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-07T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-10T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-05-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-11T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-12T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-13T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-14T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-17T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-05-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-18T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-19T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-20T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-21T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-24T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-05-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-25T22:00:00+00:00",
+                "missing_slot_count": 3,
+                "start_utc": "2026-05-25T19:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-26T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-27T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-28T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-05-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-31T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-05-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-01T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-02T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-03T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-04T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-07T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-06-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-08T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-09T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-10T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-11T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-14T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-06-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-15T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-16T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-17T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-18T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-21T22:00:00+00:00",
+                "missing_slot_count": 53,
+                "start_utc": "2026-06-19T17:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-22T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-23T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-24T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-25T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-28T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-06-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-29T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-30T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-06-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-01T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-02T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-05T22:00:00+00:00",
+                "missing_slot_count": 53,
+                "start_utc": "2026-07-03T17:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-06T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-07T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-08T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-09T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-12T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-07-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-13T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-14T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-15T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-16T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-19T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-07-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-20T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-21T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-22T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-23T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-26T22:00:00+00:00",
+                "missing_slot_count": 49,
+                "start_utc": "2026-07-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-27T22:00:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2026-07-27T21:00:00+00:00"
+              }
+            ],
+            "bars_written": 5911,
+            "coverage_first": "2025-07-28T00:00:00+00:00",
+            "coverage_last": "2026-07-27T23:00:00+00:00",
+            "gap_count": 258,
+            "gap_rows_sha256": "d6dde379a2bc771dd751a4bec73af7d37fda65bed904bb58bd0079036d522096"
+          },
+          "M15": {
+            "availability_gaps": [
+              {
+                "end_utc": "2025-07-28T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-07-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-07-29T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-07-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-07-30T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-07-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-07-31T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-07-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-03T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-08-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-04T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-05T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-06T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-07T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-10T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-08-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-11T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-12T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-13T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-14T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-17T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-08-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-18T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-19T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-20T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-21T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-24T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-08-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-25T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-26T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-27T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-28T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-08-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-08-31T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-08-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-01T22:00:00+00:00",
+                "missing_slot_count": 14,
+                "start_utc": "2025-09-01T18:30:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-02T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-03T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-04T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-07T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-09-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-08T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-09T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-10T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-11T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-14T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-09-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-15T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-16T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-17T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-18T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-21T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-09-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-22T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-23T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-24T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-25T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-28T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-09-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-29T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-09-30T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-09-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-01T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-02T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-05T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-10-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-05T22:45:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-10-05T22:30:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-06T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-07T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-08T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-09T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-12T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-10-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-13T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-14T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-15T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-16T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-19T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-10-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-20T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-21T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-22T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-23T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-26T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2025-10-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-27T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-27T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-28T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-28T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-29T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-29T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-10-30T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-10-30T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-02T22:00:00+00:00",
+                "missing_slot_count": 200,
+                "start_utc": "2025-10-31T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-03T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-04T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-05T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-06T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-09T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-11-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-10T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-11T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-12T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-13T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-16T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-11-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-17T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-18T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-19T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-20T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-23T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-11-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-24T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-25T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-26T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-11-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-27T22:00:00+00:00",
+                "missing_slot_count": 14,
+                "start_utc": "2025-11-27T18:30:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-28T07:30:00+00:00",
+                "missing_slot_count": 1,
+                "start_utc": "2025-11-28T07:15:00+00:00"
+              },
+              {
+                "end_utc": "2025-11-30T22:00:00+00:00",
+                "missing_slot_count": 205,
+                "start_utc": "2025-11-28T18:45:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-01T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-02T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-03T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-04T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-07T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-12-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-08T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-09T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-10T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-11T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-14T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-12-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-15T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-16T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-17T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-18T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-21T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-12-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-22T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-23T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-25T22:00:00+00:00",
+                "missing_slot_count": 113,
+                "start_utc": "2025-12-24T17:45:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-28T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2025-12-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-29T20:30:00+00:00",
+                "missing_slot_count": 2,
+                "start_utc": "2025-12-29T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-29T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2025-12-30T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2025-12-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-01T22:00:00+00:00",
+                "missing_slot_count": 100,
+                "start_utc": "2025-12-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-04T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-01-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-05T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-06T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-07T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-08T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-11T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-01-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-12T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-13T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-14T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-15T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-18T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-01-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-19T22:00:00+00:00",
+                "missing_slot_count": 14,
+                "start_utc": "2026-01-19T18:30:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-20T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-21T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-22T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-25T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-01-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-26T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-27T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-28T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-01-29T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-01-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-01T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-01-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-02T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-03T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-04T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-05T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-08T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-02-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-09T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-10T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-11T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-12T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-15T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-02-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-16T22:00:00+00:00",
+                "missing_slot_count": 14,
+                "start_utc": "2026-02-16T18:30:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-17T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-18T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-19T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-22T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-02-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-23T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-24T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-25T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-02-26T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-02-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-01T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-02-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-02T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-03T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-04T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-05T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-08T21:00:00+00:00",
+                "missing_slot_count": 192,
+                "start_utc": "2026-03-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-09T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-09T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-10T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-10T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-11T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-11T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-12T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-12T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-15T21:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-03-13T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-16T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-16T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-17T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-17T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-18T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-18T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-19T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-19T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-22T21:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-03-20T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-23T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-23T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-24T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-24T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-25T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-25T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-26T21:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-26T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-29T22:00:00+00:00",
+                "missing_slot_count": 200,
+                "start_utc": "2026-03-27T20:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-30T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-03-31T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-03-31T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-01T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-05T22:00:00+00:00",
+                "missing_slot_count": 292,
+                "start_utc": "2026-04-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-06T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-07T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-08T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-09T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-12T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-04-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-13T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-14T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-15T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-16T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-19T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-04-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-20T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-21T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-22T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-23T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-26T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-04-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-27T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-28T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-29T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-04-30T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-04-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-03T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-05-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-04T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-05T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-06T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-07T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-10T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-05-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-11T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-12T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-13T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-14T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-17T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-05-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-18T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-19T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-19T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-20T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-21T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-24T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-05-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-25T22:00:00+00:00",
+                "missing_slot_count": 14,
+                "start_utc": "2026-05-25T18:30:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-26T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-27T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-27T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-28T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-05-28T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-05-31T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-05-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-01T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-02T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-03T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-03T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-04T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-04T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-07T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-06-05T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-08T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-09T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-10T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-11T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-11T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-14T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-06-12T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-15T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-16T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-17T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-18T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-18T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-21T22:00:00+00:00",
+                "missing_slot_count": 212,
+                "start_utc": "2026-06-19T17:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-22T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-23T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-24T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-25T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-25T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-28T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-06-26T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-29T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-29T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-06-30T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-06-30T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-01T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-01T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-02T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-02T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-05T22:00:00+00:00",
+                "missing_slot_count": 212,
+                "start_utc": "2026-07-03T17:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-06T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-06T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-07T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-07T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-08T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-08T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-09T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-09T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-12T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-07-10T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-13T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-13T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-14T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-14T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-15T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-15T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-16T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-16T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-19T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-07-17T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-20T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-20T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-21T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-21T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-22T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-22T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-23T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-23T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-26T22:00:00+00:00",
+                "missing_slot_count": 196,
+                "start_utc": "2026-07-24T21:00:00+00:00"
+              },
+              {
+                "end_utc": "2026-07-27T22:00:00+00:00",
+                "missing_slot_count": 4,
+                "start_utc": "2026-07-27T21:00:00+00:00"
+              }
+            ],
+            "bars_written": 23628,
+            "coverage_first": "2025-07-28T00:00:00+00:00",
+            "coverage_last": "2026-07-27T23:45:00+00:00",
+            "gap_count": 261,
+            "gap_rows_sha256": "9f8d5e7a02cc69d7d96c68499fd362324227dba5a47067cf6322c73697ff64ff"
+          }
+        }
+      }
+    },
+    "timeframes": [
+      "H1",
+      "M15"
+    ]
+  },
+  "capture_complete": true,
+  "capture_status": "COMPLETE",
+  "content_inventory": [
+    {
+      "bytes": 8049,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2025-07.parquet",
+      "row_count": 96,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "a08177de710190e13ecb41474605ae15158d85d1f4066cd5b221b3beab43e53c"
+    },
+    {
+      "bytes": 32770,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2025-08.parquet",
+      "row_count": 744,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c61626bbb50ceb80b82df35e789fae0ccda4002724287df40935ada8bcf39f30"
+    },
+    {
+      "bytes": 31086,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2025-09.parquet",
+      "row_count": 720,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "93e1c84438cf20002c7d9db16199bb127e6fbf10f95f1e91bab694f725d4c0c7"
+    },
+    {
+      "bytes": 33578,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2025-10.parquet",
+      "row_count": 744,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "f516c1dcc0cc8b2c288c1973002ded5de9bcab75f84796c8e11a15631550b78c"
+    },
+    {
+      "bytes": 32197,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2025-11.parquet",
+      "row_count": 720,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "047c64a027768590ee6fa6e140fa8836dcb36d1606f4ca826eb9aacd91888659"
+    },
+    {
+      "bytes": 31456,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2025-12.parquet",
+      "row_count": 744,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "7f9a517672dc394e5d19e0324ce022b6b52a2842e4db5e63304cee1f25e46c7f"
+    },
+    {
+      "bytes": 31720,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2026-01.parquet",
+      "row_count": 744,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c4638f57a3c97f2e8ea29c0462de27ced683167ebf454e27d4ced9ffdd14e674"
+    },
+    {
+      "bytes": 29141,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2026-02.parquet",
+      "row_count": 671,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "03c70df9daa8c44fab31bc9e6d92b7a992634098ea6adb0df8136449dcda4df8"
+    },
+    {
+      "bytes": 31549,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2026-03.parquet",
+      "row_count": 744,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "de5c0d71d8eb9831a576cee867bb5bb7a444dce2f1ebe44e1402ad6c4339e25a"
+    },
+    {
+      "bytes": 30789,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2026-04.parquet",
+      "row_count": 720,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c90cd6c991ce977653558d663a4ac7d2c4ad054b721e0dd82c704324c60d25fd"
+    },
+    {
+      "bytes": 31293,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2026-05.parquet",
+      "row_count": 744,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "429c2a0215db88d13b9e3495943ff8b98f1f7bad15032164a9afb06b3f641183"
+    },
+    {
+      "bytes": 31038,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2026-06.parquet",
+      "row_count": 720,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c3d70a53aedeecadaec06dac5f3b4320592df0be0ef1b1ea0e9306b27970dbcd"
+    },
+    {
+      "bytes": 27977,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/H1/2026-07.parquet",
+      "row_count": 648,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "964680d46e3cddf12945f747e5f965b0eb1ab90153c58a83186a66491a32b989"
+    },
+    {
+      "bytes": 18088,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2025-07.parquet",
+      "row_count": 384,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "4fc22176c17a73d83692457786183c355b8df7ce6b67ff8a12e0b817c02341e5"
+    },
+    {
+      "bytes": 112907,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2025-08.parquet",
+      "row_count": 2976,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "68ffc63a5a930ca500eae45b996270fabdcdde0ca743054d0f10106c026e37df"
+    },
+    {
+      "bytes": 105098,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2025-09.parquet",
+      "row_count": 2880,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "071b5e30e6e6446e43ead5baa5ff39cb1b10648314eb5ee41b2359d761544e18"
+    },
+    {
+      "bytes": 117327,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2025-10.parquet",
+      "row_count": 2975,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c65e35078fe15f5e25c1d61c90a899d8d92177103fcebbe04727f2b836a8e297"
+    },
+    {
+      "bytes": 109858,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2025-11.parquet",
+      "row_count": 2880,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "7dc21fe7ce1adc5b968ed539fab4aedcf3df56ba802fcadea5696fb800cb383e"
+    },
+    {
+      "bytes": 105299,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2025-12.parquet",
+      "row_count": 2974,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "51d21961e93e089139312eba70b2457d02db37985c21a3d5c686799780fd1dda"
+    },
+    {
+      "bytes": 105917,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2026-01.parquet",
+      "row_count": 2976,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "cef8fcd00e0f6b395e216663cbc74bdffe5e9abdb06cc667d6c5533cd1113817"
+    },
+    {
+      "bytes": 98146,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2026-02.parquet",
+      "row_count": 2682,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "d1e4312ebdbb17ecbf2df57fe9a13440035ad5addc96ae98bef2cf6b5b00399f"
+    },
+    {
+      "bytes": 105292,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2026-03.parquet",
+      "row_count": 2972,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "96597ce301bcaa8f276adcecc90f7eb2c672918d00513a700c005fbd25523ceb"
+    },
+    {
+      "bytes": 102457,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2026-04.parquet",
+      "row_count": 2880,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "e74126e781c42afcf4f4d287ad0c708cec6c59b627f9bd71b97f79d2ee11bc48"
+    },
+    {
+      "bytes": 103103,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2026-05.parquet",
+      "row_count": 2976,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "ed93ec70cdc815c6e396179acdcf02700212afff6f652acb019e63a8bee55da9"
+    },
+    {
+      "bytes": 104112,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2026-06.parquet",
+      "row_count": 2878,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "9c76c349f2f9dc8d13086f07078cf56b563691b1edf9598fccd0af2f814b0f6b"
+    },
+    {
+      "bytes": 90302,
+      "kind": "parquet",
+      "path": "BTCUSD~2Em/bars/M15/2026-07.parquet",
+      "row_count": 2592,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "0e3b23a07d6c60bac115a685d8448dd5bbd1e31ef979bf2d2e97eb8c74e84388"
+    },
+    {
+      "bytes": 673,
+      "kind": "symbol_meta",
+      "path": "BTCUSD~2Em/meta.json",
+      "sha256": "4e1d9dae4db38f7321db76636a2945c87a5590a6db4f2f0c006b8454031c4c2f"
+    },
+    {
+      "bytes": 9129,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2025-07.parquet",
+      "row_count": 96,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "1c1ad51fe5e6a4b74c2e820873cf99b0ee1680d32969de233ffb783b09016258"
+    },
+    {
+      "bytes": 27409,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2025-08.parquet",
+      "row_count": 504,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c463a92d61a515343b7d76b05fc9b93b6416ceb0bc75c620a0e21b6b4dd51c58"
+    },
+    {
+      "bytes": 28780,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2025-09.parquet",
+      "row_count": 528,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "a9441967fee3eea1fcc5f3d4bdbb7e01e493cf110456a0403408801e84adab07"
+    },
+    {
+      "bytes": 29424,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2025-10.parquet",
+      "row_count": 546,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "4ce8bb15454b53bc32f542ceeccc3fe087d6e7202e21c071f8c67d7bf83ab447"
+    },
+    {
+      "bytes": 25996,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2025-11.parquet",
+      "row_count": 483,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "17556e59a54f3e4b5898c9da886300001c39bab63de9c19e140ea6b2acb2cd73"
+    },
+    {
+      "bytes": 28152,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2025-12.parquet",
+      "row_count": 525,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "b6fb0d8872834ab51768d4e9aff9e54fe9916a2b37b7c9a3659dd79a206662cb"
+    },
+    {
+      "bytes": 28270,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2026-01.parquet",
+      "row_count": 504,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "3c12102365c671a878a25059c9a1c7e1e3093452fc1b224d6500cee227f81eed"
+    },
+    {
+      "bytes": 25904,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2026-02.parquet",
+      "row_count": 480,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "378dd0471f2ebcff6eeb2770f6cf3a6094cfd9fdacd98dad484f25e5bd12847f"
+    },
+    {
+      "bytes": 29259,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2026-03.parquet",
+      "row_count": 531,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "3ad7aed4ff0de4876291944f91b55a530451f29b0d920a65296aa40fd44df829"
+    },
+    {
+      "bytes": 28848,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2026-04.parquet",
+      "row_count": 528,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "7a49ee1bed50e676fff1fff47670a16caa4099b6ab0260370d3c5e4e1b7384b5"
+    },
+    {
+      "bytes": 27453,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2026-05.parquet",
+      "row_count": 504,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "55d8beed1ab202792fe8a44197ec1359b3c67fc1c3e6297aa1fd652242327960"
+    },
+    {
+      "bytes": 29319,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2026-06.parquet",
+      "row_count": 528,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "97c20abaa8ef0b637034bd748ba3b5fd24f6785380d819ef065307a3f3757de1"
+    },
+    {
+      "bytes": 23676,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/H1/2026-07.parquet",
+      "row_count": 456,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "3f69a0395967e034640789559017c4a1436737e14164d12c5ff6973409ea6637"
+    },
+    {
+      "bytes": 21946,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2025-07.parquet",
+      "row_count": 384,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "91507f1ad63e1e5596ab5d7a42d156232ee70cee2c5d3534a53970d85f0925f2"
+    },
+    {
+      "bytes": 75354,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2025-08.parquet",
+      "row_count": 2016,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "ef81616f0c884e8644e95338e8fd4de03b8736f644bb6176657c24d66c16cdb5"
+    },
+    {
+      "bytes": 81679,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2025-09.parquet",
+      "row_count": 2112,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "87e78a9bb98401471e93a775be7d1e29cd1ce7e15c2bbfd0c2f78aa7dd36ff13"
+    },
+    {
+      "bytes": 80866,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2025-10.parquet",
+      "row_count": 2183,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "28431ebb05cf14d6d662de82908f6f88489cbd19d17ee06549de08480c3b47b0"
+    },
+    {
+      "bytes": 70180,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2025-11.parquet",
+      "row_count": 1932,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "9f20c4998961dfa3cb86893dab0c02b8862c063b4f8c2ffb354e64b1df22a6bd"
+    },
+    {
+      "bytes": 76606,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2025-12.parquet",
+      "row_count": 2098,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "da02aaea12839dbc0f7e532152dec55794c3e3bbce9745b15f718fdd7bfdc548"
+    },
+    {
+      "bytes": 82649,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2026-01.parquet",
+      "row_count": 2016,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "6b8b89fefcfcd3cfd428e5c8ded37c032ad348d287dc5c958606502afaf29457"
+    },
+    {
+      "bytes": 70094,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2026-02.parquet",
+      "row_count": 1920,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "8e4885f276515a0f40fb723e1be0cc02b5f21ce620e962c908d9cebaa5589371"
+    },
+    {
+      "bytes": 85698,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2026-03.parquet",
+      "row_count": 2124,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "3ff10520a311c51ba7368028f3f087da5a6b1e6cac4a2759faba919150d437a3"
+    },
+    {
+      "bytes": 82881,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2026-04.parquet",
+      "row_count": 2112,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "7d63f95ad30c0d10c27de7b6bb817d94d43f380b654fac3abbaa20599316eb65"
+    },
+    {
+      "bytes": 75793,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2026-05.parquet",
+      "row_count": 2016,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "4eafd3dbf544e342e58eab3f0db54a96278a205bd5733b05138945c9c635526d"
+    },
+    {
+      "bytes": 84520,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2026-06.parquet",
+      "row_count": 2112,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "6a6dd622601b8c72abca1d200ccb991232ceaa74316a5d5aef91ca3d25db6864"
+    },
+    {
+      "bytes": 58323,
+      "kind": "parquet",
+      "path": "EURUSD~2Em/bars/M15/2026-07.parquet",
+      "row_count": 1824,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "0d843abe1beb4d1e3599e983b9b2603335ee161c27097b57d15b6578e323725e"
+    },
+    {
+      "bytes": 690,
+      "kind": "symbol_meta",
+      "path": "EURUSD~2Em/meta.json",
+      "sha256": "b999bab6ed6092c211dd46684e5225b6e7ff3a78cdbc17f667ab302259ca85b2"
+    },
+    {
+      "bytes": 9081,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2025-07.parquet",
+      "row_count": 96,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "682104c2f88f9e14c377971405db935f0c44465c344e48dd7f1077e04d0b2667"
+    },
+    {
+      "bytes": 28261,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2025-08.parquet",
+      "row_count": 504,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "8d17edb4983d91c55d6c87b0454889e26f273a611165c92091f59e9a90c1d71a"
+    },
+    {
+      "bytes": 29067,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2025-09.parquet",
+      "row_count": 528,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "a32d00ae760091fae7f37c26c41448200441899207b47e3cde25b675021b2d66"
+    },
+    {
+      "bytes": 30335,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2025-10.parquet",
+      "row_count": 546,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "3a8df75e5bb03c41c232011f560be30ed3e21dee3c6b1f3de7e3d71a952a03b1"
+    },
+    {
+      "bytes": 26702,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2025-11.parquet",
+      "row_count": 483,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "08ea41f2ca6b55dcb349dea6be91591d76a67ac33cf15fa5f0f61ca00f8821f7"
+    },
+    {
+      "bytes": 28910,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2025-12.parquet",
+      "row_count": 525,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "91608c41701d1128473e9f68ab34a0e2f38a545fab0aeb567cddf17b96b48250"
+    },
+    {
+      "bytes": 27864,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2026-01.parquet",
+      "row_count": 504,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "de36ecd6bb9e72bf44b42e861c1fbc147ca26b729185ce325f5b1b082c370e73"
+    },
+    {
+      "bytes": 27091,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2026-02.parquet",
+      "row_count": 480,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "a69975510e8d01af0fcd5b1ce20955a352f36a8327107e6dfd068e4d7b9152b7"
+    },
+    {
+      "bytes": 29449,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2026-03.parquet",
+      "row_count": 531,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "6b6ac213aac6553782adde60d0d2cf40f82eb3c2049cf69ab0bb07fcf40bb500"
+    },
+    {
+      "bytes": 29206,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2026-04.parquet",
+      "row_count": 528,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "22a2bd1e77bc09ae1af8f8aaa5e6ea3918ea4eab4a85b3f33410231734904808"
+    },
+    {
+      "bytes": 28187,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2026-05.parquet",
+      "row_count": 504,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "9c9ec5f7024b9161ecbd21b7aa5d89141709b169d39033e2c7f961aefda244cc"
+    },
+    {
+      "bytes": 29534,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2026-06.parquet",
+      "row_count": 528,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "32f12da94fe1a68e6c95fedb8e0a3dfcfef4e53ef00fbb365d89e93f7bbe08d0"
+    },
+    {
+      "bytes": 25574,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/H1/2026-07.parquet",
+      "row_count": 456,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "cac64632105d937d5c6684cac6027bf5fa5dd505ee79b6c793abad342920ea5d"
+    },
+    {
+      "bytes": 21567,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2025-07.parquet",
+      "row_count": 384,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "736a387f0aff158abc90380649be658c318108b99db04e863aa6848e4ef93571"
+    },
+    {
+      "bytes": 82394,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2025-08.parquet",
+      "row_count": 2016,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "6480e5ec47ab9d3fa5c2f92781fbc241ad6e89689d15811e111c311bb77eaeab"
+    },
+    {
+      "bytes": 86346,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2025-09.parquet",
+      "row_count": 2112,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "488797603b38d5d88fde960939e9352fff8bd2a87a50359b224e2f1aace4c2b5"
+    },
+    {
+      "bytes": 88328,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2025-10.parquet",
+      "row_count": 2183,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "7317493e8740eff508df555c575ef16aa22cd9c93b1c54d3177d41760244ef73"
+    },
+    {
+      "bytes": 75977,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2025-11.parquet",
+      "row_count": 1932,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "b342a7b43687c71715b90e7494335088d4c7479f2a26c2d3dac2b74a7e6c7b7a"
+    },
+    {
+      "bytes": 83233,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2025-12.parquet",
+      "row_count": 2098,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "3b1ddc9000ee4e84069013b353e7861afc0fdcc84f72656f767c4cd1716f91fc"
+    },
+    {
+      "bytes": 82395,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2026-01.parquet",
+      "row_count": 2016,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "88234206934e8bb7279482a6b43c464989ab809ceb4b28e5d5e4a56fea4b9f96"
+    },
+    {
+      "bytes": 79615,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2026-02.parquet",
+      "row_count": 1920,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "151ced4b5802fdf94a6c89149a9667191ac24d22f2a915e8596c2c3b2aae5f53"
+    },
+    {
+      "bytes": 86304,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2026-03.parquet",
+      "row_count": 2124,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "82243e85afd17f7ec03e3c023b148e5e532333128ecf3f816f3abf0c15ea1046"
+    },
+    {
+      "bytes": 86530,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2026-04.parquet",
+      "row_count": 2112,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "6db3492f1995eabe9d0e26c172ba50b0749b7bdf8d7c9ab2151d980da5915a6a"
+    },
+    {
+      "bytes": 83384,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2026-05.parquet",
+      "row_count": 2016,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "3f4e0a022e5f5c90072c4f2cd3f13e94f83fe513438f4311af5f46f737319a8c"
+    },
+    {
+      "bytes": 85388,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2026-06.parquet",
+      "row_count": 2112,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c238462cbf461c5d36ecc0c71b50c45e5828f07b9ee109a80296e49f0b443533"
+    },
+    {
+      "bytes": 73520,
+      "kind": "parquet",
+      "path": "GBPUSD~2Em/bars/M15/2026-07.parquet",
+      "row_count": 1824,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c7d35186d3d9aea9b5e36ad19892de4968c6c6268899a6a4dc3e6e3904c6c536"
+    },
+    {
+      "bytes": 676,
+      "kind": "symbol_meta",
+      "path": "GBPUSD~2Em/meta.json",
+      "sha256": "397c6c21cb594569a5b578e32664e121c108d9f342c387d462dbdcd24f3c8a94"
+    },
+    {
+      "bytes": 8110,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2025-07.parquet",
+      "row_count": 92,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "ce0580016a603147341b1cb8e55b00102c2a69ca3cfddc8751f7eec5d667d903"
+    },
+    {
+      "bytes": 22004,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2025-08.parquet",
+      "row_count": 483,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "1b9e296e5f319f45b593f6e0ee2066e1c917639a0386bae0a059a1ba23136744"
+    },
+    {
+      "bytes": 22981,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2025-09.parquet",
+      "row_count": 504,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "8de8153a77e99f5d68f39bee09886ff26e955b21dedbb811786b216249152142"
+    },
+    {
+      "bytes": 24607,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2025-10.parquet",
+      "row_count": 527,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "90f0c89263986c69dc484ca9690a4adb3f5cc04d37ac372ac020833d174f17c8"
+    },
+    {
+      "bytes": 21566,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2025-11.parquet",
+      "row_count": 458,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "3399159fac58e2ee5a3a9e3d2880e82de34ad6b49a8db3bacd4c497527cf4aeb"
+    },
+    {
+      "bytes": 23304,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2025-12.parquet",
+      "row_count": 501,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "27107cc0fc78d209b24becf648d19fde83b695b42f539789e45f2b218f2bd5f1"
+    },
+    {
+      "bytes": 22965,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2026-01.parquet",
+      "row_count": 481,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "d02239f2b913346627e809a05551f60188d6163fb97d0d3a09a5f32dfa470896"
+    },
+    {
+      "bytes": 22076,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2026-02.parquet",
+      "row_count": 458,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "e951100389636c621d82a4438bcab0bb3b779ec375fd7de7a7a6cce1b849d487"
+    },
+    {
+      "bytes": 23937,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2026-03.parquet",
+      "row_count": 508,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "437f6984971aa5c57ee9d7c134fa5a91f5e4491025c448582a25329a952587e6"
+    },
+    {
+      "bytes": 22634,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2026-04.parquet",
+      "row_count": 483,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "2ced93394d0c6d3e45136c2ace12f18a2edbc907c94e4fb86da631b36b8f7f71"
+    },
+    {
+      "bytes": 22523,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2026-05.parquet",
+      "row_count": 481,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "1d9846f1d913d0be08dcd1d0a4b12edd2cdb4c906ce3fa0fdc469bfd82476dd2"
+    },
+    {
+      "bytes": 23387,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2026-06.parquet",
+      "row_count": 502,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "3066d0eb6722c8a13d47dfdaef8b69f7220fa08a1b114bd5c154b97552f712a8"
+    },
+    {
+      "bytes": 20586,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/H1/2026-07.parquet",
+      "row_count": 433,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "23b33480f9dab99e4f756281c4775c4e51ea114c4f5e76c54d5ef8ac50765b16"
+    },
+    {
+      "bytes": 17394,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2025-07.parquet",
+      "row_count": 368,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "14a9b89260b3a4cee53f87ef114c6e3532128511f502473a83f967e89ba5f6b3"
+    },
+    {
+      "bytes": 68636,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2025-08.parquet",
+      "row_count": 1932,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "0fc518fd81c967ff5a2c3662c6e186895088ab94941d69818870fe5293afe56d"
+    },
+    {
+      "bytes": 74626,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2025-09.parquet",
+      "row_count": 2014,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "a3fbca216bfd6c94937d29c14ce6a2ee8a072c65e1fcfa8e35e4573a87c2210b"
+    },
+    {
+      "bytes": 80917,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2025-10.parquet",
+      "row_count": 2107,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "b8977ae2d3ee7b2da2f36f7a77fad8574a2e0578add834afb8ec2d3738780162"
+    },
+    {
+      "bytes": 69629,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2025-11.parquet",
+      "row_count": 1828,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "9aeb9a0f184f513998e809d39efe9072be00978ad8e99fbf06072c69b08637e3"
+    },
+    {
+      "bytes": 75870,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2025-12.parquet",
+      "row_count": 2001,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "ca95fcfd6080ed29a7d9b1cc5242df5041f07158bf91b3ac3b8574ae438e32d2"
+    },
+    {
+      "bytes": 75357,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2026-01.parquet",
+      "row_count": 1922,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c35ab61e8e11a8251e61ea60856943cb78f9d9632836eb077aef3a98f13992ee"
+    },
+    {
+      "bytes": 71517,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2026-02.parquet",
+      "row_count": 1830,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "ad85aeb305c3d3979b0519133c1c70c9a932fe2617272ec08a3f6ca6aeb94a6f"
+    },
+    {
+      "bytes": 79061,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2026-03.parquet",
+      "row_count": 2032,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "07213daefbc509203b4088bd42ce8aef4f9627fb37ce2ab784c9069a7a1eb42f"
+    },
+    {
+      "bytes": 73817,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2026-04.parquet",
+      "row_count": 1932,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "88c8a73c278364f7e9bd57becdffbcb536d0796b200a8a144c7d7323159ae8a2"
+    },
+    {
+      "bytes": 72999,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2026-05.parquet",
+      "row_count": 1922,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "881e2c4927d870793e814387f7766cdf950556d1c88eb96afc1c6201a431abe1"
+    },
+    {
+      "bytes": 76636,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2026-06.parquet",
+      "row_count": 2008,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "c193a6f2002daa30a9a0b7d8d7b5497660b17cade5d6002b9af23378a50931c1"
+    },
+    {
+      "bytes": 65435,
+      "kind": "parquet",
+      "path": "XAUUSD~2Em/bars/M15/2026-07.parquet",
+      "row_count": 1732,
+      "schema_id": "MDTALPHAFX_STAGE2_ANALYSIS_BAR_SCHEMA_V1",
+      "sha256": "61621562748ea48ab46732a3a967eb4130171ef800156fc1ebbc4835b7e8d2d6"
+    },
+    {
+      "bytes": 672,
+      "kind": "symbol_meta",
+      "path": "XAUUSD~2Em/meta.json",
+      "sha256": "ccaec4a812fd76bbc15d9109ed1a6f6d69ff6e4d9640371fa077af474a6fe305"
+    }
+  ],
+  "content_sha256": "c9388bb323131c9db44975f1637b4d5a5ebab14c4fd79bb3dd06dd2a08f1b38d",
+  "cost_valid": false,
+  "created_at_utc": "2026-07-28T15:00:29.651262+00:00",
+  "inventory_sha256": "c9388bb323131c9db44975f1637b4d5a5ebab14c4fd79bb3dd06dd2a08f1b38d",
+  "nonpositive_spread_rows": [
+    {
+      "spread": 0,
+      "symbol": "GBPUSD.m",
+      "time_utc": "2025-10-30T13:00:00+00:00",
+      "timeframe": "H1"
+    },
+    {
+      "spread": 0,
+      "symbol": "GBPUSD.m",
+      "time_utc": "2026-04-29T03:00:00+00:00",
+      "timeframe": "H1"
+    },
+    {
+      "spread": 0,
+      "symbol": "GBPUSD.m",
+      "time_utc": "2026-06-23T06:00:00+00:00",
+      "timeframe": "H1"
+    },
+    {
+      "spread": 0,
+      "symbol": "GBPUSD.m",
+      "time_utc": "2026-07-01T13:00:00+00:00",
+      "timeframe": "H1"
+    },
+    {
+      "spread": 0,
+      "symbol": "GBPUSD.m",
+      "time_utc": "2025-10-30T13:30:00+00:00",
+      "timeframe": "M15"
+    },
+    {
+      "spread": 0,
+      "symbol": "GBPUSD.m",
+      "time_utc": "2026-04-29T03:00:00+00:00",
+      "timeframe": "M15"
+    },
+    {
+      "spread": 0,
+      "symbol": "GBPUSD.m",
+      "time_utc": "2026-06-23T06:30:00+00:00",
+      "timeframe": "M15"
+    },
+    {
+      "spread": 0,
+      "symbol": "GBPUSD.m",
+      "time_utc": "2026-07-01T13:00:00+00:00",
+      "timeframe": "M15"
+    }
+  ],
+  "store_format_version": 1,
+  "store_type": "MDTALPHAFX_STAGE2_ANALYSIS_ONLY_PARQUET"
+}

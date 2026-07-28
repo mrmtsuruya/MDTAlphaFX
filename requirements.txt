@@ -1,0 +1,16 @@
+# MDTAlphaFX — Stage 0.
+# Python 3.11+ per spec §1. (The Linux CI sandbox used during the build ran
+# 3.10; the code is 3.10-compatible but 3.11 is the target.)
+
+pydantic>=2.7
+PyYAML>=6.0
+pandas>=2.2
+pyarrow>=16.0
+
+# Windows only. The MetaTrader5 package has no Linux wheel, which is why
+# backend/data/mt5_connector.py imports it lazily and nothing else in the
+# backend imports it at all — see backend/data/source.py.
+MetaTrader5>=5.0.45 ; sys_platform == "win32"
+
+# Test-only.
+pytest>=8.0

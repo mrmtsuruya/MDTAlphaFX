@@ -1,0 +1,90 @@
+# §11.2 Cost modelling. All four costs are mandatory.
+#
+# "Frictionless backtests are the most common source of strategies that work in
+# testing and lose in production."
+#
+# | Cost       | Treatment                                                        |
+# |------------|------------------------------------------------------------------|
+# | Spread     | Per-bar recorded spread from the historical store, not a constant |
+# | Commission | Per-lot, per-side, from broker config                             |
+# | Swap       | Per position per rollover, long and short rates differ            |
+# | Slippage   | 0 for limit orders, slippage_points for market and stop orders    |
+
+spread:
+  # Non-negotiable. The store carries per-bar spread precisely so this can be
+  # false; setting it true is only meaningful for a deliberate A/B against a
+  # constant-spread model and taints any result it produces.
+  use_constant: false
+  # Which side of the recorded spread each direction fills on.
+  # §11.2: "Entry fills at ask (buy) or bid (sell)."
+  buy_fills_at: ASK
+  sell_fills_at: BID
+  # ...which requires knowing what the stored OHLC *is*. §11.2 says the spread
+  # is recorded per bar; it never says whether the recorded open/high/low/close
+  # are bid, ask or mid. The answer moves every fill by up to a full spread and
+  # the spec is silent. See AMBIGUITY-B01. Both readings are implemented:
+  #   BID — OHLC are bid prices (the MT5 terminal's usual behaviour, but that
+  #         is a platform observation, not a statement in this spec). A buy
+  #         pays the full spread at entry, a sell pays it at exit.
+  #   MID — OHLC are mid prices. Each side pays half a spread twice.
+  # The value below follows the MT5 convention; the operator must confirm it
+  # against the broker that actually recorded the store.
+  ohlc_basis: BID
+  # §11.2's table prices *entry*. It says nothing about the exit side. Both
+  # readings implemented; see AMBIGUITY-B02.
+  #   ROUND_TRIP  — the exit pays the opposing side of the spread too.
+  #   ENTRY_ONLY  — the exit fills at the level, no spread.
+  charge_on: ROUND_TRIP
+
+commission:
+  # Per lot, per side, in account currency. NOT exposed by symbol_info() —
+  # it is an account/broker agreement, so it cannot be resolved programmatically
+  # the way swap can. Operator must read it off the broker's contract specs.
+  # See AMBIGUITY-003.
+  per_lot_per_side:
+    XAUUSD: 0.0
+    EURUSD: 0.0
+    GBPUSD: 0.0
+    BTCUSD: 0.0
+
+swap:
+  # Long and short rates differ (§11.2). These ARE exposed by symbol_info()
+  # as swap_long / swap_short, so they are resolved from the broker at startup
+  # and snapshotted into the historical store alongside the bars rather than
+  # written here. This block controls only how they are applied.
+  source: SYMBOL_INFO          # resolved per §7.1, never assumed
+  rollover_hour_utc: 19
+  # Weekday name in UPPERCASE, e.g. "WEDNESDAY". An integer is rejected: Monday=0
+  # and Sunday=0 are both common conventions and the off-by-one fails silently.
+  triple_swap_weekday: WEDNESDAY
+
+  # The market is closed across the weekend, and the triple charge on
+  # `triple_swap_weekday` is what covers it — so a rollover instant crossed on a
+  # Saturday or Sunday is either already paid for or double-charged, depending
+  # on the broker. §11.2 does not say. See AMBIGUITY-B04.
+  #   CHARGED — every crossed rollover instant is charged, weekends included.
+  #   SKIPPED — Saturday/Sunday rollover instants are not charged.
+  weekend_rollovers: SKIPPED
+
+  # Recorded replay receives the rates snapshotted with each fixture. The
+  # values below are the approved current fallback snapshot for a run that does
+  # not supply `RunSpec.swap_rates`; recorded values always take precedence.
+  #   POINTS            — per lot, per night, in points. Converted with §7.2's
+  #                       value_per_point.
+  #   ACCOUNT_CURRENCY  — per lot, per night, already in account currency.
+  rates:
+    unit: POINTS
+    XAUUSD: { long: -71.04, short: -84.12 }
+    EURUSD: { long: -13.32, short: -3.72 }
+    GBPUSD: { long: -8.76, short: -11.64 }
+    BTCUSD: { long: -8466.6, short: -5554.2 }
+
+slippage:
+  # §11.2: default 0 for limit orders.
+  limit_order_points: 0
+  # No default is given for market and stop orders, and Appendix B does not
+  # list it. See AMBIGUITY-003.
+  market_order_points: 10
+  stop_order_points: 20
+  # Applied against the trade, never in favour of it.
+  direction: ADVERSE_ONLY

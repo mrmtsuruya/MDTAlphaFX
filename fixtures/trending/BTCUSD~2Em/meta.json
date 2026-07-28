@@ -1,0 +1,23 @@
+{
+  "account_server": "JustMarkets-Demo2",
+  "recorded_at_utc": "2026-07-28T12:35:07.833431+00:00",
+  "requested_name": "BTCUSD",
+  "resolved_name": "BTCUSD.m",
+  "server_offset_minutes": 180,
+  "spec": {
+    "contract_size": 1.0,
+    "digits": 2,
+    "freeze_level": 0,
+    "name": "BTCUSD.m",
+    "point": 0.01,
+    "stops_level": 0,
+    "tick_size": 0.01,
+    "tick_value": 0.01,
+    "volume_max": 100.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "store_format_version": 1,
+  "swap_long": -8466.6,
+  "swap_short": -5554.2
+}

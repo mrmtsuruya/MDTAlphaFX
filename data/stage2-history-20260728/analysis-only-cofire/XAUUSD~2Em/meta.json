@@ -1,0 +1,26 @@
+{
+  "account_server": "JustMarkets-Demo2",
+  "analysis_only": true,
+  "cost_valid": false,
+  "recorded_at_utc": "2026-07-28T15:23:26.656111+00:00",
+  "requested_name": "XAUUSD",
+  "resolved_name": "XAUUSD.m",
+  "server_offset_minutes": 180,
+  "spec": {
+    "contract_size": 100.0,
+    "digits": 2,
+    "freeze_level": 0,
+    "name": "XAUUSD.m",
+    "point": 0.01,
+    "stops_level": 0,
+    "tick_size": 0.01,
+    "tick_value": 1.0,
+    "volume_max": 100.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "store_format_version": 1,
+  "store_type": "MDTALPHAFX_STAGE2_ANALYSIS_ONLY_PARQUET",
+  "swap_long": -71.04,
+  "swap_short": -84.12
+}

@@ -1,0 +1,82 @@
+# §5.5 Level derivation — entry zone, stop, targets.
+#
+# ORDERING MATTERS AND IS EASY TO GET WRONG:
+#
+#   AWAITING_VALIDATION  ->  derive levels (PROVISIONAL, may be recomputed each bar)
+#                        ->  run validity gate, including POOR_RR
+#          LOCKED        ->  FREEZE. Nothing recomputes them. §6.1 rule 1 applies.
+#
+# Levels are provisional at AWAITING_VALIDATION precisely because §5.3's
+# validity gate includes POOR_RR, which cannot be evaluated before a target
+# exists. Computing them at lock — as an earlier draft said — makes the validity
+# gate reference values that do not yet exist.
+#
+# §5.5: "Every constant above lives in config/levels.yaml. They are the
+# parameters most likely to need per-symbol tuning — a 0.25 ATR buffer on
+# XAUUSD is not a 0.25 ATR buffer on EURUSD in practice, because the wick
+# distributions differ."
+#
+# Appendix B: "Decisions 16–19 are the ones most likely to be wrong at first and
+# cheapest to fix later; they are per-symbol and should be tuned from Backtester
+# output rather than argued about up front."
+
+# Entry zone. The LEADING CONTRIBUTOR's own structure defines it — an order
+# block's body, an FVG's gap, a sweep's rejection wick. Each module returns
+# those coordinates in StrategyResult.evidence; the zone is that range, widened
+# to a minimum so a hairline zone is not unfillable.
+zone:
+  min_zone_atr: 0.15
+
+# Stop loss. Structure first, volatility as the floor. Four steps, in order:
+#   1. Anchor beyond the structure the setup depends on (swing low/high).
+#   2. Buffer past it by sl_buffer_atr × ATR, so a wick through is not a stop-out.
+#   3. Floor: never tighter than min_sl_atr × ATR from the zone edge.
+#   4. Broker floor (§7.3, stops_level). WIDEN, NEVER TIGHTEN.
+stop:
+  sl_buffer_atr: 0.25
+  min_sl_atr: 1.0
+  # sl_basis carries a human-readable string to the UI — "1.06 ATR below swing
+  # low" — because a stop the user cannot explain is a stop they will move.
+  basis_required: true
+
+# Targets. R-multiples off the REALISED stop distance, then snapped to
+# structure. R = |entry_mid − stop_loss|.
+targets:
+  tp1_r: 1.5
+  tp2_r: 3.0
+                                         # no structure supports it
+  # Each target is pulled back to just inside the nearest opposing level (prior
+  # swing, unfilled FVG, session high/low) within snap_atr × ATR.
+  # NEVER PUSHED OUT — snapping may only REDUCE the target.
+  snap_atr: 0.5
+  snap_may_only_reduce: true
+
+# Rejection. If TP1 AFTER SNAPPING yields less than min_rr against the stop, the
+# signal fails validity with POOR_RR. "A correct read of the chart with no room
+# to the next level is not a trade."
+rejection:
+  min_rr: 1.2
+  reason_code: POOR_RR
+
+# §6.1 lifecycle timing.
+lifecycle:
+  signal_ttl_bars: 12
+  # "pin per symbol" — Appendix B gives no cross-symbol default at all.
+  chase_tolerance_atr: 0.25
+
+  # §6.1 rule 3: one active locked signal per (symbol, timeframe). A second
+  # candidate while one is locked is RECORDED AND QUEUED, not merged.
+  max_locked_per_symbol_timeframe: 1
+
+  # §6.1 rule 1: fields frozen on entering LOCKED. Nothing recomputes them.
+  frozen_on_lock:
+    - entry_zone
+    - exit_plan
+    - direction
+    - score
+    - breadth
+    - quality
+    - votes
+
+  # §6.1 rule 5: age_bars is display state and NEVER affects levels.
+  age_bars_affects_levels: false

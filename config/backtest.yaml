@@ -1,0 +1,186 @@
+# §11 Backtesting & validation.
+
+intrabar:
+  # §11.1 resolution order, most to least trusted.
+  # 1. Sub-bar walk against M1 — required.
+  # 2. Conservative fallback: assume the STOP is hit first, flag AMBIGUOUS_FILL.
+  # 3. Never resolve by assuming the favourable order, and never silently.
+  require_sub_bar_walk: true
+  fallback: STOP_FIRST
+  # §11.1: "Above ~5%, the equity curve is substantially an artefact of the
+  # assumption and should be read as a lower bound, not an estimate."
+  ambiguity_rate_warn: 0.05
+  # A single M1 candle spanning both stop and target is irreducibly ambiguous.
+  # It also takes the conservative fallback, and is counted separately so the
+  # two causes of ambiguity stay distinguishable.
+  irreducible_takes_fallback: true
+  # A bar may OPEN beyond a level — the weekend gap, the post-news gap. That is
+  # not the §11.1 ambiguity (only one level is crossed, so the order is known),
+  # but the fill price is a separate question and §11.1 does not answer it.
+  # See AMBIGUITY-B06. Two readings, both implemented, neither inferred:
+  #   GAPPED_PRICE — fill at the bar open. A gap through the stop costs more
+  #                  than the stop distance; a gap through the target pays more.
+  #   LEVEL_PRICE  — fill at the level. Understates gap risk.
+  # The value below is the one the Stage 0 build task directed; it is NOT a
+  # spec statement. The operator must confirm it.
+  gap_fill: GAPPED_PRICE
+
+fills:
+  # §11.2: "Fills obey §7.3. A backtest that fills an order the live system
+  # would reject on stops_level, volume_min or a closed session is measuring a
+  # strategy that cannot be traded."
+  enforce_broker_constraints: true
+  reject_outside_session: true
+  reject_below_stops_level: true
+  reject_on_spread_exceeded: true
+  # §7.3's sixth condition is "symbol trading session currently open". Neither
+  # §7.3 nor §10.1 says what supplies that calendar, and `SymbolSpec` (§2,
+  # frozen) carries no session fields. See AMBIGUITY-B07. Only the reading
+  # named here is implemented; any other value raises rather than degrading.
+  #   SESSION_WINDOW_UNION — open iff at least one config/sessions.yaml window
+  #                          contains the instant. Carries NO weekend or
+  #                          holiday calendar.
+  session_source: SESSION_WINDOW_UNION
+
+metrics:
+  # §11.4: "Trade count gates the rest — any segment under ~30 trades is
+  # reported with its count and no conclusions."
+  min_segment_trades: 30
+  # §11.4 required segmentations.
+  segment_by:
+    - regime
+    - score_decile
+    - cluster_breadth
+    - contested
+    - timeframe
+    - session
+  risk_free_rate: 0.0
+
+replay:
+  # Rule 6: evaluation happens on bar close, not on tick.
+  evaluate_on: BAR_CLOSE
+  # Bars fed to a module before its first evaluation, on top of its declared
+  # min_bars. Guards against an indicator that is technically warm but not
+  # settled.
+  warmup_bars: 0
+
+  # A module fires at the close of bar i. Where does the fill land? The spec is
+  # silent — §11.2 prices a fill, §5.5/§6.1 (Stage 1) describe entry *zones* and
+  # pending orders, and neither says what a bar-close replay does with a market
+  # entry. See AMBIGUITY-B08. Only the value named here is implemented.
+  #   NEXT_BAR_OPEN — fill at the open of bar i+1. The earliest instant the
+  #                   engine could have acted on information it did not hold
+  #                   until bar i closed.
+  entry_fill: NEXT_BAR_OPEN
+
+  # §7.4 "Max positions per symbol: 1". The portfolio guards themselves are
+  # Stage 5; this is the same number applied to the replay so Stage 0 does not
+  # measure a strategy stacking positions the live system would refuse. A signal
+  # arriving while a position is open is RECORDED with its reason, not dropped
+  # (rule 8).
+  concurrent_positions_per_symbol: 1
+
+  # A position still open when the bar data runs out has no terminal price.
+  # §11 does not say what to do with it and rule 11 says it must resolve. See
+  # AMBIGUITY-B09. Only the value named here is implemented.
+  #   REPORT_SEPARATELY — closed at the last bar's close, counted, and EXCLUDED
+  #                       from expectancy / profit factor / win rate, with the
+  #                       exclusion stated in the report.
+  unresolved_at_data_end: REPORT_SEPARATELY
+
+  # Position size for the replay. §7.2 derives lots from equity and risk_pct;
+  # that is Stage 5, and Stage 0 has no equity. There is no defensible Stage 0
+  # default, so this stays undecided rather than becoming an invented number
+  # that silently scales every currency-denominated cost. See AMBIGUITY-B10.
+  volume: 0.10
+
+# Harness scaffolding for the §9 Stage 0 gate ONLY.
+#
+# These parameterise `backend/strategies/trivial.py`, which is NOT one of the
+# 28 modules in §4 and must never be counted as one. They are not spec values
+# and not Appendix B decisions — the spec does not define this strategy. They
+# exist so the gate can run end-to-end without a numeric literal in code.
+gate_strategy:
+  lookback_bars: 20
+  stop_points: 200
+  target_points: 400
+  fired_score: 50.0
+
+# §11.3: "Do not run a global optimizer over this system."
+# Walk-forward is the only permitted parameter search. Stage 0 records the
+# prohibition; the walk-forward runner itself is not Stage 0 scope.
+parameter_search:
+  global_optimisation_permitted: false
+
+# ---------------------------------------------------------------------------
+# §9 Stage 0: "recorded fixtures covering trending, ranging and high-volatility
+# periods". Read by `scripts/record_fixtures.py`.
+#
+# THE SPEC NAMES NO HISTORICAL WINDOWS. It says which market conditions the
+# fixture set must contain and stops there — §11.5 even warns that "a year
+# containing no sustained range says nothing about ranging performance", which
+# is precisely the failure a badly-chosen window produces.
+#
+# The dates below are operator decisions. The 2026 replacements were explicitly
+# authorized by `APPROVE FIXTURE RECOVERY ADDENDUM` on 2026-07-28 after the
+# earlier 2025 windows returned no M1 history from the guarded DEMO terminal.
+#
+# `scripts/record_fixtures.py --auto-classify` scans whatever history the broker
+# exposes and *proposes* candidate windows ranked by ADX and ATR percentile. It
+# prints them. It never writes them here.
+#
+# Each period records every timeframe in engine.timeframes (analysis + M1) with
+# per-bar spread, plus the resolved SymbolSpec and swap rates.
+fixtures:
+  # Where each period's store is written, relative to engine.paths.fixtures.
+  # One self-contained BarSource per period, so a test binds to a directory.
+  periods:
+    trending:
+      # Must demonstrate: a sustained directional move — ADX above the §3.2
+      # trend threshold for a run of bars, EMA stack aligned, high regression
+      # R². This is what clusters D1/E/H are gated on (§3.4), so a fixture
+      # without a real trend leaves half the library untested.
+      start: "2026-06-29T04:00:00Z"
+      end: "2026-07-05T10:00:00Z"
+      symbols: [BTCUSD]
+      # Optional: `symbols: [XAUUSD]` narrows the period to specific base names.
+      # Omitted means every name in symbols.watchlist.
+
+    ranging:
+      # Must demonstrate: sustained chop — ADX below the §3.2 range threshold
+      # with ATR percentile under 60, price rotating inside a band. Gates
+      # cluster G, which is SUPPRESSED in every other regime (§3.4), so this is
+      # the only fixture in which envelope reversion can be tested at all.
+      start: "2026-06-09T16:00:00Z"
+      end: "2026-06-17T22:00:00Z"
+      symbols: [GBPUSD]
+
+    high_volatility:
+      # Must demonstrate: an ATR percentile above 90 (§3.2's VOLATILE_NEWS
+      # trigger), ideally including a gap or a news spike. Two jobs: it is the
+      # regime in which no new signals are generated at all (§3.4), and it is
+      # where a single candle most often spans both stop and target — the §11.1
+      # ambiguity the sub-bar walk exists to resolve.
+      start: "2026-06-07T23:00:00Z"
+      end: "2026-06-16T11:00:00Z"
+      symbols: [XAUUSD]
+
+  auto_classify:
+    # Inputs for `--auto-classify`. This PROPOSES windows for a human to
+    # approve; it is not the Tier 1 classifier and nothing in backend/ reads it.
+    #
+    # The three indicator parameters are quoted from §3.1 rather than chosen:
+    #   "ADX(14)" · "ATR(14) as percentile of trailing 100 bars"
+    adx_period: 14
+    atr_period: 14
+    atr_percentile_lookback_bars: 100
+
+    # Which series to scan and how long a candidate window should be. The spec
+    # says nothing about either — a fixture long enough to contain a regime is a
+    # judgement about this operator's symbols. Pass --timeframe / --window-bars
+    # on the command line, or settle them here.
+    timeframe: H1
+    window_bars: 500
+
+    # How much history to scan back from the present, in bars of `timeframe`.
+    scan_bars: 10000
