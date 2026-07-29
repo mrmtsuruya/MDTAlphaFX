@@ -9,38 +9,233 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
+import { Route as AuthenticatedSystemRouteImport } from './routes/_authenticated/system'
+import { Route as AuthenticatedStrategiesRouteImport } from './routes/_authenticated/strategies'
+import { Route as AuthenticatedSignalsRouteImport } from './routes/_authenticated/signals'
+import { Route as AuthenticatedRedeemRouteImport } from './routes/_authenticated/redeem'
+import { Route as AuthenticatedNewsRouteImport } from './routes/_authenticated/news'
+import { Route as AuthenticatedMt5RouteImport } from './routes/_authenticated/mt5'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedConsultRouteImport } from './routes/_authenticated/consult'
+import { Route as AuthenticatedChartRouteImport } from './routes/_authenticated/chart'
+import { Route as AuthenticatedBuilderRouteImport } from './routes/_authenticated/builder'
+import { Route as AuthenticatedBacktesterRouteImport } from './routes/_authenticated/backtester'
+import { Route as AuthenticatedAiNewsRouteImport } from './routes/_authenticated/ai-news'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedUsageRoute = AuthenticatedUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSystemRoute = AuthenticatedSystemRouteImport.update({
+  id: '/system',
+  path: '/system',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStrategiesRoute = AuthenticatedStrategiesRouteImport.update({
+  id: '/strategies',
+  path: '/strategies',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSignalsRoute = AuthenticatedSignalsRouteImport.update({
+  id: '/signals',
+  path: '/signals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRedeemRoute = AuthenticatedRedeemRouteImport.update({
+  id: '/redeem',
+  path: '/redeem',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNewsRoute = AuthenticatedNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMt5Route = AuthenticatedMt5RouteImport.update({
+  id: '/mt5',
+  path: '/mt5',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedConsultRoute = AuthenticatedConsultRouteImport.update({
+  id: '/consult',
+  path: '/consult',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChartRoute = AuthenticatedChartRouteImport.update({
+  id: '/chart',
+  path: '/chart',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBuilderRoute = AuthenticatedBuilderRouteImport.update({
+  id: '/builder',
+  path: '/builder',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBacktesterRoute = AuthenticatedBacktesterRouteImport.update({
+  id: '/backtester',
+  path: '/backtester',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAiNewsRoute = AuthenticatedAiNewsRouteImport.update({
+  id: '/ai-news',
+  path: '/ai-news',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/ai-news': typeof AuthenticatedAiNewsRoute
+  '/backtester': typeof AuthenticatedBacktesterRoute
+  '/builder': typeof AuthenticatedBuilderRoute
+  '/chart': typeof AuthenticatedChartRoute
+  '/consult': typeof AuthenticatedConsultRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/mt5': typeof AuthenticatedMt5Route
+  '/news': typeof AuthenticatedNewsRoute
+  '/redeem': typeof AuthenticatedRedeemRoute
+  '/signals': typeof AuthenticatedSignalsRoute
+  '/strategies': typeof AuthenticatedStrategiesRoute
+  '/system': typeof AuthenticatedSystemRoute
+  '/usage': typeof AuthenticatedUsageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/ai-news': typeof AuthenticatedAiNewsRoute
+  '/backtester': typeof AuthenticatedBacktesterRoute
+  '/builder': typeof AuthenticatedBuilderRoute
+  '/chart': typeof AuthenticatedChartRoute
+  '/consult': typeof AuthenticatedConsultRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/mt5': typeof AuthenticatedMt5Route
+  '/news': typeof AuthenticatedNewsRoute
+  '/redeem': typeof AuthenticatedRedeemRoute
+  '/signals': typeof AuthenticatedSignalsRoute
+  '/strategies': typeof AuthenticatedStrategiesRoute
+  '/system': typeof AuthenticatedSystemRoute
+  '/usage': typeof AuthenticatedUsageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/ai-news': typeof AuthenticatedAiNewsRoute
+  '/_authenticated/backtester': typeof AuthenticatedBacktesterRoute
+  '/_authenticated/builder': typeof AuthenticatedBuilderRoute
+  '/_authenticated/chart': typeof AuthenticatedChartRoute
+  '/_authenticated/consult': typeof AuthenticatedConsultRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/mt5': typeof AuthenticatedMt5Route
+  '/_authenticated/news': typeof AuthenticatedNewsRoute
+  '/_authenticated/redeem': typeof AuthenticatedRedeemRoute
+  '/_authenticated/signals': typeof AuthenticatedSignalsRoute
+  '/_authenticated/strategies': typeof AuthenticatedStrategiesRoute
+  '/_authenticated/system': typeof AuthenticatedSystemRoute
+  '/_authenticated/usage': typeof AuthenticatedUsageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/ai-news'
+    | '/backtester'
+    | '/builder'
+    | '/chart'
+    | '/consult'
+    | '/dashboard'
+    | '/mt5'
+    | '/news'
+    | '/redeem'
+    | '/signals'
+    | '/strategies'
+    | '/system'
+    | '/usage'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/ai-news'
+    | '/backtester'
+    | '/builder'
+    | '/chart'
+    | '/consult'
+    | '/dashboard'
+    | '/mt5'
+    | '/news'
+    | '/redeem'
+    | '/signals'
+    | '/strategies'
+    | '/system'
+    | '/usage'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/ai-news'
+    | '/_authenticated/backtester'
+    | '/_authenticated/builder'
+    | '/_authenticated/chart'
+    | '/_authenticated/consult'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/mt5'
+    | '/_authenticated/news'
+    | '/_authenticated/redeem'
+    | '/_authenticated/signals'
+    | '/_authenticated/strategies'
+    | '/_authenticated/system'
+    | '/_authenticated/usage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +243,139 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/usage': {
+      id: '/_authenticated/usage'
+      path: '/usage'
+      fullPath: '/usage'
+      preLoaderRoute: typeof AuthenticatedUsageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/system': {
+      id: '/_authenticated/system'
+      path: '/system'
+      fullPath: '/system'
+      preLoaderRoute: typeof AuthenticatedSystemRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/strategies': {
+      id: '/_authenticated/strategies'
+      path: '/strategies'
+      fullPath: '/strategies'
+      preLoaderRoute: typeof AuthenticatedStrategiesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/signals': {
+      id: '/_authenticated/signals'
+      path: '/signals'
+      fullPath: '/signals'
+      preLoaderRoute: typeof AuthenticatedSignalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/redeem': {
+      id: '/_authenticated/redeem'
+      path: '/redeem'
+      fullPath: '/redeem'
+      preLoaderRoute: typeof AuthenticatedRedeemRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/news': {
+      id: '/_authenticated/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof AuthenticatedNewsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mt5': {
+      id: '/_authenticated/mt5'
+      path: '/mt5'
+      fullPath: '/mt5'
+      preLoaderRoute: typeof AuthenticatedMt5RouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/consult': {
+      id: '/_authenticated/consult'
+      path: '/consult'
+      fullPath: '/consult'
+      preLoaderRoute: typeof AuthenticatedConsultRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/chart': {
+      id: '/_authenticated/chart'
+      path: '/chart'
+      fullPath: '/chart'
+      preLoaderRoute: typeof AuthenticatedChartRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/builder': {
+      id: '/_authenticated/builder'
+      path: '/builder'
+      fullPath: '/builder'
+      preLoaderRoute: typeof AuthenticatedBuilderRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/backtester': {
+      id: '/_authenticated/backtester'
+      path: '/backtester'
+      fullPath: '/backtester'
+      preLoaderRoute: typeof AuthenticatedBacktesterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ai-news': {
+      id: '/_authenticated/ai-news'
+      path: '/ai-news'
+      fullPath: '/ai-news'
+      preLoaderRoute: typeof AuthenticatedAiNewsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAiNewsRoute: typeof AuthenticatedAiNewsRoute
+  AuthenticatedBacktesterRoute: typeof AuthenticatedBacktesterRoute
+  AuthenticatedBuilderRoute: typeof AuthenticatedBuilderRoute
+  AuthenticatedChartRoute: typeof AuthenticatedChartRoute
+  AuthenticatedConsultRoute: typeof AuthenticatedConsultRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedMt5Route: typeof AuthenticatedMt5Route
+  AuthenticatedNewsRoute: typeof AuthenticatedNewsRoute
+  AuthenticatedRedeemRoute: typeof AuthenticatedRedeemRoute
+  AuthenticatedSignalsRoute: typeof AuthenticatedSignalsRoute
+  AuthenticatedStrategiesRoute: typeof AuthenticatedStrategiesRoute
+  AuthenticatedSystemRoute: typeof AuthenticatedSystemRoute
+  AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAiNewsRoute: AuthenticatedAiNewsRoute,
+  AuthenticatedBacktesterRoute: AuthenticatedBacktesterRoute,
+  AuthenticatedBuilderRoute: AuthenticatedBuilderRoute,
+  AuthenticatedChartRoute: AuthenticatedChartRoute,
+  AuthenticatedConsultRoute: AuthenticatedConsultRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedMt5Route: AuthenticatedMt5Route,
+  AuthenticatedNewsRoute: AuthenticatedNewsRoute,
+  AuthenticatedRedeemRoute: AuthenticatedRedeemRoute,
+  AuthenticatedSignalsRoute: AuthenticatedSignalsRoute,
+  AuthenticatedStrategiesRoute: AuthenticatedStrategiesRoute,
+  AuthenticatedSystemRoute: AuthenticatedSystemRoute,
+  AuthenticatedUsageRoute: AuthenticatedUsageRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
