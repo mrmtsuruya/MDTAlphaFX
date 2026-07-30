@@ -77,6 +77,12 @@ class RegistryReceipt:
     cluster_ids: tuple[str, ...]
     min_bars: tuple[int, ...]
 
+    @property
+    def common_window_bars(self) -> int:
+        """The registry-derived approved shared evaluation window."""
+
+        return max(self.min_bars)
+
 
 def build_strategy_registry(config: Config) -> tuple[Strategy, ...]:
     validate_strategy_config(config)

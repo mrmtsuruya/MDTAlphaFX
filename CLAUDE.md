@@ -7,6 +7,11 @@ Automated market analysis and MT5 execution for a single operator. Windows deskt
 **Current stage:** `Stage 2 — the 28 strategy modules`. Do not implement
 anything from a later stage.
 
+**Provider-neutral resume entry point:** `docs/AI-RESUME.md`. Keep it aligned
+with this file, `docs/CODEX-HANDOFF.md`, and `docs/STAGE2-STATUS.md` whenever a
+durable checkpoint changes so work can resume without access to a prior chat or
+local model.
+
 Stage 0 is **closed**. The operator approved fixture recovery on 2026-07-28,
 all three replacement windows were recorded from the guarded DEMO terminal,
 and the unqualified recorded-history gate passes. The high-volatility period
@@ -42,15 +47,15 @@ readings. Never weaken `ParquetBarStore`, use the analysis-only cohort for
 replay or costs, connect to a live account, or apply the resulting measured
 cluster/weight/threshold proposal without its later explicit authorization.
 
-**Stage 2 evaluation/proposal gate.** The protocol does not settle how many bars
-are supplied after `min_bars`, and recorded evidence proves full-prefix and
-bounded evaluation differ. Measured clusters also need a non-arbitrary mapping
-back to semantic regime ids, and the H1/M15 cohort cannot supply the H4 penalty.
-The exact common-window/no-lookahead/mapping/pre-HTF proposal is in
-`docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md`. Do not regenerate Stage 2
-goldens or run the recovered-history co-firing proposal until the operator
-sends `APPROVE STAGE 2 EVALUATION WINDOW PROFILE`. History capture and the
-already authorized store/collision recovery may continue independently.
+**Stage 2 evaluation-window profile.** On 2026-07-30 the operator explicitly
+authorized `APPROVE STAGE 2 EVALUATION WINDOW PROFILE`. The exact
+common-window, closed-H1/no-lookahead, semantic cluster mapping, and partial
+pre-HTF score-distribution readings in
+`docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md` are normative. Stage 2
+goldens and visuals may be regenerated and the recovered-history co-firing
+proposal may be run using only those readings. Do not apply any resulting
+measured cluster, weight, threshold, regime-permission, or production-config
+proposal without its later explicit authorization.
 
 **Stage 2 recovered history.** The authorized analysis-only/cost-invalid cohort
 is complete under

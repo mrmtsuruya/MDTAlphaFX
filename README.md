@@ -10,8 +10,8 @@ The normative product specification is
 
 ## Current checkpoint
 
-The project is at the **Stage 2 evaluation-window authorization gate**.
-Implementation and recovery work through that gate is complete:
+The project is in **Stage 2 evaluation-window implementation**. The operator
+authorized `APPROVE STAGE 2 EVALUATION WINDOW PROFILE` on 2026-07-30:
 
 - all 28 pure strategy modules and their registry exist;
 - the authorized same-bar collision ranking is applied;
@@ -19,17 +19,24 @@ Implementation and recovery work through that gate is complete:
 - its 108 content files verify against SHA-256
   `c9388bb323131c9db44975f1637b4d5a5ebab14c4fd79bb3dd06dd2a08f1b38d`;
 - replay explicitly refuses that detector-only data source;
-- the proposal harness is implemented and deliberately fail-closed; and
-- 963 clean combined tests plus 63 focused integrity tests pass.
+- the registry-derived common evaluation window is 203 M15 bars;
+- the proposal and recorded-golden harnesses now use that common window; and
+- 964 clean combined tests plus 63 focused integrity tests pass.
 
-Six recorded golden outputs for modules 2–6 and 9 are intentionally stale
-after the authorized collision-ranking correction. Do not regenerate them or
-run the measured co-firing proposal until the operator sends:
+All 28 recorded golden snapshots are intentionally stale against the new
+common-window receipt and must be regenerated and reviewed explicitly. The
+full suite currently reports `965 passed, 28 failed`, with all failures confined
+to `tests/stage2/test_recorded_goldens.py`.
 
-`APPROVE STAGE 2 EVALUATION WINDOW PROFILE`
+The next code checkpoint is the deterministic maximum-overlap mapping from
+measured clusters to semantic IDs A/B/C/D1/D2/E/F/G/H, followed by the approved
+partial pre-HTF score distribution. Do not apply the measured proposal to
+production config.
 
-Start a new agent session with [`AGENTS.md`](AGENTS.md) and
-[`docs/CODEX-HANDOFF.md`](docs/CODEX-HANDOFF.md).
+Start any new cloud or local agent session with [`AGENTS.md`](AGENTS.md) and the
+provider-neutral [`docs/AI-RESUME.md`](docs/AI-RESUME.md). The older
+[`docs/CODEX-HANDOFF.md`](docs/CODEX-HANDOFF.md) remains a detailed compatible
+handoff.
 
 ## Repository map
 
@@ -56,7 +63,7 @@ python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 
-The complete suite currently reports six expected failures in
+The complete suite currently reports 28 expected stale-golden failures in
 `tests/stage2/test_recorded_goldens.py`. The clean checkpoint command is:
 
 ```powershell
@@ -65,7 +72,7 @@ python -m pytest -q tests\unit tests\stage1 `
   --ignore=tests\stage2\test_recorded_goldens.py
 ```
 
-Expected result: `963 passed`.
+Expected result: `964 passed`.
 
 ## Frontend setup
 

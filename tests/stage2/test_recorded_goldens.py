@@ -16,11 +16,13 @@ from pathlib import Path
 
 import pytest
 
+from backend.analysis.stage2_proposal import common_window_bars
 from backend.contracts import Timeframe
 from backend.core.config import Config
 from backend.core.timeutil import ensure_utc
 from backend.data.store import ParquetBarStore
 from backend.strategies import build_strategy_registry
+from backend.strategies.configuration import EVALUATION_WINDOW_POLICY
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -40,6 +42,11 @@ def _fixtures_root(config: Config) -> Path:
 
 def _recorded_payloads(config: Config) -> dict[int, dict]:
     strategies = build_strategy_registry(config)
+    common = common_window_bars(strategies)
+    registry_min_bars = [
+        {"module_id": strategy.module_id, "min_bars": strategy.min_bars}
+        for strategy in strategies
+    ]
     payloads = {
         strategy.module_id: {
             "module_id": strategy.module_id,
@@ -47,6 +54,9 @@ def _recorded_payloads(config: Config) -> dict[int, dict]:
             "cluster_id": strategy.cluster_id,
             "min_bars": strategy.min_bars,
             "timeframe": TIMEFRAME.value,
+            "evaluation_window_policy": EVALUATION_WINDOW_POLICY,
+            "common_window_bars": common,
+            "registry_min_bars": registry_min_bars,
             "periods": [],
         }
         for strategy in strategies
@@ -66,10 +76,16 @@ def _recorded_payloads(config: Config) -> dict[int, dict]:
                 raise AssertionError(
                     f"recorded fixture {period_name}/{symbol}/{TIMEFRAME.value} is empty"
                 )
+            if len(bars) < common:
+                raise AssertionError(
+                    f"recorded fixture {period_name}/{symbol} has fewer than "
+                    f"{common} common-window bars"
+                )
             for strategy in strategies:
                 evaluations = []
-                for index in range(strategy.min_bars - 1, len(bars)):
-                    result = strategy.evaluate(bars[: index + 1], record.spec)
+                for index in range(common - 1, len(bars)):
+                    window = list(bars[index + 1 - common : index + 1])
+                    result = strategy.evaluate(window, record.spec)
                     evaluations.append(
                         {
                             "bar_index": index,
@@ -85,6 +101,15 @@ def _recorded_payloads(config: Config) -> dict[int, dict]:
                         "evaluations": evaluations,
                     }
                 )
+    for strategy in strategies:
+        if not any(
+            evaluation["result"]["fired"]
+            for period in payloads[strategy.module_id]["periods"]
+            for evaluation in period["evaluations"]
+        ):
+            raise AssertionError(
+                f"module {strategy.module_id} has no recorded common-window positive"
+            )
     return payloads
 
 

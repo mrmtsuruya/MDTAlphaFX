@@ -12,7 +12,8 @@ from backend.analysis.stage2_proposal import (
     EffectiveRegime,
     EvaluatedObservation,
     attach_latest_closed_regimes,
-    evaluate_full_prefix_population,
+    common_window_bars,
+    evaluate_common_window_population,
     neutral_cluster_proposals,
     neutral_reachability_artifact,
     pairwise_artifacts,
@@ -226,14 +227,13 @@ def test_pre_htf_ingredients_emit_both_sides_without_gating_or_penalty_claims():
     assert distribution["status"].endswith("NOT_REALISED_STAGE1")
 
 
-def test_cli_fails_closed_before_selecting_unapproved_evaluation_window():
+def test_cli_accepts_only_approved_evaluation_window_policy():
     config = Config.load(REPO_ROOT / "config")
-    with pytest.raises(SystemExit, match="evaluation-window semantics"):
-        require_evaluation_policy(config)
+    assert require_evaluation_policy(config) == "COMMON_MAX_MIN_BARS"
 
 
-def test_full_prefix_batch_matches_direct_strategy_evaluation_on_recorded_fixture():
-    """The exact batch path must remain equivalent to the existing API."""
+def test_common_window_batch_matches_direct_strategy_evaluation_on_recorded_fixture():
+    """The batch path must match direct approved common-window evaluation."""
 
     config = Config.load(REPO_ROOT / "config")
     period_name, raw_period = next(
@@ -248,23 +248,27 @@ def test_full_prefix_batch_matches_direct_strategy_evaluation_on_recorded_fixtur
     record = store.symbol_record(str(raw_period["symbols"][0]))
     all_bars = store.bars(record.resolved_name, Timeframe.M15, start, end)
     strategies = build_strategy_registry(config)
-    stop = max(strategy.min_bars for strategy in strategies) + 2
+    common = common_window_bars(strategies)
+    stop = common + 2
     bars = all_bars[:stop]
     regimes = [Regime.RANGING] * len(bars)
 
-    batch = evaluate_full_prefix_population(
+    batch = evaluate_common_window_population(
         symbol=record.resolved_name,
         bars=bars,
         spec=record.spec,
         strategies=strategies,
         regimes=regimes,
     )
-    start_index = max(strategy.min_bars for strategy in strategies) - 1
+    start_index = common - 1
     assert len(batch) == len(bars) - start_index
     for offset, observation in enumerate(batch):
         index = start_index + offset
         direct = tuple(
-            strategy.evaluate(list(bars[: index + 1]), record.spec)
+            strategy.evaluate(
+                list(bars[index + 1 - common : index + 1]),
+                record.spec,
+            )
             for strategy in strategies
         )
         assert tuple(
@@ -286,8 +290,8 @@ def test_full_prefix_batch_matches_direct_strategy_evaluation_on_recorded_fixtur
         )
 
 
-def test_declared_lookback_is_not_equivalent_to_existing_full_prefix_semantics():
-    """The policy refusal is backed by a recorded-fixture signal divergence."""
+def test_common_window_differs_from_legacy_full_prefix_semantics():
+    """The approved common window is backed by a recorded-fixture divergence."""
 
     config = Config.load(REPO_ROOT / "config")
     period = config.section("backtest.fixtures.periods")["trending"]
@@ -299,12 +303,21 @@ def test_declared_lookback_is_not_equivalent_to_existing_full_prefix_semantics()
     store = ParquetBarStore.from_config(config, root=fixture_root / "trending")
     record = store.symbol_record(str(period["symbols"][0]))
     bars = store.bars(record.resolved_name, Timeframe.M15, start, end)
-    macd = build_strategy_registry(config)[18]
+    strategies = build_strategy_registry(config)
+    strategy = strategies[16]
+    common = common_window_bars(strategies)
+    index = 244
 
-    full_prefix = macd.evaluate(list(bars), record.spec)
-    declared_lookback = macd.evaluate(list(bars[-macd.min_bars :]), record.spec)
+    assert bars[index].time == datetime(2026, 7, 1, 17, 0, tzinfo=timezone.utc)
+
+    full_prefix = strategy.evaluate(list(bars[: index + 1]), record.spec)
+    common_window = strategy.evaluate(
+        list(bars[index + 1 - common : index + 1]),
+        record.spec,
+    )
 
     assert full_prefix.fired is False
     assert full_prefix.direction is Direction.NONE
-    assert declared_lookback.fired is True
-    assert declared_lookback.direction is Direction.SELL
+    assert common_window.fired is True
+    assert common_window.direction is Direction.BUY
+    assert common_window.score == 85.0

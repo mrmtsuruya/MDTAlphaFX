@@ -82,6 +82,77 @@ def _parse_time(value: Any) -> datetime | None:
     return parsed.astimezone(UTC)
 
 
+def _golden_receipt(
+    payloads: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Validate one identical approved evaluation receipt before rendering."""
+
+    if len(payloads) != 28:
+        raise SystemExit(
+            f"golden receipt requires exactly 28 payloads, got {len(payloads)}"
+        )
+
+    first_registry: list[Mapping[str, Any]] | None = None
+    common_window: int | None = None
+    for index, payload in enumerate(payloads):
+        policy = payload.get("evaluation_window_policy")
+        candidate_window = payload.get("common_window_bars")
+        registry = payload.get("registry_min_bars")
+        if policy != "COMMON_MAX_MIN_BARS":
+            raise SystemExit(
+                f"golden payload {index + 1} has invalid evaluation policy {policy!r}"
+            )
+        if (
+            isinstance(candidate_window, bool)
+            or not isinstance(candidate_window, int)
+            or candidate_window != 203
+        ):
+            raise SystemExit(
+                f"golden payload {index + 1} common_window_bars must be integer 203"
+            )
+        if not isinstance(registry, list) or len(registry) != 28:
+            raise SystemExit(
+                f"golden payload {index + 1} registry_min_bars must contain 28 rows"
+            )
+        if first_registry is None:
+            first_registry = registry
+            common_window = candidate_window
+        elif registry != first_registry:
+            raise SystemExit("all golden registry_min_bars receipts must be identical")
+
+    assert first_registry is not None and common_window is not None
+    min_bars_values: list[int] = []
+    for expected_module_id, entry in enumerate(first_registry, start=1):
+        if not isinstance(entry, Mapping):
+            raise SystemExit("every registry_min_bars row must be an object")
+        module_id = entry.get("module_id")
+        min_bars = entry.get("min_bars")
+        if (
+            isinstance(module_id, bool)
+            or not isinstance(module_id, int)
+            or module_id != expected_module_id
+        ):
+            raise SystemExit(
+                "registry_min_bars module ids must be the ordered sequence 1..28"
+            )
+        if (
+            isinstance(min_bars, bool)
+            or not isinstance(min_bars, int)
+            or min_bars < 1
+        ):
+            raise SystemExit("registry_min_bars values must be positive integers")
+        min_bars_values.append(min_bars)
+    if max(min_bars_values) != common_window:
+        raise SystemExit(
+            "common_window_bars must equal the maximum registry min_bars"
+        )
+    return {
+        "evaluation_window_policy": "COMMON_MAX_MIN_BARS",
+        "common_window_bars": common_window,
+        "registry_min_bars": [dict(entry) for entry in first_registry],
+    }
+
+
 def _geometry_times(value: Any) -> Iterable[datetime]:
     if isinstance(value, Mapping):
         for key, item in value.items():
@@ -505,6 +576,15 @@ def _render_markdown(manifest: Mapping[str, Any]) -> str:
         "The renderer consumed locked golden results and recorded M15 candles. "
         "It did not import, execute, or recompute any detector or indicator.",
         "",
+        f"Evaluation window: `{manifest['evaluation_window_policy']}`  ",
+        f"Common window bars: `{manifest['common_window_bars']}`  ",
+        "Registry min_bars receipt: `"
+        + ", ".join(
+            f"M{row['module_id']:02d}={row['min_bars']}"
+            for row in manifest["registry_min_bars"]
+        )
+        + "`",
+        "",
         f"Contact sheet: `{manifest['contact_sheet']['path']}`  ",
         f"SHA-256: `{manifest['contact_sheet']['sha256']}`",
         "",
@@ -536,9 +616,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     golden_dir = args.golden_dir.resolve()
     fixture_root = args.fixture_root.resolve()
     output_dir = args.output_dir.resolve()
-    visuals_dir = output_dir / "visuals"
-    visuals_dir.mkdir(parents=True, exist_ok=True)
-
     golden_paths = sorted(golden_dir.glob("m[0-2][0-9].json"))
     expected = [f"m{module_id:02d}.json" for module_id in range(1, 29)]
     if [path.name for path in golden_paths] != expected:
@@ -547,9 +624,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"{[path.name for path in golden_paths]}"
         )
 
+    payloads = [
+        json.loads(path.read_text(encoding="utf-8")) for path in golden_paths
+    ]
+    receipt = _golden_receipt(payloads)
+
+    visuals_dir = output_dir / "visuals"
+    visuals_dir.mkdir(parents=True, exist_ok=True)
+
     entries: list[dict[str, Any]] = []
-    for golden_path in golden_paths:
-        payload = json.loads(golden_path.read_text(encoding="utf-8"))
+    for golden_path, payload in zip(golden_paths, payloads, strict=True):
         entries.append(
             _render_module(
                 payload=payload,
@@ -577,6 +661,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "status": "PASS",
         "evidence_mode": "LOCKED_GOLDENS_PLUS_RECORDED_CANDLES_ONLY",
         "detectors_executed": False,
+        **receipt,
         "modules_rendered": len(entries),
         "modules": entries,
         "contact_sheet": {

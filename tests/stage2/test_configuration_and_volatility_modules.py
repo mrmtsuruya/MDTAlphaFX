@@ -13,7 +13,9 @@ import backend.strategies.m28_session_open_range_breakout as m28_module
 from backend.contracts import Candle, Direction, StrategyResult, SymbolSpec
 from backend.core.config import Config
 from backend.core.timeutil import UTC
+from backend.strategies import build_strategy_registry
 from backend.strategies.configuration import (
+    EVALUATION_WINDOW_POLICY,
     load_module_profile,
     validate_strategy_config,
 )
@@ -78,6 +80,17 @@ def test_approved_strategy_config_covers_every_module(config):
     assert [load_module_profile(config, value).module_id for value in range(1, 29)] == list(
         range(1, 29)
     )
+
+
+def test_evaluation_window_policy_is_approved_and_derived_from_registry(config):
+    assert (
+        config.get("strategies.co_firing.evaluation_window_policy")
+        == EVALUATION_WINDOW_POLICY
+    )
+    common_window_bars = max(
+        strategy.min_bars for strategy in build_strategy_registry(config)
+    )
+    assert common_window_bars == 203
 
 
 @pytest.mark.parametrize(

@@ -5,21 +5,23 @@ before changing code:
 
 1. `MDTAlphaFX SPEC v2 - Quant Platform & Execution Engine.md`
 2. `CLAUDE.md`
-3. `docs/CODEX-HANDOFF.md`
-4. `docs/STAGE2-STATUS.md`
-5. `docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md`
+3. `docs/AI-RESUME.md`
+4. `docs/CODEX-HANDOFF.md`
+5. `docs/STAGE2-STATUS.md`
+6. `docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md`
 
-The current stage is Stage 2. The recovery addendum is complete, but the
-evaluation-window profile is only proposed.
+`docs/AI-RESUME.md` is the provider-neutral entry point. It must remain
+accurate enough for a new cloud or local coding model to resume without this
+chat history.
 
-Do not regenerate Stage 2 recorded goldens, rerender the Stage 2 visual pack,
-run the recovered-history co-firing proposal, or add
-`strategies.co_firing.evaluation_window_policy` unless the operator sends this
-exact authorization:
+The current stage is Stage 2. The recovery addendum is complete, and the
+operator authorized `APPROVE STAGE 2 EVALUATION WINDOW PROFILE` on
+2026-07-30. Implement only the exact approved common-window, closed-H1,
+semantic cluster-mapping, and partial pre-HTF readings. Stage 2 recorded
+goldens and visuals may be regenerated and the recovered-history co-firing
+proposal may be run.
 
-`APPROVE STAGE 2 EVALUATION WINDOW PROFILE`
-
-That phrase does not authorize applying the resulting measured
+That authorization does not permit applying the resulting measured
 cluster/weight/threshold proposal, live-account access, AUTO, order placement,
 Stage 2b, or Stage 3.
 
@@ -48,4 +50,4 @@ python -m pytest -q tests\unit tests\stage1 `
   --ignore=tests\stage2\test_recorded_goldens.py
 ```
 
-Expected: `963 passed`.
+Expected: `964 passed`.

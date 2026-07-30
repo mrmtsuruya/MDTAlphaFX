@@ -436,7 +436,7 @@ label.
 Authorized with `APPROVE STAGE 2 RECOVERY ADDENDUM` on 2026-07-28. The pure
 analysis core and recovered-history proposal may now use this exact formula.
 
-### AMBIGUITY-024 · strategy evaluation window after `min_bars` · PROPOSED
+### AMBIGUITY-024 · strategy evaluation window after `min_bars` · APPROVED
 
 The frozen protocol calls `min_bars` the required lookback but does not specify
 whether a caller supplies exactly that many bars, one shared rolling window, or
@@ -448,45 +448,44 @@ evidence.
 Full-prefix one-year evaluation is also quadratic, while per-module minimum
 windows give pairs different evidence horizons.
 
-**Proposed resolution:** use the common rolling window derived as the maximum
+**Approved resolution:** use the common rolling window derived as the maximum
 of all registered module `min_bars` values, currently 203, with the exact
 no-lookahead H1 attachment boundary in
 `docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md`. Early M15 bars lacking the
 common window or a ready closed-H1 verdict are excluded with explicit reason
 codes rather than counted as non-fires.
 
-No golden regeneration or full-history co-firing run may select a window
-reading pending `APPROVE STAGE 2 EVALUATION WINDOW PROFILE`.
+The shared profile was authorized with
+`APPROVE STAGE 2 EVALUATION WINDOW PROFILE` on 2026-07-30; golden
+regeneration and full-history co-firing may now use only the approved semantics.
 
-### AMBIGUITY-025 · measured cluster labels vs semantic regime ids · PROPOSED
+### AMBIGUITY-025 · measured cluster labels vs semantic regime ids · APPROVED
 
 Average-linkage returns unlabeled module sets, while §3.4 permissions are keyed
 by semantic cluster ids. Assigning ids by sorted output position would attach
 arbitrary regime permissions and corrupt the proposed score distribution.
 
-**Proposed resolution:** preserve insufficient-module anchors, then choose the
+**Approved resolution:** preserve insufficient-module anchors, then choose the
 remaining one-to-one cluster-id assignment that maximizes overlap with current
 membership; break equal-total-overlap assignments lexicographically as fully
 specified in `docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md`. Retain the
 current regime map provisionally through that mapping and disclose the overlap
 matrix; do not infer new regime permissions from correlation.
 
-### AMBIGUITY-026 · H4 penalty absent from the Stage 2 cohort · PROPOSED
+### AMBIGUITY-026 · H4 penalty absent from the Stage 2 cohort · APPROVED
 
 The approved co-firing cohort contains H1/M15 only, while `engine.bias_timeframe`
 is H4 and §5.2 has a separate higher-timeframe conflict penalty. A final
 realised Stage 1 score cannot be reconstructed without H4 bias evidence.
 
-**Proposed resolution:** emit observed breadth/quality plus an explicitly
+**Approved resolution:** emit observed breadth/quality plus an explicitly
 partial `pre_htf_score_distribution` with penalty 1.0, and regenerate
 theoretical reachability tables. Never label it a final emitted-signal
 distribution or infer H4 from H1.
 
-AMBIGUITY-025 and 026 share the same pending authorization as the evaluation
-window because all three are required to make the recovered-history proposal
-well-defined:
-
-`APPROVE STAGE 2 EVALUATION WINDOW PROFILE`
+Authorization `APPROVE STAGE 2 EVALUATION WINDOW PROFILE` was received on
+2026-07-30. All three readings are normative for Stage 2 evidence generation;
+applying any measured proposal still requires later explicit authorization.
 
 ---
 
@@ -519,10 +518,9 @@ report a human reads. Disclosed for review, change freely.
 ## What this leaves you
 
 Stage 0 is closed against the approved profile and recovered DEMO fixtures.
-Stage 2 implementation/delegation and its detector/history profile are
-authorized. Continuation of the affected SMC modules and guarded co-firing
-cohort is now held at the two-item recovery proposal in
-`docs/PROPOSED-STAGE2-RECOVERY-ADDENDUM.md`.
+Stage 2 implementation/delegation, detector/history, recovery, and
+evaluation-window profiles are authorized. Current work is golden/visual
+regeneration and the proposal-only recovered-history co-firing run.
 
 Continue resolving the remaining replay/data ambiguities without changing
 approved config silently. Nothing authorizes order placement, AUTO execution,

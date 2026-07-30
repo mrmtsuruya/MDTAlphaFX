@@ -200,6 +200,7 @@ history:
   destination: data/stage2-history-20260728
 
 co_firing:
+  evaluation_window_policy: COMMON_MAX_MIN_BARS
   observation: SYMBOL_TIMEFRAME_BAR_CLOSE
   agreement: SAME_DIRECTION_SIMULTANEOUS
   conflict: OPPOSITE_DIRECTION_SIMULTANEOUS

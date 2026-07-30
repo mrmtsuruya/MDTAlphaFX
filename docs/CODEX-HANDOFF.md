@@ -1,8 +1,8 @@
 # Codex handoff — resume here
 
-Checkpoint date: 2026-07-28  
-Current stage: **Stage 2 — evaluation-window authorization gate**  
-Whole-config version: `f58ba49db649`
+Checkpoint date: 2026-07-30
+Current stage: **Stage 2 — evaluation-window implementation in progress**
+Whole-config version: `849d204ba18a`
 
 ## Required first action
 
@@ -10,15 +10,15 @@ Read, in order:
 
 1. `MDTAlphaFX SPEC v2 - Quant Platform & Execution Engine.md`
 2. `CLAUDE.md`
-3. `docs/STAGE2-STATUS.md`
-4. `docs/STAGE2-HISTORY-RECEIPT.md`
-5. `docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md`
-6. `docs/AMBIGUITY.md`, especially 024–026
+3. `docs/AI-RESUME.md`
+4. `docs/STAGE2-STATUS.md`
+5. `docs/STAGE2-HISTORY-RECEIPT.md`
+6. `docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md`
+7. `docs/AMBIGUITY.md`, especially 024–026
 
-Do not infer authorization from this handoff. The next operation remains
-blocked until the operator sends:
-
-`APPROVE STAGE 2 EVALUATION WINDOW PROFILE`
+The operator explicitly authorized
+`APPROVE STAGE 2 EVALUATION WINDOW PROFILE` on 2026-07-30. Implement only the
+approved profile; do not infer authorization for applying measured proposals.
 
 ## Authorizations already received
 
@@ -27,6 +27,7 @@ blocked until the operator sends:
 - `APPROVE + DELEGATE STAGE 2`
 - `APPROVE STAGE 2 DETECTOR + HISTORY PROFILE`
 - `APPROVE STAGE 2 RECOVERY ADDENDUM`
+- `APPROVE STAGE 2 EVALUATION WINDOW PROFILE`
 
 These do not authorize live-account access, order placement, AUTO execution,
 Stage 2b, Stage 3, or applying a measured cluster/weight/threshold proposal.
@@ -76,19 +77,20 @@ for replay, fills, costs, outcomes, trade metrics, or performance.
 
 - Focused store/recorder/replay/proposal suite: `63 passed`
 - Clean combined Stage 0/1/2 regression with the stale Stage 2 recorded-golden
-  file excluded: `963 passed`
-- Full suite audit: `985 passed, 6 failed`
+  file excluded: `964 passed`
+- Full suite audit: `965 passed, 28 failed`
 - Compilation: passed
 
-The six expected failures are modules 2, 3, 4, 5, 6, and 9 in
-`tests/stage2/test_recorded_goldens.py`. They became stale when the authorized
-candidate-ranking recovery corrected recorded output. The old 28-image visual
-pack is preserved but also marked pre-recovery/stale.
+All 28 expected failures are confined to
+`tests/stage2/test_recorded_goldens.py`. Every old payload lacks the authorized
+common-window receipt and was recorded under the legacy evaluation horizon;
+modules 2–6 and 9 were already content-stale after collision recovery. The old
+28-image visual pack is preserved but also marked pre-recovery/stale.
 
-Do not “fix” those six by accepting current output under the old full-prefix
-harness.
+Do not “fix” the failures by weakening comparisons or bulk-accepting output.
+Regenerate explicitly under the common 203-bar harness and review every module.
 
-## Why the next authorization is required
+## Authorized evaluation-window profile
 
 The strategy protocol declares `min_bars` but not the caller’s post-minimum
 window. Recorded evidence proves the choice changes module behavior:
@@ -98,7 +100,7 @@ window. Recorded evidence proves the choice changes module behavior:
 - modules 17 and 25 retain direction but change saved evidence; and
 - ever-growing full-prefix evaluation is quadratic on the one-year cohort.
 
-The proposed profile settles all linked semantics in one authorization:
+The authorized profile settles all linked semantics:
 
 1. `COMMON_MAX_MIN_BARS`, derived from the registry and currently 203;
 2. the same recent 203 closed M15 bars for every module;
@@ -108,29 +110,27 @@ The proposed profile settles all linked semantics in one authorization:
 5. an explicitly partial pre-HTF score distribution because the cohort has no
    H4 bias evidence.
 
-## Work to perform after authorization
+## Authorized work in progress
 
-Only after receiving
-`APPROVE STAGE 2 EVALUATION WINDOW PROFILE`:
-
-1. Mark the evaluation profile and AMBIGUITY-024/025/026 approved.
-2. Add `evaluation_window_policy: COMMON_MAX_MIN_BARS` under
+1. **Completed:** mark the evaluation profile and AMBIGUITY-024/025/026
+   approved.
+2. **Completed:** add `evaluation_window_policy: COMMON_MAX_MIN_BARS` under
    `strategies.co_firing` in `config/strategies.yaml`.
-3. Update the proposal runner for:
-   - the derived common 203-bar M15 window;
-   - exact closed-H1/no-lookahead alignment;
-   - maximum-overlap semantic cluster-ID continuity;
-   - the overlap matrix and deterministic tie break;
-   - `calendar_supplied=false`; and
-   - the explicitly partial `pre_htf_score_distribution` with HTF penalty 1.0.
-4. Regenerate all 28 recorded goldens explicitly and review every change.
-5. Rerender and hash all 28 evidence-only visuals.
-6. Run measured co-firing across the verified four-symbol cohort. Parallelize
+3. **Partially completed:** the proposal runner uses the derived common
+   203-bar M15 window and exact closed-H1/no-lookahead alignment.
+4. **Resume here:** implement maximum-overlap semantic cluster-ID continuity,
+   emit the full overlap matrix and deterministic tie break, replace the
+   obsolete `BLOCKED_PENDING_AUTHORIZATION` mapping status, and emit the
+   explicitly partial `pre_htf_score_distribution` with
+   `htf_penalty_applied=1.0` and `calendar_supplied=false`.
+5. Regenerate all 28 recorded goldens explicitly and review every change.
+6. Rerender and hash all 28 evidence-only visuals.
+7. Run measured co-firing across the verified four-symbol cohort. Parallelize
    by symbol if useful, but merge deterministically.
-7. Emit proposal-only memberships, equal weights, calibration evidence,
+8. Emit proposal-only memberships, equal weights, calibration evidence,
    reachability tables, and receipts.
-8. Run the complete regression and update status documentation.
-9. Stop before applying the proposal and print the exact next authorization
+9. Run the complete regression and update status documentation.
+10. Stop before applying the proposal and print the exact next authorization
    phrase supported by the measured evidence.
 
 The proposal run must not modify approved cluster membership, weights,
@@ -157,11 +157,12 @@ python -m pytest -q `
   tests\stage2\test_stage2_proposal.py
 ```
 
-Current fail-closed proposal check:
+Proposal runner:
 
 ```powershell
 python scripts\run_stage2_cofire.py
 ```
 
-Before authorization it must exit nonzero, explain the unresolved evaluation
-semantics, and create no `docs/stage2-gate/cofiring-proposal/` directory.
+Until the authorized implementation is complete, it may remain fail-closed.
+After implementation it must emit proposal-only artifacts and must not mutate
+approved cluster, weight, threshold, regime-permission, or production config.

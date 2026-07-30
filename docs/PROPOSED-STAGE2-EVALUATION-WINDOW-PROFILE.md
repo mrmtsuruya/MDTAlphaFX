@@ -1,9 +1,10 @@
 # Proposed Stage 2 evaluation-window profile
 
-Status: **PROPOSED — NOT AUTHORIZED**
+Status: **APPROVED — IMPLEMENTATION IN PROGRESS — 2026-07-30**
 
 Prepared: 2026-07-28  
 Requested authorization: `APPROVE STAGE 2 EVALUATION WINDOW PROFILE`
+Authorization received: `APPROVE STAGE 2 EVALUATION WINDOW PROFILE` on 2026-07-30.
 
 ## Why this decision is required
 

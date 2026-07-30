@@ -1,14 +1,16 @@
 # Stage 2 status
 
-Status: **RECOVERY IMPLEMENTED · EVALUATION-WINDOW AUTHORIZATION REQUIRED**
+Status: **EVALUATION-WINDOW IMPLEMENTATION IN PROGRESS**
 
 Authorization received: `APPROVE + DELEGATE STAGE 2` on 2026-07-28.  
 Detector/history authorization received:
 `APPROVE STAGE 2 DETECTOR + HISTORY PROFILE` on 2026-07-28.
 Recovery authorization received:
 `APPROVE STAGE 2 RECOVERY ADDENDUM` on 2026-07-28.
+Evaluation-window authorization received:
+`APPROVE STAGE 2 EVALUATION WINDOW PROFILE` on 2026-07-30.
 
-Current whole-config version: `f58ba49db649`.
+Current whole-config version: `849d204ba18a`.
 
 ## Completed
 
@@ -26,7 +28,7 @@ Current whole-config version: `f58ba49db649`.
 - The pre-recovery M15 golden and visual corpus is preserved for comparison.
   The authorized collision ranking changed recorded output for modules
   2–6 and 9, so those artifacts are now explicitly stale and will be
-  regenerated only after the evaluation-window policy is authorized.
+  regenerated under the now-authorized common-window policy.
 - Implemented and tested the pure co-firing metrics/clustering core and its
   fail-closed proposal harness. It has not been run against recovered history
   and has not changed approved config.
@@ -37,9 +39,10 @@ Current whole-config version: `f58ba49db649`.
 |---|---|
 | Stage 2 non-golden suite after collision recovery | **110 passed** |
 | Existing Stage 0/1 regression suite | **828 passed** |
-| Clean combined regression after history hardening | **963 passed** |
+| Clean combined regression after evaluation-window wiring | **964 passed** |
 | Focused store/recorder/replay/proposal integrity suite | **63 passed** |
-| Recorded-golden comparison | **HELD · 6 expected stale modules** |
+| Full suite audit | **965 passed · 28 expected stale-golden failures** |
+| Recorded-golden comparison | **HELD · all 28 legacy payloads require explicit regeneration/review** |
 | Strategy/test/script compilation | **PASS** |
 | Registry | **28 modules, ids 1–28 exactly once** |
 | Pre-recovery visual evidence | **STALE · preserved for comparison** |
@@ -86,22 +89,22 @@ Incomplete or altered captures fail closed, and `ReplayEngine` explicitly
 refuses the analysis-only/cost-invalid store. See
 `docs/STAGE2-HISTORY-RECEIPT.md`.
 
-Before golden regeneration or the full co-firing run, one additional caller
-semantic must be authorized. Full-prefix and rolling-window evaluation produce
-different recorded module evidence, while the frozen protocol does not choose
-between them. The exact proposal is:
+The operator authorized the exact common-window, closed-H1/no-lookahead,
+semantic cluster mapping, and partial pre-HTF score-distribution readings in
+`docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md` on 2026-07-30.
 
-`docs/PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md`
-
-Required authorization:
-
-`APPROVE STAGE 2 EVALUATION WINDOW PROFILE`
-
-After that decision, active work is attaching closed H1 regimes to M15
+Active work is attaching closed H1 regimes to M15
 observations, regenerating the recorded goldens and visuals, running the
 co-firing matrix, and emitting the
 correlation-derived membership/equal-weight/calibration proposal. The proposal
 will not be applied to config without a later explicit authorization.
+
+The common 203-bar evaluator and exact closed-H1 attachment are wired. Resume
+at the still-missing deterministic maximum-overlap mapping from measured sets
+to A/B/C/D1/D2/E/F/G/H and the explicitly partial
+`pre_htf_score_distribution` with `htf_penalty_applied=1.0`. The current runner
+still contains obsolete `BLOCKED_PENDING_AUTHORIZATION` mapping language; that
+is an implementation marker, not a new authorization requirement.
 
 Nothing here authorizes live-account access, order placement, AUTO, Stage 2b,
 Stage 3, weakening the cost-valid store, or application of measured

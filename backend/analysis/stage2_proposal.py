@@ -190,7 +190,18 @@ def _compact_result(result: StrategyResult) -> StrategyResult:
     )
 
 
-def evaluate_full_prefix_population(
+def common_window_bars(strategies: Sequence[Strategy]) -> int:
+    """Derive the approved shared window from the complete strategy registry."""
+
+    ordered = tuple(sorted(strategies, key=lambda strategy: strategy.module_id))
+    if tuple(strategy.module_id for strategy in ordered) != MODULE_IDS:
+        raise ValueError("strategies must contain modules 1..28 exactly once")
+    if any(strategy.min_bars < 1 for strategy in ordered):
+        raise ValueError("every strategy min_bars must be at least 1")
+    return max(strategy.min_bars for strategy in ordered)
+
+
+def evaluate_common_window_population(
     *,
     symbol: str,
     bars: Sequence[Candle],
@@ -198,29 +209,21 @@ def evaluate_full_prefix_population(
     strategies: Sequence[Strategy],
     regimes: Sequence[Regime | None],
 ) -> tuple[EvaluatedObservation, ...]:
-    """Evaluate the common eligible population with exact full-prefix semantics.
-
-    Recorded Stage 2 goldens call each detector with the complete prefix.  This
-    routine intentionally preserves that meaning.  It is quadratic in cohort
-    length for detectors that rescan their input; callers must not relabel it a
-    performant rolling-window batch implementation.
-    """
+    """Evaluate each eligible M15 close using the approved shared rolling window."""
 
     if len(bars) != len(regimes):
         raise ValueError("bars and regimes must have equal length")
     ordered = tuple(sorted(strategies, key=lambda strategy: strategy.module_id))
-    if tuple(strategy.module_id for strategy in ordered) != MODULE_IDS:
-        raise ValueError("strategies must contain modules 1..28 exactly once")
-    start_index = max(strategy.min_bars for strategy in ordered) - 1
+    common_window_size = common_window_bars(ordered)
     m15_delta = timeframe_delta(Timeframe.M15)
     result: list[EvaluatedObservation] = []
-    for index in range(start_index, len(bars)):
+    for index in range(common_window_size - 1, len(bars)):
         regime = regimes[index]
         if regime is None:
             continue
-        prefix = list(bars[: index + 1])
+        window = list(bars[index + 1 - common_window_size : index + 1])
         module_results = tuple(
-            _compact_result(strategy.evaluate(prefix, spec))
+            _compact_result(strategy.evaluate(window, spec))
             for strategy in ordered
         )
         result.append(
@@ -947,7 +950,8 @@ __all__ = [
     "attach_latest_closed_regimes",
     "canonical_json_bytes",
     "classify_closed_h1",
-    "evaluate_full_prefix_population",
+    "common_window_bars",
+    "evaluate_common_window_population",
     "fire_count_artifact",
     "observation_digest",
     "pairwise_artifacts",

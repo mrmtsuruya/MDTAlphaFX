@@ -16,6 +16,9 @@ from typing import Any
 from ..core.config import Config
 
 
+EVALUATION_WINDOW_POLICY = "COMMON_MAX_MIN_BARS"
+
+
 def _freeze(value: Any) -> Any:
     if isinstance(value, Mapping):
         return MappingProxyType({str(key): _freeze(item) for key, item in value.items()})
@@ -104,8 +107,19 @@ def validate_strategy_config(config: Config) -> None:
         raise ValueError("strategies.schema_version must be the approved value 1")
     for module_id in range(1, 29):
         load_module_profile(config, module_id)
+    policy = config.get("strategies.co_firing.evaluation_window_policy")
+    if policy != EVALUATION_WINDOW_POLICY:
+        raise ValueError(
+            "strategies.co_firing.evaluation_window_policy must be exactly "
+            f"{EVALUATION_WINDOW_POLICY!r}"
+        )
     if config.get("strategies.co_firing.apply_proposal_to_config") is not False:
         raise ValueError("Stage 2 measured proposals must not auto-apply to config")
 
 
-__all__ = ["ModuleProfile", "load_module_profile", "validate_strategy_config"]
+__all__ = [
+    "EVALUATION_WINDOW_POLICY",
+    "ModuleProfile",
+    "load_module_profile",
+    "validate_strategy_config",
+]

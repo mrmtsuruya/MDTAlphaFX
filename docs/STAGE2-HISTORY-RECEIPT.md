@@ -86,11 +86,16 @@ recomputing the nonpositive-spread receipt, and hashing every content file.
 Opening the store verifies the full inventory by default and refuses
 incomplete, legacy, missing, added, deleted, or modified content.
 
-Post-capture verification:
+Post-capture verification at the recovery checkpoint:
 
 - Focused store/recorder/replay/proposal suite: **63 passed**
 - Clean combined Stage 0/1/2 regression, excluding the six deliberately stale
   recorded-golden outputs: **963 passed**
+
+The later authorized evaluation-window wiring added one passing policy test and
+made all 28 legacy golden payloads intentionally stale. The current governed
+checkpoint is **964 passed** with the recorded-golden file excluded; see
+`docs/AI-RESUME.md` for the current full-suite receipt.
 
 This receipt authorizes detector co-firing use only. It is not evidence for
 fills, costs, outcomes, trade metrics, or backtest performance.

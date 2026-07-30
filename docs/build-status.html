@@ -22,24 +22,24 @@
 
 <h2>Gate evidence</h2>
 <section class="grid">
-  <article class="card warn"><div class="k">Recorded goldens</div><div class="v">6 STALE</div><div class="note">Authorized collision ranking changed modules 2–6 and 9; regeneration waits for the window decision.</div></article>
+  <article class="card warn"><div class="k">Recorded goldens</div><div class="v">28 STALE</div><div class="note">All legacy payloads require the authorized common-window receipt; modules 2–6 and 9 were already content-stale after collision recovery.</div></article>
   <article class="card warn"><div class="k">Visual evidence</div><div class="v">PRESERVED</div><div class="note">Pre-recovery 28-chart pack is retained for comparison and is not the current gate.</div></article>
-  <article class="card stop"><div class="k">Measured co-firing</div><div class="v">HELD</div><div class="note">The cohort is ready; execution waits only for the evaluation-window authorization.</div></article>
+  <article class="card warn"><div class="k">Measured co-firing</div><div class="v">IN PROGRESS</div><div class="note">The evaluation-window profile is authorized; semantic cluster mapping and partial pre-HTF evidence remain to be implemented.</div></article>
 </section>
 
 <h2>Verification</h2>
 <section class="grid">
-  <article class="card ok"><div class="k">Config binding</div><div class="v">f58ba49db649</div><div class="note">Approved immutable strategy profile plus the whole current config.</div></article>
-  <article class="card ok"><div class="k">Clean regression</div><div class="v">963 passed</div><div class="note">Combined Stage 0/1/2 suite passes with the six deliberately stale recorded outputs excluded.</div></article>
+  <article class="card ok"><div class="k">Config binding</div><div class="v">849d204ba18a</div><div class="note">Approved evaluation-window policy plus the whole current config.</div></article>
+  <article class="card ok"><div class="k">Clean regression</div><div class="v">964 passed</div><div class="note">Combined Stage 0/1/2 suite passes with all 28 intentionally stale common-window golden snapshots excluded.</div></article>
   <article class="card ok"><div class="k">History integrity</div><div class="v">63 passed</div><div class="note">Tamper, incomplete-capture, replay-refusal, recorder, and proposal boundary checks pass.</div></article>
 </section>
 
-<h2>Next authorization checkpoint</h2>
+<h2>Exact resume checkpoint</h2>
 <ol class="steps">
-  <li><b>Approve the common evaluation horizon</b> with <code>APPROVE STAGE 2 EVALUATION WINDOW PROFILE</code>.</li>
+  <li><b>Implement the authorized semantic cluster mapping</b> with the maximum-overlap assignment and deterministic tie break.</li>
   <li><b>Regenerate goldens and visual evidence</b> under the authorized common-window and no-lookahead H1 policy.</li>
   <li><b>Run measured co-firing</b> and emit the proposal-only memberships, weights, and pre-HTF distribution. The later proposal-apply authorization will be printed with that evidence.</li>
 </ol>
 
-<p class="foot">Stage 2 handoff: <a href="STAGE2-STATUS.md">STAGE2-STATUS.md</a> · History receipt: <a href="STAGE2-HISTORY-RECEIPT.md">capture</a> · Evaluation window: <a href="PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md">proposal</a> · Recovery addendum: <a href="PROPOSED-STAGE2-RECOVERY-ADDENDUM.md">approved</a> · Preserved visual manifest: <a href="stage2-gate/visual-manifest.md">pre-recovery evidence</a></p>
+<p class="foot">AI resume: <a href="AI-RESUME.md">provider-neutral handoff</a> · Stage 2 status: <a href="STAGE2-STATUS.md">STAGE2-STATUS.md</a> · History receipt: <a href="STAGE2-HISTORY-RECEIPT.md">capture</a> · Evaluation window: <a href="PROPOSED-STAGE2-EVALUATION-WINDOW-PROFILE.md">approved profile</a> · Recovery addendum: <a href="PROPOSED-STAGE2-RECOVERY-ADDENDUM.md">approved</a> · Preserved visual manifest: <a href="stage2-gate/visual-manifest.md">pre-recovery evidence</a></p>
 </main></body></html>

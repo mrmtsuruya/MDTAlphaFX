@@ -1,9 +1,7 @@
 """Run the Stage 2 analysis-only co-firing and proposal harness.
 
-The command is intentionally fail-closed until the detector evaluation-window
-policy is authorized and recorded in ``strategies.co_firing``.  Existing
-recorded goldens use the complete history prefix; a declared-lookback rolling
-window is much faster but has already been shown to change detector results.
+The command accepts only the authorized registry-derived common evaluation
+window and emits proposal evidence without applying it to production config.
 """
 
 from __future__ import annotations
@@ -27,7 +25,8 @@ from backend.analysis.stage2_proposal import (  # noqa: E402
     attach_latest_closed_regimes,
     canonical_json_bytes,
     classify_closed_h1,
-    evaluate_full_prefix_population,
+    common_window_bars,
+    evaluate_common_window_population,
     fire_count_artifact,
     neutral_cluster_proposals,
     neutral_reachability_artifact,
@@ -45,12 +44,14 @@ from backend.data.stage2_analysis_store import (  # noqa: E402
     Stage2AnalysisParquetStore,
 )
 from backend.strategies import build_strategy_registry  # noqa: E402
-from backend.strategies.configuration import validate_strategy_config  # noqa: E402
+from backend.strategies.configuration import (  # noqa: E402
+    EVALUATION_WINDOW_POLICY,
+    validate_strategy_config,
+)
 
 
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "stage2-gate" / "cofiring-proposal"
 EVALUATION_POLICY_KEY = "strategies.co_firing.evaluation_window_policy"
-FULL_PREFIX_POLICY = "FULL_PREFIX"
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -77,27 +78,19 @@ def _parse_utc(value: str, key: str) -> datetime:
 
 
 def require_evaluation_policy(config: Config) -> str:
-    """Refuse to guess the unresolved full-prefix versus lookback semantics."""
+    """Require the exact authorized common-window policy."""
 
     try:
         value = config.get(EVALUATION_POLICY_KEY)
     except ConfigError as exc:
         raise SystemExit(
-            "Stage 2 co-firing is ready but evaluation-window semantics are "
-            "not authorized. Full-prefix evaluation matches the recorded "
-            "goldens but is quadratic over the one-year cohort; rolling each "
-            "module at its declared min_bars is bounded but changes at least "
-            "M19 firing on the recorded fixtures. Add an explicitly approved "
-            f"{EVALUATION_POLICY_KEY} before running; no proposal was written. "
-            "Two later calibration outputs also remain blocked: measured "
-            "clusters have no authorized mapping to A/B/C/D1/D2/E/F/G/H, and "
-            "the H1/M15 cohort has no H4 bias from which to apply the Stage 1 "
-            "HTF penalty."
+            "The approved Stage 2 evaluation-window policy is missing; "
+            "no proposal was written."
         ) from exc
-    if value != FULL_PREFIX_POLICY:
+    if value != EVALUATION_WINDOW_POLICY:
         raise SystemExit(
-            f"{EVALUATION_POLICY_KEY}={value!r} is not implemented or "
-            "authorized by this harness. No proposal was written."
+            f"{EVALUATION_POLICY_KEY}={value!r}; required "
+            f"{EVALUATION_WINDOW_POLICY!r}. No proposal was written."
         )
     return str(value)
 
@@ -337,7 +330,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         h1_regimes = classify_closed_h1(h1, config)
         attached = attach_latest_closed_regimes(m15, h1_regimes)
-        symbol_observations = evaluate_full_prefix_population(
+        symbol_observations = evaluate_common_window_population(
             symbol=record.resolved_name,
             bars=m15,
             spec=record.spec,

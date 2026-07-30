@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "updated_date": "2026-07-30",
+  "repository": "mrmtsuruya/MDTAlphaFX",
+  "handoff_branch": "agent/github-handoff-sync",
+  "stage": "Stage 2",
+  "status": "EVALUATION_WINDOW_IMPLEMENTATION_IN_PROGRESS",
+  "authorized_profile": "APPROVE STAGE 2 EVALUATION WINDOW PROFILE",
+  "next_checkpoint": {
+    "summary": "Implement deterministic maximum-overlap semantic cluster mapping and the approved partial pre-HTF score distribution.",
+    "files": [
+      "backend/analysis/stage2_proposal.py",
+      "scripts/run_stage2_cofire.py",
+      "tests/stage2/test_stage2_proposal.py"
+    ],
+    "requirements": [
+      "Preserve insufficient-module cluster anchors.",
+      "Maximize total overlap in the remaining one-to-one assignment.",
+      "Use the approved lexicographic tie break.",
+      "Emit the full overlap matrix and assignment receipt.",
+      "Regenerate theoretical reachability without changing production config.",
+      "Emit pre_htf_score_distribution with htf_penalty_applied=1.0 and calendar_supplied=false."
+    ]
+  },
+  "verification": {
+    "clean_checkpoint": {
+      "result": "964 passed",
+      "command": "python -m pytest -q tests\\unit tests\\stage1 tests\\golden\\test_trivial_golden.py tests\\stage2 --ignore=tests\\stage2\\test_recorded_goldens.py"
+    },
+    "focused_integrity": {
+      "result": "63 passed",
+      "command": "python -m pytest -q tests\\unit\\test_stage2_analysis_store.py tests\\unit\\test_record_stage2_history.py tests\\unit\\test_replay.py tests\\stage2\\test_stage2_proposal.py"
+    },
+    "full_suite": {
+      "result": "965 passed, 28 failed",
+      "expected_failures": "Only recorded-golden comparisons for modules 1..28."
+    }
+  },
+  "history_content_sha256": "c9388bb323131c9db44975f1637b4d5a5ebab14c4fd79bb3dd06dd2a08f1b38d",
+  "forbidden_without_later_authorization": [
+    "Apply measured cluster membership or weights.",
+    "Change thresholds, alpha, regime permissions, or production config.",
+    "Access a live account.",
+    "Place, modify, or cancel orders.",
+    "Enable AUTO execution.",
+    "Start Stage 2b or Stage 3.",
+    "Use analysis-only history for replay, costs, fills, outcomes, or performance."
+  ],
+  "canonical_handoff": "docs/AI-RESUME.md"
+}
