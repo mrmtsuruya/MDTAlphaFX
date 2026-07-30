@@ -238,7 +238,7 @@ export function runBacktest(
   bars: number,
   paramsOverride: Partial<Record<string, number>> = {},
 ): BacktestResult {
-  const params = { ...STRATEGY_DEFAULTS[strategy], ...paramsOverride };
+  const params: Record<string, number> = { ...STRATEGY_DEFAULTS[strategy], ...(paramsOverride as Record<string, number>) };
   const candles = generateCandles(pair, bars);
   const a = atr(candles, params.atrPeriod ?? 14);
   const sig = signalSeries(strategy, candles, params);
