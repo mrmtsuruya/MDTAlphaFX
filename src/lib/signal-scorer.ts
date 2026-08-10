@@ -59,20 +59,48 @@ export type SignalForScoring = {
   created_at: string;
 };
 
-export function scoreSignal(signal: SignalForScoring, mid: number): SignalOutcome {
-  const { entry, stop_loss: sl, take_profit_1: tp1, take_profit_2: tp2 } = signal;
+/**
+ * Live-standing snapshot: where does this signal stand against the CURRENT
+ * price? Used only when no candles are available to replay the real path —
+ * replaySignalPath is authoritative and is tried first.
+ *
+ * Its result is PERSISTED (scoreSignalPerformance writes the resolved status
+ * back to `signals`), so it is not a display convenience and its semantics have
+ * to match the execution policy exactly. Two consequences:
+ *
+ *  - **Price through TP1 does not resolve anything under B-single.** TP1 arms a
+ *    breakeven stop; the position runs on toward TP2. A snapshot cannot see
+ *    whether TP1 was touched on some earlier bar, so the only honest reading of
+ *    "price is currently past TP1" is that the trade is still OPEN. Returning
+ *    `hit_tp1` here would write a terminal status for a live position, and it
+ *    used to book +1.25R for it — contradicting R_OF_STATUS, which says a
+ *    `hit_tp1` is the breakeven exit at 0R.
+ *  - **A long exits on the bid and a short on the ask.** Comparing a raw mid to
+ *    those levels under-detects the stop and over-detects the target, the same
+ *    bias documented on replaySignalPath. The mid is shifted to the exit side
+ *    before any comparison.
+ */
+export function scoreSignal(
+  signal: SignalForScoring,
+  mid: number,
+  opts?: { halfSpread?: number },
+): SignalOutcome {
+  const { entry, stop_loss: sl, take_profit_2: tp2 } = signal;
   const long = signal.direction === "long";
   const risk = Math.abs(entry - sl);
   if (risk <= 0) return { status: "open", r: 0 };
 
-  // Live-standing approximation (see replaySignalPath for the true path check).
-  const distanceTo = (level: number) => (long ? mid - level : level - mid);
+  const h = opts?.halfSpread ?? halfSpread(signal.pair);
+  // The price the exit would actually fill at, not the mid.
+  const exit = long ? mid - h : mid + h;
+  const distanceTo = (level: number) => (long ? exit - level : level - exit);
 
-  if (distanceTo(tp2) >= 0) return { status: "hit_tp2", r: 2 };
-  if (distanceTo(tp1) >= 0) return { status: "hit_tp1", r: 1.25 };
+  // Stop first: if price is through both, it hit the worse level.
   if (distanceTo(sl) <= 0) return { status: "hit_sl", r: -1 };
-  // Open: current unrealized R relative to the stop.
-  const realized = long ? mid - entry : entry - mid;
+  if (distanceTo(tp2) >= 0) return { status: "hit_tp2", r: 2 };
+  // Past TP1 but not TP2 is a running position with its stop at breakeven,
+  // not a resolution. Fall through to the unrealized-R branch below.
+  const realized = long ? exit - entry : entry - exit;
   return { status: "open", r: +(realized / risk).toFixed(3) };
 }
 

@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildPerformanceReport, outcomeFromStatus, replaySignalPath } from "./signal-scorer.ts";
+import {
+  buildPerformanceReport,
+  outcomeFromStatus,
+  replaySignalPath,
+  scoreSignal,
+} from "./signal-scorer.ts";
 
 const CREATED_AT = "2025-01-01T00:00:00.000Z";
 
@@ -370,4 +375,73 @@ test("B-single: buildPerformanceReport treats a breakeven exit as neither win no
   assert.equal(strategy.wins, 1);
   assert.equal(strategy.losses, 1);
   assert.equal(strategy.open, 0, "a breakeven exit is resolved, not open");
+});
+
+// ---------------------------------------------------------------------------
+// scoreSignal — the live-standing snapshot.
+//
+// Its output is PERSISTED, so its semantics have to match B-single exactly.
+// Two bugs it used to have: it compared a raw mid against bid/ask-referenced
+// levels, and it treated "price is past TP1" as a terminal +1.25R win — which
+// under B-single is neither terminal nor worth 1.25R.
+// ---------------------------------------------------------------------------
+
+const LIVE = {
+  id: "live-1",
+  pair: "EURUSD",
+  direction: "long" as const,
+  entry: 100,
+  stop_loss: 99,
+  take_profit_1: 101.25,
+  take_profit_2: 102,
+  contributing_strategies: ["ema_trend"],
+  status: "fresh",
+  created_at: "2025-01-01T00:00:00.000Z",
+};
+
+test("scoreSignal: price past TP1 but short of TP2 stays OPEN, not a win", () => {
+  const outcome = scoreSignal(LIVE, 101.5, { halfSpread: 0 });
+  assert.equal(outcome.status, "open", "TP1 arms a breakeven stop; it does not close the trade");
+  assert.ok(outcome.r > 0, "it is running in profit, so unrealized R is positive");
+});
+
+test("scoreSignal: never returns hit_tp1, because a snapshot cannot see an earlier touch", () => {
+  for (const mid of [99.5, 100, 101.24, 101.25, 101.9, 102.5]) {
+    assert.notEqual(
+      scoreSignal(LIVE, mid, { halfSpread: 0 }).status,
+      "hit_tp1",
+      `mid ${mid} must not produce a terminal hit_tp1`,
+    );
+  }
+});
+
+test("scoreSignal: TP2 and SL still resolve", () => {
+  assert.equal(scoreSignal(LIVE, 102.1, { halfSpread: 0 }).status, "hit_tp2");
+  assert.equal(scoreSignal(LIVE, 98.9, { halfSpread: 0 }).status, "hit_sl");
+});
+
+test("scoreSignal: the mid is shifted to the exit side before comparison", () => {
+  // Mid sits just above the stop; the bid a long exits on is already through it.
+  assert.equal(scoreSignal(LIVE, 99.05, { halfSpread: 0 }).status, "open");
+  assert.equal(scoreSignal(LIVE, 99.05, { halfSpread: 0.1 }).status, "hit_sl");
+});
+
+test("scoreSignal: a short mirrors the long, on the ask", () => {
+  const short = {
+    ...LIVE,
+    direction: "short" as const,
+    stop_loss: 101,
+    take_profit_1: 98.75,
+    take_profit_2: 98,
+  };
+  assert.equal(scoreSignal(short, 100.95, { halfSpread: 0 }).status, "open");
+  assert.equal(scoreSignal(short, 100.95, { halfSpread: 0.1 }).status, "hit_sl");
+  assert.equal(scoreSignal(short, 97.9, { halfSpread: 0 }).status, "hit_tp2");
+});
+
+test("scoreSignal: its R for a resolved status agrees with R_OF_STATUS", () => {
+  // The drift this guards against: scoreSignal used to book +1.25R for a
+  // hit_tp1 while the shared table said 0.
+  assert.equal(scoreSignal(LIVE, 102.5, { halfSpread: 0 }).r, outcomeFromStatus("hit_tp2")!.r);
+  assert.equal(scoreSignal(LIVE, 98.5, { halfSpread: 0 }).r, outcomeFromStatus("hit_sl")!.r);
 });
