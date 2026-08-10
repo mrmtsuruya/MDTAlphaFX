@@ -6,7 +6,10 @@ export const Route = createFileRoute("/_authenticated/ai-news")({
       { title: "AI News — MDTAlphaFX" },
       { name: "description", content: "New AI models, benchmarks, and vibe-coding project ideas." },
       { property: "og:title", content: "AI News — MDTAlphaFX" },
-      { property: "og:description", content: "New AI models, benchmarks, and vibe-coding project ideas." },
+      {
+        property: "og:description",
+        content: "New AI models, benchmarks, and vibe-coding project ideas.",
+      },
     ],
   }),
   component: AINews,
@@ -37,18 +40,25 @@ function AINews() {
   return (
     <div className="p-6 space-y-4 animate-fade-up">
       <header>
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">// AI_INTEL</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          // AI_INTEL
+        </div>
         <h1 className="text-2xl font-bold text-white">AI News & Model Rankings</h1>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="rounded-lg border border-cyber-border bg-cyber-surface">
           <div className="px-4 py-3 border-b border-cyber-border">
-            <h2 className="font-mono text-[10px] uppercase tracking-widest text-neon-accent">// TOP_10_MODELS</h2>
+            <h2 className="font-mono text-[10px] uppercase tracking-widest text-neon-accent">
+              // TOP_10_MODELS
+            </h2>
           </div>
           <div className="divide-y divide-cyber-border">
             {RANKINGS.map((m) => (
-              <div key={m.r} className="px-4 py-2.5 flex items-center gap-3 font-mono text-xs hover:bg-cyber-surface-2">
+              <div
+                key={m.r}
+                className="px-4 py-2.5 flex items-center gap-3 font-mono text-xs hover:bg-cyber-surface-2"
+              >
                 <span className="w-6 text-neon-accent font-bold">#{m.r}</span>
                 <span className="flex-1 text-white">{m.model}</span>
                 <span className="text-muted-foreground">{m.provider}</span>
@@ -60,23 +70,34 @@ function AINews() {
 
         <section className="rounded-lg border border-cyber-border bg-cyber-surface">
           <div className="px-4 py-3 border-b border-cyber-border">
-            <h2 className="font-mono text-[10px] uppercase tracking-widest text-neon-accent">// NEWS_WIRE</h2>
+            <h2 className="font-mono text-[10px] uppercase tracking-widest text-neon-accent">
+              // NEWS_WIRE
+            </h2>
           </div>
           <div className="divide-y divide-cyber-border">
             {NEWS.map((n, i) => (
               <div key={i} className="p-4 hover:bg-cyber-surface-2">
-                <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
-                  n.tag === "MODEL" ? "bg-neon-accent/20 text-neon-accent" :
-                  n.tag === "BENCHMARK" ? "bg-neon-long/20 text-neon-long" :
-                  "bg-neon-warn/20 text-neon-warn"
-                }`}>{n.tag}</span>
+                <span
+                  className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+                    n.tag === "MODEL"
+                      ? "bg-neon-accent/20 text-neon-accent"
+                      : n.tag === "BENCHMARK"
+                        ? "bg-neon-long/20 text-neon-long"
+                        : "bg-neon-warn/20 text-neon-warn"
+                  }`}
+                >
+                  {n.tag}
+                </span>
                 <div className="text-sm text-white mt-1.5">{n.title}</div>
               </div>
             ))}
           </div>
         </section>
       </div>
-      <p className="text-[10px] font-mono text-muted-foreground">// Live leaderboard integration is stubbed — wire lmsys/livebench feeds via a scheduled server route.</p>
+      <p className="text-[10px] font-mono text-muted-foreground">
+        // Live leaderboard integration is stubbed — wire lmsys/livebench feeds via a scheduled
+        server route.
+      </p>
     </div>
   );
 }

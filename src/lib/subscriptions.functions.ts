@@ -19,7 +19,8 @@ export const redeemSubscription = createServerFn({ method: "POST" })
 
     if (findError) throw new Error(findError.message);
     if (!sub) throw new Error("Invalid subscription key.");
-    if (sub.user_id && sub.user_id !== userId) throw new Error("Key already redeemed by another account.");
+    if (sub.user_id && sub.user_id !== userId)
+      throw new Error("Key already redeemed by another account.");
     if (sub.status !== "active") throw new Error(`Key is ${sub.status}.`);
     if (email && sub.email.toLowerCase() !== email)
       throw new Error("Key was issued to a different email.");

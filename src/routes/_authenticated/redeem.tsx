@@ -27,7 +27,11 @@ function Redeem() {
   const q = useQuery({ queryKey: ["subscription"], queryFn: () => subFn() });
   const m = useMutation({
     mutationFn: (k: string) => redeemFn({ data: { key: k } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["subscription"] }); toast.success("Subscription activated"); setKey(""); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["subscription"] });
+      toast.success("Subscription activated");
+      setKey("");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -36,7 +40,9 @@ function Redeem() {
   return (
     <div className="p-6 max-w-2xl animate-fade-up">
       <header>
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">// SUBSCRIPTION</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          // SUBSCRIPTION
+        </div>
         <h1 className="text-2xl font-bold text-white">Subscription</h1>
       </header>
 
@@ -46,7 +52,9 @@ function Redeem() {
             <KeyRound className="size-4" />
             <span className="font-mono text-xs uppercase tracking-widest">ACTIVE · {sub.tier}</span>
           </div>
-          <div className="mt-2 text-sm text-white">Full 28-strategy engine, MT5 automation, and AI consult unlocked.</div>
+          <div className="mt-2 text-sm text-white">
+            Full 28-strategy engine, MT5 automation, and AI consult unlocked.
+          </div>
           <div className="mt-3 font-mono text-[10px] text-muted-foreground">
             REDEEMED · {sub.redeemed_at ? new Date(sub.redeemed_at).toLocaleString() : "—"}
             {sub.expires_at && <> · EXPIRES {new Date(sub.expires_at).toLocaleDateString()}</>}
@@ -54,7 +62,9 @@ function Redeem() {
         </div>
       ) : (
         <div className="mt-4 rounded-lg border border-cyber-border bg-cyber-surface p-5">
-          <p className="text-sm text-muted-foreground">Enter the subscription key that was issued to your account email.</p>
+          <p className="text-sm text-muted-foreground">
+            Enter the subscription key that was issued to your account email.
+          </p>
           <div className="mt-4 flex gap-2">
             <input
               value={key}
@@ -66,7 +76,9 @@ function Redeem() {
               onClick={() => m.mutate(key)}
               disabled={m.isPending || !key.trim()}
               className="rounded-sm bg-neon-accent px-4 py-2 font-mono text-xs font-bold text-cyber-bg hover:brightness-110 disabled:opacity-50"
-            >REDEEM</button>
+            >
+              REDEEM
+            </button>
           </div>
           <p className="mt-3 text-[10px] font-mono text-muted-foreground">
             Don't have a key? Contact your MDTAlphaFX admin.

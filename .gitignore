@@ -16,6 +16,10 @@ dist-ssr
 .nitro
 *.local
 
+# Env
+.env
+.env.local
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
@@ -30,3 +34,17 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+specs/.current-spec
+**/.progress.md
+
+# Historical market data (Dukascopy). Bulk, regenerable, and gigabytes per year
+# on XAUUSD ticks -- never commit it. Rebuild with tools/fetch-history.mjs.
+data/history/
+.dukascopy-cache/
+
+# Local backups
+MDTAlphaFX-BACKUP-*.tar.gz
+
+# Local preview tooling runtime state — a ~14MB SQLite db plus its WAL/SHM.
+# Machine-local and regenerable; nothing here belongs in a synced repo.
+.freebuff/

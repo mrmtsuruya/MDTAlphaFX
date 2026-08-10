@@ -1,7 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -29,10 +28,30 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") navigate({ to: "/dashboard" });
-    });
-    return () => sub.subscription.unsubscribe();
+    async function completeOAuthCallback() {
+      const params = new URLSearchParams(window.location.hash.slice(1));
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
+
+      if (!accessToken || !refreshToken) return;
+
+      window.history.replaceState(null, "", window.location.pathname);
+      setBusy(true);
+      const { error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+
+      if (error) {
+        toast.error(error.message);
+        setBusy(false);
+        return;
+      }
+
+      window.location.replace(`${window.location.origin}/dashboard`);
+    }
+
+    void completeOAuthCallback();
   }, [navigate]);
 
   async function submit(e: React.FormEvent) {
@@ -51,6 +70,7 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        navigate({ to: "/dashboard" });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Auth failed");
@@ -59,14 +79,18 @@ function AuthPage() {
     }
   }
 
-  async function google() {
+  function google() {
     setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) toast.error(result.error.message);
-    } finally {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) throw new Error("Supabase URL is not configured");
+
+      const authorizeUrl = new URL("/auth/v1/authorize", supabaseUrl);
+      authorizeUrl.searchParams.set("provider", "google");
+      authorizeUrl.searchParams.set("redirect_to", `${window.location.origin}/auth`);
+      window.location.assign(authorizeUrl.toString());
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Google sign-in failed");
       setBusy(false);
     }
   }
@@ -102,17 +126,25 @@ function AuthPage() {
           disabled={busy}
           className="mt-6 w-full inline-flex items-center justify-center gap-2 rounded-sm border border-cyber-border bg-cyber-bg px-4 py-2.5 text-sm font-medium text-white hover:bg-cyber-surface-2 transition disabled:opacity-50"
         >
-          <svg className="size-4" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.5-1.7 4.3-5.5 4.3-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.9 1.5l2.6-2.5C16.9 3.7 14.7 2.8 12 2.8 6.9 2.8 2.8 6.9 2.8 12s4.1 9.2 9.2 9.2c5.3 0 8.9-3.7 8.9-9 0-.6-.1-1.1-.2-1.6H12Z"/></svg>
+          <svg className="size-4" viewBox="0 0 24 24">
+            <path
+              fill="#EA4335"
+              d="M12 10.2v3.9h5.5c-.2 1.5-1.7 4.3-5.5 4.3-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.9 1.5l2.6-2.5C16.9 3.7 14.7 2.8 12 2.8 6.9 2.8 2.8 6.9 2.8 12s4.1 9.2 9.2 9.2c5.3 0 8.9-3.7 8.9-9 0-.6-.1-1.1-.2-1.6H12Z"
+            />
+          </svg>
           Continue with Google
         </button>
 
         <div className="my-6 flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-          <div className="h-px flex-1 bg-cyber-border" /> OR <div className="h-px flex-1 bg-cyber-border" />
+          <div className="h-px flex-1 bg-cyber-border" /> OR{" "}
+          <div className="h-px flex-1 bg-cyber-border" />
         </div>
 
         <form onSubmit={submit} className="space-y-3">
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">EMAIL</label>
+            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              EMAIL
+            </label>
             <input
               type="email"
               required
@@ -122,7 +154,9 @@ function AuthPage() {
             />
           </div>
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">PASSWORD</label>
+            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              PASSWORD
+            </label>
             <input
               type="password"
               required

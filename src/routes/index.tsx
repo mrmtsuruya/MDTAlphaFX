@@ -67,9 +67,9 @@ function Landing() {
             trading terminal.
           </h1>
           <p className="mt-6 text-lg text-muted-foreground max-w-2xl">
-            MDTAlphaFX runs 28 professional forex strategies in parallel, cross-references
-            live macro news &amp; geopolitical impact, and delivers ATR-anchored signals
-            with entry, SL, TP1, TP2 — plus per-signal AI consult and MT5 automation.
+            MDTAlphaFX runs 28 professional forex strategies in parallel, cross-references live
+            macro news &amp; geopolitical impact, and delivers ATR-anchored signals with entry, SL,
+            TP1, TP2 — plus per-signal AI consult and MT5 automation.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
@@ -89,24 +89,47 @@ function Landing() {
 
         <section id="features" className="mt-24 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: Zap, title: "28 STRATEGIES", body: "Trend, momentum, harmonics, ICT order flow, news-reactive AI overlay — toggle any combination." },
-            { icon: LineChart, title: "ATR SIGNALS", body: "Every signal ships entry, SL, TP1, TP2, confluence %, and 'don't chase' validity gate." },
-            { icon: Radio, title: "MACRO SYNC", body: "Live news + geopolitical feed impacts signal validity in real time." },
-            { icon: Bot, title: "AI CONSULT", body: "Ask Gemini or GPT for a take/skip verdict on any signal before you execute." },
+            {
+              icon: Zap,
+              title: "28 STRATEGIES",
+              body: "Trend, momentum, harmonics, ICT order flow, news-reactive AI overlay — toggle any combination.",
+            },
+            {
+              icon: LineChart,
+              title: "ATR SIGNALS",
+              body: "Every signal ships entry, SL, TP1, TP2, confluence %, and 'don't chase' validity gate.",
+            },
+            {
+              icon: Radio,
+              title: "MACRO SYNC",
+              body: "Live news + geopolitical feed impacts signal validity in real time.",
+            },
+            {
+              icon: Bot,
+              title: "AI CONSULT",
+              body: "Ask Gemini or GPT for a take/skip verdict on any signal before you execute.",
+            },
           ].map(({ icon: Icon, title, body }) => (
-            <div key={title} className="rounded-lg border border-cyber-border bg-cyber-surface p-6 hover:border-neon-accent/40 transition group">
+            <div
+              key={title}
+              className="rounded-lg border border-cyber-border bg-cyber-surface p-6 hover:border-neon-accent/40 transition group"
+            >
               <Icon className="size-6 text-neon-accent" />
-              <h3 className="mt-4 font-mono text-sm font-bold tracking-widest text-white">{title}</h3>
+              <h3 className="mt-4 font-mono text-sm font-bold tracking-widest text-white">
+                {title}
+              </h3>
               <p className="mt-2 text-sm text-muted-foreground">{body}</p>
             </div>
           ))}
         </section>
 
         <section className="mt-24 rounded-lg border border-cyber-border bg-cyber-surface p-8">
-          <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">// SUBSCRIPTION_KEYS</h2>
+          <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            // SUBSCRIPTION_KEYS
+          </h2>
           <p className="mt-2 text-lg text-white">
-            Access is gated by subscription key. Sign up, then redeem the key issued to
-            your email to unlock the full 28-strategy engine and MT5 automation.
+            Access is gated by subscription key. Sign up, then redeem the key issued to your email
+            to unlock the full 28-strategy engine and MT5 automation.
           </p>
         </section>
       </main>

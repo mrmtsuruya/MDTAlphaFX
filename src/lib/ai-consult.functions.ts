@@ -4,7 +4,8 @@ import { z } from "zod";
 
 const ConsultInput = z.object({
   signalId: z.string().uuid(),
-  model: z.enum(["google/gemini-3.6-flash", "google/gemini-3.1-pro-preview", "openai/gpt-5.4-mini"])
+  model: z
+    .enum(["google/gemini-3.6-flash", "google/gemini-3.1-pro-preview", "openai/gpt-5.4-mini"])
     .default("google/gemini-3.6-flash"),
 });
 
@@ -62,7 +63,8 @@ RISK: <one sentence on the main risk>`;
     if (!res.ok) {
       const body = await res.text();
       if (res.status === 429) throw new Error("Rate limited — please wait and retry.");
-      if (res.status === 402) throw new Error("AI credits exhausted. Add credits in workspace settings.");
+      if (res.status === 402)
+        throw new Error("AI credits exhausted. Add credits in workspace settings.");
       throw new Error(`AI consult failed [${res.status}]: ${body}`);
     }
 
