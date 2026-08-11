@@ -81,6 +81,8 @@ export type SampleStats = {
   label: string;
   trades: number;
   wins: number;
+  /** B-single breakeven exits (`hit_tp1`) — resolved and in the denominator, but neither wins nor losses. */
+  scratches: number;
   losses: number;
   open: number;
   /** null (never 0) when there are zero resolved trades — a fabricated rate is worse than no rate. */
@@ -241,9 +243,13 @@ export function resolveSignalOutcome(
   };
 }
 
-function computeSampleStats(label: string, trades: BacktestTrade[]): SampleStats {
+export function summarizeBacktestTrades(label: string, trades: BacktestTrade[]): SampleStats {
   const resolved = trades.filter((t) => t.outcome !== "open");
-  const wins = resolved.filter((t) => t.outcome !== "hit_sl");
+  // B-single accounting: only TP2 is a win; `hit_tp1` is the breakeven scratch
+  // (resolved, in the denominator, neither win nor loss); only the pre-TP1
+  // stop is a loss.
+  const wins = resolved.filter((t) => t.outcome === "hit_tp2");
+  const scratches = resolved.filter((t) => t.outcome === "hit_tp1");
   const losses = resolved.filter((t) => t.outcome === "hit_sl");
   const totalR = +trades.reduce((sum, t) => sum + t.r, 0).toFixed(3);
 
@@ -260,6 +266,7 @@ function computeSampleStats(label: string, trades: BacktestTrade[]): SampleStats
     label,
     trades: trades.length,
     wins: wins.length,
+    scratches: scratches.length,
     losses: losses.length,
     open: trades.length - resolved.length,
     winRate: resolved.length > 0 ? +((wins.length / resolved.length) * 100).toFixed(1) : null,
@@ -284,14 +291,14 @@ function buildSegmentReport(
     }
   }
   const byStrategy = [...byStrategyMap.entries()]
-    .map(([strategyId, strategyTrades]) => computeSampleStats(strategyId, strategyTrades))
+    .map(([strategyId, strategyTrades]) => summarizeBacktestTrades(strategyId, strategyTrades))
     .sort((a, b) => b.trades - a.trades);
 
   return {
     segment,
     fromBarIndex,
     toBarIndex,
-    overall: computeSampleStats("__overall__", trades),
+    overall: summarizeBacktestTrades("__overall__", trades),
     byStrategy,
   };
 }

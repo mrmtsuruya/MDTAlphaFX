@@ -99,7 +99,7 @@
 - Consumes: existing `ResolvedSignalForLearning`, `BacktestTrade`, `SampleStats`.
 - Produces: `summarizeBacktestTrades(label: string, trades: BacktestTrade[]): SampleStats`; `SampleStats.scratches: number`.
 
-- [ ] **Step 1: Write failing learning tests**
+- [x] **Step 1: Write failing learning tests**
 
 Create `src/lib/signal-learning.test.ts` with fixtures containing one `hit_tp2`, one `hit_tp1`, and one `hit_sl` for the same strategy and mode:
 
@@ -139,7 +139,7 @@ test("B-single scratch autopsy says breakeven and 0R", () => {
 });
 ```
 
-- [ ] **Step 2: Write failing backtest summary test**
+- [x] **Step 2: Write failing backtest summary test**
 
 Export `summarizeBacktestTrades` in the test import before implementation. Add a test using three minimal `BacktestTrade` rows and assert:
 
@@ -156,7 +156,7 @@ assert.deepEqual(
 assert.equal(stats.trades, stats.wins + stats.scratches + stats.losses + stats.open);
 ```
 
-- [ ] **Step 3: Run focused tests and confirm failure**
+- [x] **Step 3: Run focused tests and confirm failure**
 
 ```powershell
 node --test src/lib/signal-learning.test.ts src/lib/real-backtest.test.ts
@@ -164,7 +164,7 @@ node --test src/lib/signal-learning.test.ts src/lib/real-backtest.test.ts
 
 Expected: learning assertions fail because global wins include `hit_tp1`; import fails because `summarizeBacktestTrades` is not exported.
 
-- [ ] **Step 4: Implement exact accounting**
+- [x] **Step 4: Implement exact accounting**
 
 In `buildLearningReport` use:
 
@@ -186,7 +186,7 @@ const losses = resolved.filter((trade) => trade.outcome === "hit_sl");
 
 Update `backtester.tsx` sample size from `o.wins + o.losses` to `o.wins + o.scratches + o.losses`, and show `W/S/L` counts.
 
-- [ ] **Step 5: Run focused and full tests**
+- [x] **Step 5: Run focused and full tests**
 
 ```powershell
 node --test src/lib/signal-learning.test.ts src/lib/real-backtest.test.ts
@@ -195,7 +195,7 @@ bun run test
 
 Expected: all tests pass; existing invariants include scratches.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add -- src/lib/signal-learning.test.ts src/lib/signal-learning.ts src/lib/real-backtest.ts src/lib/real-backtest.test.ts src/routes/_authenticated/backtester.tsx

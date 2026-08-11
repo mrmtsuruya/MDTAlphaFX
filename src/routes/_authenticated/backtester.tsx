@@ -753,9 +753,10 @@ function SegmentCard({ title, segment }: { title: string; segment: SegmentReport
         <Stat label="TRADES" value={`${o.trades}`} />
         <Stat
           label="WIN RATE"
-          value={`${formatRate(o.winRate)} (n=${o.wins + o.losses})`}
+          value={`${formatRate(o.winRate)} (n=${o.wins + o.scratches + o.losses})`}
           tone={o.winRate == null ? undefined : o.winRate >= 50 ? "long" : "short"}
         />
+        <Stat label="W/S/L" value={`${o.wins}/${o.scratches}/${o.losses}`} />
         <Stat label="TOTAL R" value={`${o.totalR}R`} tone={o.totalR >= 0 ? "long" : "short"} />
         <Stat label="EXPECTANCY" value={o.expectancyR == null ? "—" : `${o.expectancyR}R`} />
         <Stat label="MAX DD" value={`${o.maxDrawdownR}R`} tone="short" />

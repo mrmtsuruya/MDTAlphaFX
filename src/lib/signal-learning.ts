@@ -243,9 +243,9 @@ export function buildSignalAutopsy(signal: ResolvedSignalForLearning): SignalAut
       status: signal.status,
       r,
       confluence,
-      headline: `Winner but early exit — TP1 banked +1.25R on ${signal.pair}`,
-      diagnosis: `The ${direction} move delivered TP1 but stalled before TP2 — the edge was real, the follow-through was not. Carrying strategies: ${carriers.join(", ") || "—"}.`,
-      lesson: `A +1.25R bank is a good outcome; in ${mode} mode the missing TP2 leg usually means the move ran out of momentum after the first target.`,
+      headline: `Scratched at breakeven — TP1 reached, then the breakeven stop took it out on ${signal.pair}`,
+      diagnosis: `The ${direction} move reached TP1 but reversed far enough to trigger the breakeven stop — the whole 0.01 lot exited flat. Carrying strategies: ${carriers.join(", ") || "—"}.`,
+      lesson: `Under B-single only TP2 banks R: this scratch means the thesis stalled after the first target. It is resolved and counts toward the rate denominator, but is neither a win nor a loss.`,
       carriers,
     };
   }
@@ -290,7 +290,7 @@ export function buildSignalAutopsy(signal: ResolvedSignalForLearning): SignalAut
 
 export type LearningReport = {
   generatedAt: string;
-  resolved: number; // wins + losses across the record
+  resolved: number; // wins + scratches + losses across the record
   wins: number;
   losses: number;
   stale: number;
@@ -315,8 +315,11 @@ export function buildLearningReport(
   const resolved = signals.filter(
     (s) => s.status === "hit_tp1" || s.status === "hit_tp2" || s.status === "hit_sl",
   );
-  const wins = resolved.filter((s) => s.status !== "hit_sl").length;
-  const losses = resolved.length - wins;
+  // B-single: only TP2 is a win and only the pre-TP1 stop is a loss. `hit_tp1`
+  // is the breakeven scratch — resolved (so it dilutes the win rate) but
+  // excluded from both tallies.
+  const wins = resolved.filter((s) => s.status === "hit_tp2").length;
+  const losses = resolved.filter((s) => s.status === "hit_sl").length;
   const stale = signals.filter((s) => s.status === "invalidated").length;
   const totalR = signals.reduce((sum, s) => sum + (R_OF_STATUS[s.status] ?? 0), 0);
 

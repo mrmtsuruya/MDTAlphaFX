@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveSignalOutcome, runRealBacktest } from "./real-backtest.ts";
+import { resolveSignalOutcome, runRealBacktest, summarizeBacktestTrades } from "./real-backtest.ts";
 import type { SignalEngineCandle } from "./signal-engine.ts";
 import { replaySignalPath } from "./signal-scorer.ts";
 import { ALL_ENGINE_STRATEGY_IDS } from "./strategy-weights.ts";
@@ -570,14 +570,49 @@ test("walk-forward backtest: trades are non-overlapping, segmented correctly, an
       assert.equal(segment.overall.expectancyR, null);
     }
     for (const entry of segment.byStrategy) {
-      if (entry.wins + entry.losses === 0) {
+      if (entry.wins + entry.scratches + entry.losses === 0) {
         assert.equal(entry.winRate, null);
       } else {
         assert.ok(entry.winRate !== null && entry.winRate >= 0 && entry.winRate <= 100);
       }
-      assert.equal(entry.trades, entry.wins + entry.losses + entry.open);
+      assert.equal(entry.trades, entry.wins + entry.scratches + entry.losses + entry.open);
     }
   }
 
   assert.deepEqual(report.strategyIdsEvaluated, [...ALL_ENGINE_STRATEGY_IDS]);
+});
+
+test("summarizeBacktestTrades counts B-single scratches in the resolved denominator", () => {
+  const base = {
+    strategyIds: ["ema_trend"],
+    direction: "long" as const,
+    signalBarIndex: 0,
+    signalTime: "2026-08-01T00:00:00.000Z",
+    entry: 100,
+    stopLoss: 99,
+    takeProfit1: 101.25,
+    takeProfit2: 102,
+    confluence: 70,
+    resolutionBarIndex: 5,
+    resolutionTime: "2026-08-01T05:00:00.000Z",
+    maeR: 0.4,
+    mfeR: 1.4,
+    barsHeld: 6,
+    segment: "in_sample" as const,
+  };
+  const stats = summarizeBacktestTrades("__overall__", [
+    { ...base, signalBarIndex: 0, outcome: "hit_tp2", r: 2 },
+    { ...base, signalBarIndex: 1, outcome: "hit_tp1", r: 0 },
+    { ...base, signalBarIndex: 2, outcome: "hit_sl", r: -1 },
+  ]);
+  assert.deepEqual(
+    {
+      wins: stats.wins,
+      scratches: stats.scratches,
+      losses: stats.losses,
+      winRate: stats.winRate,
+    },
+    { wins: 1, scratches: 1, losses: 1, winRate: 33.3 },
+  );
+  assert.equal(stats.trades, stats.wins + stats.scratches + stats.losses + stats.open);
 });
