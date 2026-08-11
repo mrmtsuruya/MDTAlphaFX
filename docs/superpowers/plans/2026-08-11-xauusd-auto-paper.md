@@ -992,7 +992,7 @@ git commit -m "feat: add atomic paper worker RPCs"
 - Consumes: Tasks 3–5 market provider/state machine; Task 7 repository; existing `scanCandlesForSignal`, `computeStrategyWeights`, `ALL_ENGINE_STRATEGY_IDS`, `computeMtfAgreement`.
 - Produces: `resolveEnabledPaperStrategies`, `scanCompletedTimeframes`, `runXauusdPaperCycle`, `createWorkerHandler`.
 
-- [ ] **Step 1: Write strategy-accounting tests**
+- [x] **Step 1: Write strategy-accounting tests**
 
 Assert catalog parity and explicit accounting:
 
@@ -1008,7 +1008,7 @@ assert.deepEqual(
 
 Test each newly completed timeframe once, explicit macro-dependent failure labels when macro context is unavailable, and no existing learned multiplier input.
 
-- [ ] **Step 2: Write worker failure/idempotency tests**
+- [x] **Step 2: Write worker failure/idempotency tests**
 
 Use in-memory provider/repository fakes. Assert:
 
@@ -1023,13 +1023,13 @@ Use in-memory provider/repository fakes. Assert:
 
 Write handler tests proving missing/wrong secret returns 401, GET returns 405, non-empty input returns 400, valid secret plus `{}` returns 200 with bounded counters, and thrown worker error returns a generic 503 without stack/token leakage.
 
-- [ ] **Step 3: Run and confirm missing-module failures**
+- [x] **Step 3: Run and confirm missing-module failures**
 
 ```powershell
 node --test src/lib/paper-scan-orchestration.test.ts src/lib/xauusd-paper-worker.test.ts src/lib/xauusd-paper-handler.test.ts
 ```
 
-- [ ] **Step 4: Implement orchestration boundary**
+- [x] **Step 4: Implement orchestration boundary**
 
 `resolveEnabledPaperStrategies` first compares sorted database catalog IDs with `ALL_ENGINE_STRATEGY_IDS`; any missing/unknown ID throws `strategy_catalog_drift` and prevents canonical signals. With a matching catalog, return registry order filtered only by explicit `enabled=false` settings. Activation creates missing settings as enabled, so silence never means disabled.
 
@@ -1075,7 +1075,7 @@ export async function scanCompletedTimeframes(input: {
 
 For each timeframe, derive mid candles, compute walk-forward weights, call `scanCandlesForSignal`, derive abstentions from active IDs minus vote IDs, and store full diagnostics. Map `M1/M5/M15/M30` to `scalper`; map `H1/H4/D1` to `intraday`. Preserve validity minutes exactly as `M1=10`, `M5=15`, `M15=30`, `M30=60`, `H1=90`, `H4=240`, `D1=1440`. Never multiply by existing `computeStrategyLearning` output. Until a canonical macro provider is separately approved, compatible `news_reactive` and `ai_confluence` evaluations are recorded under `failed` with code `macro_context_unavailable` and are removed from the engine call; incompatible timeframes remain `incompatible`. No signal may cite a failed engine. Use current MTF plan when direction candles are present; confirmed opposing tide rejects candidate with named reason. Return every eligible timeframe candidate; do not collapse them to one winner.
 
-- [ ] **Step 5: Implement worker cycle**
+- [x] **Step 5: Implement worker cycle**
 
 ```ts
 export async function runXauusdPaperCycle(deps: {
@@ -1089,7 +1089,7 @@ export async function runXauusdPaperCycle(deps: {
 
 Run provider health and call `recordWorkerHealth` before loading profiles, so initial activation has a recent health row even while every profile is disabled. Discover enabled profiles internally. Fetch one quote and latest completed map. Claim per-user/timeframe/candle/version fingerprint before full candle fetch. Validate provider data and commit every eligible candidate atomically as `waiting_entry`. Then group live trades by timeframe, fetch up to 500 completed two-sided candles, filter strictly after `lastObservedAt ?? createdAt`, add current quote as the newest observation, sort by provider timestamp with candles before quote on an exact tie, and apply oldest-first. Newly committed trades therefore fill from generation quote ask/bid without an assumed mid price; existing trades replay every completed candle before current quote. If provider history cannot bridge saved timestamp, record `trade_observation_gap` and leave trade unchanged rather than skipping unseen prices. Catch per-scan failures, store safe codes, and continue other profiles/timeframes. Top-level credential/provider failure records degraded health and returns without fabricating work.
 
-- [ ] **Step 6: Implement secret-protected thin Edge handler**
+- [x] **Step 6: Implement secret-protected thin Edge handler**
 
 Implement `createWorkerHandler({ expectedSecret, runCycle })` in `src/lib/xauusd-paper-handler.ts`. Compare `x-worker-secret` with Web Crypto digest, accept `POST` only, accept empty JSON object only, and return bounded JSON counters. Request cannot supply user ID, symbol, lot, strategy IDs, or provider URL.
 
@@ -1104,11 +1104,11 @@ verify_jwt = false
 
 `supabase/functions/.env.example` contains fake names only.
 
-- [ ] **Step 7: Add dependency-boundary assertion**
+- [x] **Step 7: Add dependency-boundary assertion**
 
 In `xauusd-paper-worker.test.ts`, read worker, repository, provider, and Edge handler source. Parse import lines and assert none contains `mt5`, `order`, `broker`, `trade-client`, or `local-cli`. Assert OANDA adapter request methods remain GET-only.
 
-- [ ] **Step 8: Run available gates**
+- [x] **Step 8: Run available gates**
 
 ```powershell
 node --test src/lib/paper-scan-orchestration.test.ts src/lib/xauusd-paper-worker.test.ts src/lib/xauusd-paper-handler.test.ts
@@ -1118,7 +1118,7 @@ bun run test
 
 If Deno already exists, also run `deno check supabase/functions/xauusd-paper-worker/index.ts`; otherwise record Edge-runtime check as infrastructure-blocked.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add -- src/lib/paper-scan-orchestration.ts src/lib/paper-scan-orchestration.test.ts src/lib/xauusd-paper-worker.ts src/lib/xauusd-paper-worker.test.ts src/lib/xauusd-paper-handler.ts src/lib/xauusd-paper-handler.test.ts supabase/functions/xauusd-paper-worker/index.ts supabase/functions/xauusd-paper-worker/deno.json supabase/functions/.env.example supabase/config.toml

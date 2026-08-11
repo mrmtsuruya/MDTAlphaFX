@@ -1,1 +1,4 @@
 project_id = "lcyxfrprcpyarhagkryz"
+
+[functions.xauusd-paper-worker]
+verify_jwt = false

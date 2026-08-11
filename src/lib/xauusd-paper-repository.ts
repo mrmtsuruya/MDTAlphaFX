@@ -9,7 +9,9 @@
 // which bypasses RLS by design.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, Json } from "@/integrations/supabase/types";
+// Relative (not `@/`) so the same module also resolves inside the Deno Edge
+// runtime where the Vite `@/` alias does not exist.
+import type { Database, Json } from "../integrations/supabase/types";
 import type { PaperTimeframe } from "./xauusd-market-data.ts";
 import type { NativeXauusdQuote, TwoSidedCandle } from "./xauusd-market-data.ts";
 import type { PaperTrade, PaperTradeState } from "./paper-trade-state.ts";
