@@ -424,7 +424,7 @@ git commit -m "feat: define verified XAUUSD market data contract"
 - Consumes: `XauusdMarketDataProvider` and market types from Task 3.
 - Produces: `createOandaPracticeXauusdProvider(config, fetchImpl?)`.
 
-- [ ] **Step 1: Write fake-fetch tests before adapter**
+- [x] **Step 1: Write fake-fetch tests before adapter**
 
 Capture every request. Return representative OANDA pricing and `price=BA` candle payloads. Assert:
 
@@ -445,13 +445,13 @@ assert.deepEqual(await provider.quote(), {
 
 Assert empty bids, empty asks, non-`XAU_USD`, non-tradeable price, malformed numeric values, HTTP 401, and missing `complete` candles throw stable `OandaMarketDataError` codes. Assert adapter drops final incomplete candle instead of relabeling it complete.
 
-- [ ] **Step 2: Run and confirm missing-module failure**
+- [x] **Step 2: Run and confirm missing-module failure**
 
 ```powershell
 node --test src/lib/oanda-xauusd-provider.test.ts
 ```
 
-- [ ] **Step 3: Implement practice-only endpoints**
+- [x] **Step 3: Implement practice-only endpoints**
 
 ```ts
 const OANDA_PRACTICE_BASE_URL = "https://api-fxpractice.oanda.com";
@@ -487,11 +487,11 @@ Set `Authorization: Bearer <token>` and `Accept-Datetime-Format: RFC3339`. Never
 
 Official response contracts: [OANDA pricing endpoints](https://developer.oanda.com/rest-live-v20/pricing-ep/) and [bid/ask candlestick fields](https://developer.oanda.com/rest-live-v20/instrument-df/).
 
-- [ ] **Step 4: Tighten example environment copy**
+- [x] **Step 4: Tighten example environment copy**
 
 Keep existing fake OANDA names. Change comments to state `practice data only`, `GET-only`, and `never commit tokens`. Add no live-host variable.
 
-- [ ] **Step 5: Run tests, typecheck, and dependency scan**
+- [x] **Step 5: Run tests, typecheck, and dependency scan**
 
 ```powershell
 node --test src/lib/oanda-xauusd-provider.test.ts
@@ -501,7 +501,7 @@ rg -n "orders|api-fxtrade|POST|PUT|PATCH|DELETE" src/lib/oanda-xauusd-provider.t
 
 Expected: tests/typecheck pass; `rg` returns no order endpoint, live host, or mutating HTTP method in executable code.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```powershell
 git add -- .env.example src/lib/oanda-xauusd-provider.ts src/lib/oanda-xauusd-provider.test.ts
