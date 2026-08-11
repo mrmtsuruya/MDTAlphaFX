@@ -12,6 +12,7 @@ import { readFileSync } from "node:fs";
 
 const EXPAND_MIGRATION = "20260811010000_xauusd_paper_expand.sql";
 const CATALOG_MIGRATION = "20260811010100_xauusd_strategy_catalog_backfill.sql";
+const WORKER_RPC_MIGRATION = "20260811010200_xauusd_paper_worker_rpcs.sql";
 
 const expandSql = readFileSync(
   new URL(`../../supabase/migrations/${EXPAND_MIGRATION}`, import.meta.url),
@@ -19,6 +20,10 @@ const expandSql = readFileSync(
 );
 const catalogSql = readFileSync(
   new URL(`../../supabase/migrations/${CATALOG_MIGRATION}`, import.meta.url),
+  "utf8",
+);
+const workerRpcSql = readFileSync(
+  new URL(`../../supabase/migrations/${WORKER_RPC_MIGRATION}`, import.meta.url),
   "utf8",
 );
 
@@ -111,4 +116,80 @@ test("catalog backfill inserts all five missing engine strategies", () => {
   assert.match(catalogSql, /ON CONFLICT \(id\) DO UPDATE/i);
   assert.match(catalogSql, /strategy_settings \(user_id, strategy_id, enabled\)/i);
   assert.match(catalogSql, /NOT EXISTS/i);
+});
+
+test("worker RPC migration defines every required RPC", () => {
+  for (const name of [
+    "set_xauusd_paper_enabled",
+    "worker_record_xauusd_health",
+    "worker_claim_xauusd_scan",
+    "worker_commit_xauusd_scan",
+    "worker_fail_xauusd_scan",
+    "worker_apply_paper_transition",
+    "archive_xauusd_terminal_signals",
+  ]) {
+    assert.match(workerRpcSql, new RegExp(`CREATE OR REPLACE FUNCTION public\\.${name}\\(`, "i"));
+  }
+});
+
+test("every worker RPC is SECURITY DEFINER with a pinned search_path", () => {
+  const functions = workerRpcSql.split(/CREATE OR REPLACE FUNCTION/).slice(1);
+  assert.ok(functions.length >= 7, `expected >= 7 functions, got ${functions.length}`);
+  for (const fn of functions) {
+    const name = fn.match(/public\.(\w+)\(/)?.[1];
+    assert.ok(name, "every function has a name");
+    assert.match(
+      fn,
+      /SECURITY DEFINER/i,
+      `${name} must be SECURITY DEFINER`,
+    );
+    assert.match(
+      fn,
+      /SET search_path = public/i,
+      `${name} must pin search_path to public`,
+    );
+  }
+});
+
+test("worker RPCs are revoked from PUBLIC/anon/authenticated", () => {
+  const workerOnly = [
+    "worker_record_xauusd_health",
+    "worker_claim_xauusd_scan",
+    "worker_commit_xauusd_scan",
+    "worker_fail_xauusd_scan",
+    "worker_apply_paper_transition",
+    "archive_xauusd_terminal_signals",
+  ];
+  for (const name of workerOnly) {
+    assert.match(
+      workerRpcSql,
+      new RegExp(`REVOKE ALL ON FUNCTION public\\.${name}\\([^)]*\\) FROM PUBLIC, anon, authenticated`, "is"),
+      `${name} must be revoked from PUBLIC, anon and authenticated`,
+    );
+    // And granted to service_role only.
+    assert.match(
+      workerRpcSql,
+      new RegExp(`GRANT EXECUTE ON FUNCTION public\\.${name}\\([^)]*\\) TO service_role`, "is"),
+      `${name} must be granted to service_role`,
+    );
+  }
+});
+
+test("only the profile toggle is granted to authenticated", () => {
+  assert.match(
+    workerRpcSql,
+    /GRANT EXECUTE ON FUNCTION public\.set_xauusd_paper_enabled\(boolean\) TO authenticated/i,
+  );
+  // No other authenticated grant may exist in the RPC migration.
+  const authenticatedGrants = workerRpcSql.match(/GRANT EXECUTE ON FUNCTION [^;]*TO authenticated/gi) ?? [];
+  assert.equal(authenticatedGrants.length, 1);
+});
+
+test("archive RPC soft-archives only and contains no DELETE", () => {
+  const archive = workerRpcSql.split(/CREATE OR REPLACE FUNCTION public\.archive_xauusd_terminal_signals/)[1];
+  assert.ok(archive);
+  assert.doesNotMatch(archive, /\bDELETE\b/i);
+  assert.match(archive, /interval '30 days'/i);
+  assert.match(archive, /archived_at = p_now/i);
+  assert.match(archive, /RETURNS integer/i);
 });

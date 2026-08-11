@@ -737,12 +737,113 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      archive_xauusd_terminal_signals: {
+        Args: {
+          p_now: string;
+        };
+        Returns: number;
+      };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
           _user_id: string;
         };
         Returns: boolean;
+      };
+      set_xauusd_paper_enabled: {
+        Args: {
+          p_enabled: boolean;
+        };
+        Returns: undefined;
+      };
+      worker_apply_paper_transition: {
+        Args: {
+          p_after_state: Database["public"]["Enums"]["paper_trade_state"] | null;
+          p_ambiguous_intrabar: boolean | null;
+          p_bars_held: number | null;
+          p_before_state: Database["public"]["Enums"]["paper_trade_state"] | null;
+          p_entry_price: number | null;
+          p_entry_time: string | null;
+          p_evidence: Json;
+          p_event_key: string;
+          p_event_type: string;
+          p_exit_price: number | null;
+          p_exit_time: string | null;
+          p_expected_state: Database["public"]["Enums"]["paper_trade_state"];
+          p_expected_version: number;
+          p_last_observed_at: string | null;
+          p_mae_r: number | null;
+          p_mfe_r: number | null;
+          p_next_state: Database["public"]["Enums"]["paper_trade_state"];
+          p_next_version: number;
+          p_provider_timestamp: string | null;
+          p_result_r: number | null;
+          p_tp1_armed_at: string | null;
+          p_trade_id: string;
+        };
+        Returns: boolean;
+      };
+      worker_claim_xauusd_scan: {
+        Args: {
+          p_candle_closed_at: string;
+          p_engine_version: string;
+          p_lease_expires_at: string;
+          p_policy_version: string;
+          p_scan_fingerprint: string;
+          p_scan_mode: Database["public"]["Enums"]["trader_profile"];
+          p_symbol: string;
+          p_timeframe: string;
+          p_user_id: string;
+        };
+        Returns: {
+          scan_run_id: string;
+          claimed: boolean;
+        }[];
+      };
+      worker_commit_xauusd_scan: {
+        Args: {
+          p_engine_accounting: Json;
+          p_engine_version: string;
+          p_execution_policy_version: string;
+          p_instrument_spec_version: string;
+          p_policy_version: string;
+          p_quality_result: Json;
+          p_scan_fingerprint: string;
+          p_scan_run_id: string;
+          p_signal: Json;
+          p_snapshots: Json;
+          p_trade: Json;
+          p_user_id: string;
+        };
+        Returns: {
+          signal_id: string;
+          paper_trade_id: string;
+          created: boolean;
+        }[];
+      };
+      worker_fail_xauusd_scan: {
+        Args: {
+          p_code: string;
+          p_detail: string;
+          p_engine_accounting: Json;
+          p_scan_run_id: string;
+          p_status: Database["public"]["Enums"]["paper_scan_status"];
+        };
+        Returns: undefined;
+      };
+      worker_record_xauusd_health: {
+        Args: {
+          p_checked_at: string;
+          p_code: string;
+          p_detail: Json;
+          p_instrument: string;
+          p_ok: boolean;
+          p_provider: string;
+          p_quote_age_ms: number | null;
+          p_quote_provider_time: string | null;
+          p_spread: number | null;
+        };
+        Returns: undefined;
       };
     };
     Enums: {

@@ -818,17 +818,17 @@ git commit -m "feat: add canonical XAUUSD paper schema"
 - Produces RPCs `set_xauusd_paper_enabled`, `worker_record_xauusd_health`, `worker_claim_xauusd_scan`, `worker_commit_xauusd_scan`, `worker_fail_xauusd_scan`, `worker_apply_paper_transition`, `archive_xauusd_terminal_signals`.
 - Produces `PaperWorkerRepository` and `createSupabasePaperRepository(client)`.
 
-- [ ] **Step 1: Extend static tests before SQL**
+- [x] **Step 1: Extend static tests before SQL**
 
 Assert every RPC name exists, every worker RPC contains `SECURITY DEFINER SET search_path = public`, and SQL revokes execution from `PUBLIC`, `anon`, and `authenticated`. Assert only `set_xauusd_paper_enabled(boolean)` is granted to `authenticated`.
 
-- [ ] **Step 2: Run and confirm failure**
+- [x] **Step 2: Run and confirm failure**
 
 ```powershell
 node --test src/lib/paper-schema-contract.test.ts
 ```
 
-- [ ] **Step 3: Implement profile and claim RPCs**
+- [x] **Step 3: Implement profile and claim RPCs**
 
 `set_xauusd_paper_enabled(p_enabled boolean)` derives `auth.uid()`, upserts fixed `XAUUSD`, `0.01`, `Asia/Manila`, `all_registered`, sets `activated_at` only on false-to-true transition, and enables missing settings for all catalog strategies. Enabling requires `paper_worker_health.ok=true` with `checked_at >= now() - interval '2 minutes'`; disabling always succeeds.
 
@@ -840,7 +840,7 @@ node --test src/lib/paper-schema-contract.test.ts
 RETURNS TABLE (scan_run_id uuid, claimed boolean)
 ```
 
-- [ ] **Step 4: Implement atomic scan commit RPC**
+- [x] **Step 4: Implement atomic scan commit RPC**
 
 Use explicit typed parameters for user, scan, snapshot, signal, versions, levels, diagnostics, and expiry. Inside one function:
 
@@ -855,19 +855,19 @@ Use explicit typed parameters for user, scan, snapshot, signal, versions, levels
 
 Any constraint failure rolls back every step.
 
-- [ ] **Step 5: Implement compare-and-swap transition RPC**
+- [x] **Step 5: Implement compare-and-swap transition RPC**
 
 `worker_apply_paper_transition` locks trade, requires exact state plus state version, updates state/fill/result/metrics, increments version, and appends one event with next sequence. Duplicate `event_key` returns `applied=false`; it never appends second event.
 
-- [ ] **Step 6: Implement failure and archive RPCs**
+- [x] **Step 6: Implement failure and archive RPCs**
 
 `worker_fail_xauusd_scan` stores only enumerated safe codes and bounded diagnostics. `archive_xauusd_terminal_signals(p_now)` sets both signal/trade `archived_at` for terminal canonical trades whose signal is at least 30 days old. It returns archived count and contains no `DELETE`.
 
-- [ ] **Step 7: Write pgTAP idempotency and atomicity tests**
+- [x] **Step 7: Write pgTAP idempotency and atomicity tests**
 
 Test duplicate claim, duplicate commit, exactly one trade/event, stale transition version rejection, duplicate event key rejection, and transaction rollback when an invalid next state is submitted.
 
-- [ ] **Step 8: Implement repository interface**
+- [x] **Step 8: Implement repository interface**
 
 ```ts
 export type PaperProfile = {
@@ -956,7 +956,7 @@ export interface PaperWorkerRepository {
 
 `createSupabasePaperRepository` calls RPCs only for canonical writes. It never calls `.from("signals").insert/update/delete` or `.from("paper_trades").insert/update/delete` directly.
 
-- [ ] **Step 9: Update generated RPC types and run gates**
+- [x] **Step 9: Update generated RPC types and run gates**
 
 ```powershell
 node --test src/lib/paper-schema-contract.test.ts
@@ -965,7 +965,7 @@ bunx tsc --noEmit
 
 Run pgTAP only when local Supabase exists; otherwise retain infrastructure-blocked status.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```powershell
 git add -- supabase/migrations/20260811010200_xauusd_paper_worker_rpcs.sql supabase/tests/database/003_xauusd_paper_idempotency.test.sql supabase/tests/database/004_xauusd_paper_atomicity.test.sql src/lib/xauusd-paper-repository.ts src/lib/paper-schema-contract.test.ts src/integrations/supabase/types.ts
