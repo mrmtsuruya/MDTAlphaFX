@@ -63,6 +63,15 @@ export type CommitPaperSignal = {
     expiresAt: string;
     engineVersion: string;
     policyVersion: string;
+    // Engine accounting stored on the completed scan run so the UI can show
+    // exactly which strategies were evaluated / abstained / excluded / failed.
+    accounting: {
+      evaluated: string[];
+      abstained: string[];
+      incompatible: string[];
+      excluded: string[];
+      failed: { strategyId: string; code: string }[];
+    };
   };
 };
 
@@ -248,7 +257,7 @@ export function createSupabasePaperRepository(
         p_execution_policy_version: "b_single_v1",
         p_instrument_spec_version: "xauusd_0_01_lot_v1",
         p_quality_result: input.signal.diagnostics as unknown as Json,
-        p_engine_accounting: {} as Json,
+        p_engine_accounting: input.signal.accounting as unknown as Json,
       });
       if (error) throw error;
       const row = data?.[0];

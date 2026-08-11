@@ -369,7 +369,14 @@ async function buildLiveSignal(
 
 export const generateSignals = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => GenerateInput.parse(input))
+  .validator((input: unknown): z.infer<typeof GenerateInput> => {
+    // Browser signal generation is retired: canonical XAUUSD paper signals
+    // are worker-owned and the unattended auto-paper worker replaces this
+    // path. Throwing here fails the request BEFORE any provider work can run
+    // (the handler below can never execute).
+    void GenerateInput.parse(input);
+    throw new Error("Browser signal generation retired; enable XAUUSD Auto-Paper.");
+  })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -752,6 +759,8 @@ export const getStrategyLeague = createServerFn({ method: "POST" })
       .eq("user_id", userId)
       .eq("mode", mode)
       .in("status", ["hit_tp1", "hit_tp2", "hit_sl", "invalidated"])
+      // Canonical rows are excluded — they are resolved only by the worker RPC path.
+      .neq("generated_by", "xauusd_paper_worker")
       .order("created_at", { ascending: false })
       .limit(300);
     const learning = computeStrategyLearning(
@@ -903,6 +912,7 @@ export const getStrategyDetail = createServerFn({ method: "POST" })
         .eq("user_id", userId)
         .eq("mode", "intraday")
         .in("status", ["hit_tp1", "hit_tp2", "hit_sl", "invalidated"])
+        .neq("generated_by", "xauusd_paper_worker")
         .order("created_at", { ascending: false })
         .limit(300),
       supabase
@@ -911,6 +921,7 @@ export const getStrategyDetail = createServerFn({ method: "POST" })
         .eq("user_id", userId)
         .eq("mode", "scalper")
         .in("status", ["hit_tp1", "hit_tp2", "hit_sl", "invalidated"])
+        .neq("generated_by", "xauusd_paper_worker")
         .order("created_at", { ascending: false })
         .limit(300),
     ]);
@@ -943,6 +954,7 @@ export const getStrategyDetail = createServerFn({ method: "POST" })
       )
       .eq("user_id", userId)
       .contains("contributing_strategies", [data.strategyId])
+      .neq("generated_by", "xauusd_paper_worker")
       .order("created_at", { ascending: false })
       .limit(5);
 
@@ -974,6 +986,7 @@ export const getLearningReport = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .eq("mode", "intraday")
       .in("status", ["hit_tp1", "hit_tp2", "hit_sl", "invalidated"])
+      .neq("generated_by", "xauusd_paper_worker")
       .order("created_at", { ascending: false })
       .limit(300);
     const { data: scalperRows, error: scalperError } = await supabase
@@ -984,6 +997,7 @@ export const getLearningReport = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .eq("mode", "scalper")
       .in("status", ["hit_tp1", "hit_tp2", "hit_sl", "invalidated"])
+      .neq("generated_by", "xauusd_paper_worker")
       .order("created_at", { ascending: false })
       .limit(300);
     if (intradayError) throw new Error(intradayError.message);
@@ -1016,6 +1030,7 @@ export const getCalibrationCurve = createServerFn({ method: "GET" })
       .select("confluence, status")
       .eq("user_id", userId)
       .in("status", ["hit_tp1", "hit_tp2", "hit_sl"])
+      .neq("generated_by", "xauusd_paper_worker")
       .order("created_at", { ascending: false })
       .limit(2000);
     if (error) throw new Error(error.message);
@@ -1029,6 +1044,9 @@ export const listSignals = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("signals")
       .select("*")
+      // Canonical worker rows are shown through listXauusdPaperSignals only;
+      // the legacy feed never mixes them in.
+      .neq("generated_by", "xauusd_paper_worker")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
@@ -1110,6 +1128,9 @@ export const scoreSignalPerformance = createServerFn({ method: "GET" })
         "id, pair, direction, timeframe, entry, stop_loss, take_profit_1, take_profit_2, contributing_strategies, status, created_at, expires_at",
       )
       .eq("user_id", userId)
+      // Canonical rows are never scored or mutated here — the worker RPC path
+      // is the only resolver for them.
+      .neq("generated_by", "xauusd_paper_worker")
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw new Error(error.message);
@@ -1197,6 +1218,18 @@ export const invalidateSignal = createServerFn({ method: "POST" })
   .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    // Canonical worker signals cannot be invalidated from the browser — they
+    // are resolved only through the worker's RPC path.
+    const { data: existing, error: fetchError } = await supabase
+      .from("signals")
+      .select("generated_by")
+      .eq("id", data.id)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (fetchError) throw new Error(fetchError.message);
+    if (existing?.generated_by === "xauusd_paper_worker") {
+      throw new Error("Canonical paper signals are worker-managed and cannot be invalidated.");
+    }
     const { error } = await supabase
       .from("signals")
       .update({ status: "invalidated" })

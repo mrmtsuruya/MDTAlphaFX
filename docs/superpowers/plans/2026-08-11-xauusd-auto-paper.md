@@ -1138,17 +1138,17 @@ git commit -m "feat: add unattended XAUUSD paper worker"
 **Interfaces:**
 - Produces: `getXauusdPaperProfile`, `setXauusdPaperEnabled`, `getXauusdPaperHealth`, `listXauusdPaperSignals`, `getXauusdPaperPerformance`, `getXauusdShadowLearning`, `PaperSignalListItem`, `PaperShadowLearningReport`.
 
-- [ ] **Step 1: Write view-model tests**
+- [x] **Step 1: Write view-model tests**
 
 Fixture one active and one archived canonical row joined to `paper_trades`. Assert mapper returns full PHT timestamp, UTC title, `PAPER ONLY`, `0.01`, B-single status copy, provider/freshness fields, and no broker/order fields. Assert archived filter is server input rather than client filtering a capped active list. Add canonical learning fixtures proving archived terminal rows remain included, legacy rows and mismatched policy versions are excluded, breakeven is a scratch, and returned candidates carry `applied: false`.
 
-- [ ] **Step 2: Run and confirm missing-module failure**
+- [x] **Step 2: Run and confirm missing-module failure**
 
 ```powershell
 node --test src/lib/xauusd-paper-view.test.ts
 ```
 
-- [ ] **Step 3: Implement pure mapper**
+- [x] **Step 3: Implement pure mapper**
 
 ```ts
 export type PaperSignalListItem = {
@@ -1199,7 +1199,7 @@ export type PaperShadowLearningReport = {
 
 Map decimal strings with finite-number guards. Invalid canonical rows throw safe mapping error; never show them as valid.
 
-- [ ] **Step 4: Implement authenticated server functions**
+- [x] **Step 4: Implement authenticated server functions**
 
 Use `requireSupabaseAuth` for every function.
 
@@ -1212,7 +1212,7 @@ Use `requireSupabaseAuth` for every function.
 
 When schema is missing (`42P01` or `PGRST205`), return `migration_required` health and disabled profile instead of crashing authenticated UI.
 
-- [ ] **Step 5: Isolate legacy endpoints**
+- [x] **Step 5: Isolate legacy endpoints**
 
 At start of `generateSignals`, throw `Browser signal generation retired; enable XAUUSD Auto-Paper.` before provider work. In `scoreSignalPerformance`, `getLearningReport`, calibration, and other legacy queries, exclude `generated_by='xauusd_paper_worker'`. Canonical rows can only be resolved by worker RPC path.
 

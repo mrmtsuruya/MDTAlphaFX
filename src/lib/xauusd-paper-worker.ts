@@ -107,6 +107,7 @@ async function toCommitInput(input: {
       expiresAt: input.candidate.expiresAt,
       engineVersion: input.engineVersion,
       policyVersion: input.policyVersion,
+      accounting: input.candidate.accounting,
     },
   };
 }
