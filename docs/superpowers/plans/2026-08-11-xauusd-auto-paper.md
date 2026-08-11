@@ -213,7 +213,7 @@ git commit -m "fix: count B-single scratches consistently"
 **Interfaces:**
 - Produces: `PHT_TIME_ZONE`, `formatPhtTimestamp(value: string | Date): string`, `utcIsoTitle(value: string | Date): string`.
 
-- [ ] **Step 1: Write failing formatter tests**
+- [x] **Step 1: Write failing formatter tests**
 
 ```ts
 import assert from "node:assert/strict";
@@ -240,13 +240,13 @@ test("normalizes UTC tooltip and survives invalid input", () => {
 });
 ```
 
-- [ ] **Step 2: Run and confirm missing-module failure**
+- [x] **Step 2: Run and confirm missing-module failure**
 
 ```powershell
 node --test src/lib/pht-time.test.ts
 ```
 
-- [ ] **Step 3: Implement formatter using `formatToParts`**
+- [x] **Step 3: Implement formatter using `formatToParts`**
 
 ```ts
 export const PHT_TIME_ZONE = "Asia/Manila";
@@ -284,7 +284,7 @@ export function utcIsoTitle(value: string | Date): string {
 }
 ```
 
-- [ ] **Step 4: Run test and commit**
+- [x] **Step 4: Run test and commit**
 
 ```powershell
 node --test src/lib/pht-time.test.ts
