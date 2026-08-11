@@ -305,7 +305,7 @@ Expected: three tests pass.
 **Interfaces:**
 - Produces: `PaperTimeframe`, `NativeXauusdQuote`, `TwoSidedCandle`, `XauusdMarketDataProvider`, `validateQuote`, `validateCandles`, `validateSpreadForSignal`, `toMidCandles`, `snapshotContentHash`.
 
-- [ ] **Step 1: Write contract tests**
+- [x] **Step 1: Write contract tests**
 
 Build one valid quote at `2026-08-11T07:42:10Z` and 60 ascending completed bid/ask candles. Test exact rejection codes:
 
@@ -321,13 +321,13 @@ assert.equal(validateSpreadForSignal(validQuote, 3400, 3399).code, "spread_too_w
 
 Also assert `toMidCandles` averages each bid/ask OHLC field and preserves provider time/volume. Assert identical quote/candle inputs produce the same 64-character SHA-256 hex hash and changing one bid value changes the hash.
 
-- [ ] **Step 2: Run and confirm missing-module failure**
+- [x] **Step 2: Run and confirm missing-module failure**
 
 ```powershell
 node --test src/lib/xauusd-market-data.test.ts
 ```
 
-- [ ] **Step 3: Implement exact public contract**
+- [x] **Step 3: Implement exact public contract**
 
 ```ts
 export const PAPER_TIMEFRAMES = ["M1", "M5", "M15", "M30", "H1", "H4", "D1"] as const;
@@ -395,7 +395,7 @@ export function snapshotContentHash(
 
 Quote maximum age is 15,000 ms. `validateSpreadForSignal` rejects non-positive stop distance and spread greater than 10% of `Math.abs(entry - stopLoss)`. `validateCandles` accepts completed ascending unique rows only and validates bid/ask OHLC invariants. `snapshotContentHash` hashes a fixed-order JSON array through `crypto.subtle.digest("SHA-256", ...)`; never hash object enumeration order.
 
-- [ ] **Step 4: Run focused tests and typecheck**
+- [x] **Step 4: Run focused tests and typecheck**
 
 ```powershell
 node --test src/lib/xauusd-market-data.test.ts
@@ -404,7 +404,7 @@ bunx tsc --noEmit
 
 Expected: tests and typecheck pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add -- src/lib/xauusd-market-data.ts src/lib/xauusd-market-data.test.ts
