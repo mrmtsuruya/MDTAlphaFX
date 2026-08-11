@@ -5,7 +5,7 @@
 -- as the infrastructure-blocked gate.
 
 BEGIN;
-SELECT plan(7);
+SELECT plan(10);
 
 INSERT INTO auth.users (id, email) VALUES ('00000000-0000-0000-0000-000000000002', 'paper-atomic@test.local');
 

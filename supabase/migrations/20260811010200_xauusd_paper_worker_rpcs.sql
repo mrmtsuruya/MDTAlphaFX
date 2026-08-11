@@ -126,19 +126,26 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.scan_runs
-    (user_id, scan_fingerprint, symbol, timeframe, candle_closed_at, scan_mode,
-     engine_version, policy_version, status, lease_expires_at, started_at)
-  VALUES
-    (p_user_id, p_scan_fingerprint, p_symbol, p_timeframe, p_candle_closed_at,
-     p_scan_mode, p_engine_version, p_policy_version, 'running',
-     p_lease_expires_at, now())
-  ON CONFLICT (scan_fingerprint) DO NOTHING;
-
+  -- claimed must mean "this call inserted the row": a duplicate/concurrent
+  -- claim on the same fingerprint returns the existing run with claimed=false
+  -- so only one worker ever owns a scan.
   RETURN QUERY
-  SELECT sr.id, (sr.status = 'running')
-  FROM public.scan_runs sr
-  WHERE sr.scan_fingerprint = p_scan_fingerprint;
+  WITH ins AS (
+    INSERT INTO public.scan_runs
+      (user_id, scan_fingerprint, symbol, timeframe, candle_closed_at, scan_mode,
+       engine_version, policy_version, status, lease_expires_at, started_at)
+    VALUES
+      (p_user_id, p_scan_fingerprint, p_symbol, p_timeframe, p_candle_closed_at,
+       p_scan_mode, p_engine_version, p_policy_version, 'running',
+       p_lease_expires_at, now())
+    ON CONFLICT (scan_fingerprint) DO NOTHING
+    RETURNING id
+  )
+  SELECT id, true FROM ins
+  UNION ALL
+  SELECT id, false FROM public.scan_runs
+  WHERE scan_fingerprint = p_scan_fingerprint
+    AND NOT EXISTS (SELECT 1 FROM ins);
 END;
 $$;
 REVOKE ALL ON FUNCTION public.worker_claim_xauusd_scan(
@@ -200,7 +207,7 @@ BEGIN
   SELECT id INTO v_signal_id FROM public.signals
   WHERE scan_fingerprint = p_scan_fingerprint;
   IF v_signal_id IS NOT NULL THEN
-    SELECT id INTO v_trade_id FROM public.paper_trades WHERE signal_id = v_signal_id;
+    SELECT id INTO v_trade_id FROM public.paper_trades pt WHERE pt.signal_id = v_signal_id;
     RETURN QUERY SELECT v_signal_id, v_trade_id, false;
     RETURN;
   END IF;
@@ -272,7 +279,7 @@ BEGIN
   VALUES
     (p_user_id, 'XAUUSD', v_direction, v_mode, v_timeframe, v_entry, v_stop,
      v_tp1, v_tp2, v_atr, v_confluence,
-     COALESCE((p_signal->>'contributing_strategies')::text[], '{}'), 'fresh',
+     COALESCE(ARRAY(SELECT jsonb_array_elements_text(p_signal->'contributing_strategies')), '{}'), 'fresh',
      p_signal->>'rationale', '[]'::jsonb, v_expires_at, p_scan_run_id,
      v_entry_snapshot, p_engine_version, p_policy_version,
      p_execution_policy_version, p_scan_fingerprint, 'xauusd_paper_worker')

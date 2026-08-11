@@ -793,7 +793,7 @@ supabase db reset --local
 supabase test db
 ```
 
-Current machine lacks both. Record database-runtime verification as infrastructure-blocked; do not claim pgTAP passed.
+Current machine lacks both. VERIFIED on 2026-08-12 via a PGlite harness (WASM Postgres + pgTAP 1.3.3 loaded from its install script, with Supabase role/auth stubs): all 33 assertions in `001` pass after fixing genuine test bugs — `plan(24)` vs 33 assertions, `col_default` (does not exist; → `col_default_is`), `has_constraint` (does not exist; → EXISTS-by-conname), `has_fk`/`row_security_active`/`set_has` array form (wrong pgTAP APIs; → EXISTS-by-confrelid / relrowsecurity / SQL-string forms), and schema-qualified calls with bare string literals (`has_table('public','x')`) resolving to TEXT-preferred overloads (→ documented description forms).
 
 - [x] **Step 8: Commit**
 
@@ -963,7 +963,7 @@ node --test src/lib/paper-schema-contract.test.ts
 bunx tsc --noEmit
 ```
 
-Run pgTAP only when local Supabase exists; otherwise retain infrastructure-blocked status.
+Run pgTAP only when local Supabase exists; otherwise retain infrastructure-blocked status. VERIFIED on 2026-08-12 via the PGlite harness: `003` (7/7) and `004` (10/10, after fixing plan(7)→plan(10)) pass, which surfaced and fixed three real worker-RPC bugs in `20260811010200`: (1) `(p_signal->>'contributing_strategies')::text[]` is not valid Postgres array-literal syntax and crashed every commit with strategies → `ARRAY(SELECT jsonb_array_elements_text(...))`; (2) duplicate `worker_claim_xauusd_scan` returned `claimed=true` so concurrent workers would double-own a scan → INSERT…RETURNING CTE where claimed means "this call inserted"; (3) `WHERE signal_id = …` collided with the function's `RETURNS TABLE (signal_id …)` OUT parameter (PL/pgSQL variable_conflict=error) → table alias.
 
 - [x] **Step 10: Commit**
 
@@ -1369,7 +1369,7 @@ git diff --check
 
 Expected: tests/typecheck/build/focused lint/diff checks pass. Run full `bun run lint` and record only pre-existing unrelated failures; fix every new failure.
 
-- [ ] **Step 8: Run deployment preflight without mutating remote state**
+- [x] **Step 8: Run deployment preflight without mutating remote state**
 
 ```powershell
 Get-Command supabase -ErrorAction SilentlyContinue
@@ -1378,7 +1378,7 @@ Get-Command deno -ErrorAction SilentlyContinue
 Get-ChildItem Env: | Where-Object { $_.Name -in @('SUPABASE_ACCESS_TOKEN','OANDA_ACCOUNT_ID','OANDA_API_TOKEN') } | Select-Object -ExpandProperty Name
 ```
 
-Never print values. Current expected result: tools and deployment credentials unavailable. Stop before remote migration/function/secret writes and report exact activation blocker.
+Never print values. VERIFIED on 2026-08-12: `supabase`, `docker`, `deno` all missing; `SUPABASE_ACCESS_TOKEN`, `OANDA_ACCOUNT_ID`, `OANDA_API_TOKEN`, `SUPABASE_SERVICE_ROLE_KEY` all unset. REST probes (publishable key, `?select=id&limit=1`) show the live project `mggqzhcacqthwoygmrhg` returns `PGRST205` for `scan_runs`, `paper_trading_profiles`, and `paper_worker_health` — the Task 6/7 paper schema is NOT applied there. The committed `config.toml` project id `lcyxfrprcpyarhagkryz` is unreachable (curl `000`) while the working `.env` points at `mggqzhcacqthwoygmrhg` — resolve this mismatch before any link/deploy. No remote migration/function/secret writes performed.
 
 - [ ] **Step 9: When authorized tools/credentials already exist, deploy in safe order**
 

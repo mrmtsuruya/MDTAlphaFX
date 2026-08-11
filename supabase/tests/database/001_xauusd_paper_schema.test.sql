@@ -5,20 +5,20 @@
 -- src/lib/paper-schema-contract.test.ts cover the same ground on Node.
 
 BEGIN;
-SELECT plan(24);
+SELECT plan(33);
 
 -- --- All seven canonical tables exist ---------------------------------------
-SELECT has_table('public', 'paper_trading_profiles');
-SELECT has_table('public', 'paper_worker_health');
-SELECT has_table('public', 'scan_runs');
-SELECT has_table('public', 'market_snapshots');
-SELECT has_table('public', 'signal_market_snapshots');
-SELECT has_table('public', 'paper_trades');
-SELECT has_table('public', 'paper_trade_events');
+SELECT has_table('public', 'paper_trading_profiles', 'paper_trading_profiles table exists');
+SELECT has_table('public', 'paper_worker_health', 'paper_worker_health table exists');
+SELECT has_table('public', 'scan_runs', 'scan_runs table exists');
+SELECT has_table('public', 'market_snapshots', 'market_snapshots table exists');
+SELECT has_table('public', 'signal_market_snapshots', 'signal_market_snapshots table exists');
+SELECT has_table('public', 'paper_trades', 'paper_trades table exists');
+SELECT has_table('public', 'paper_trade_events', 'paper_trade_events table exists');
 
 -- --- Enums -------------------------------------------------------------------
-SELECT has_type('public', 'paper_scan_status');
-SELECT has_type('public', 'paper_trade_state');
+SELECT has_type('public', 'paper_scan_status', 'paper_scan_status enum exists');
+SELECT has_type('public', 'paper_trade_state', 'paper_trade_state enum exists');
 
 -- --- Fixed symbol/lot/timezone/scope constraints -----------------------------
 SELECT ok(EXISTS (
@@ -37,7 +37,8 @@ SELECT ok(EXISTS (
     AND c.contype = 'c'
     AND pg_get_constraintdef(c.oid) ILIKE '%lot_size = 0.01%'
 ), 'paper_trading_profiles pins lot_size to 0.01');
-SELECT col_default('public', 'paper_trading_profiles', 'enabled', 'false');
+SELECT col_default_is('public', 'paper_trading_profiles', 'enabled', false,
+  'paper_trading_profiles.enabled defaults to false');
 SELECT ok(EXISTS (
   SELECT 1 FROM pg_constraint c
   JOIN pg_class t ON t.oid = c.conrelid
@@ -54,37 +55,56 @@ SELECT ok(EXISTS (
     AND c.contype = 'c'
     AND pg_get_constraintdef(c.oid) ILIKE '%instrument_spec_version = ''xauusd_0_01_lot_v1''%'
 ), 'paper_trades pins instrument_spec_version to xauusd_0_01_lot_v1');
-SELECT has_constraint('public', 'paper_trades', 'paper_trades_directional_levels');
-
--- --- Unique keys -------------------------------------------------------------
-SELECT has_index('public', 'scan_runs', 'scan_runs_fingerprint_uidx');
-SELECT has_index('public', 'signals', 'canonical_signal_fingerprint_uidx');
-SELECT has_index('public', 'paper_trades', 'paper_trades_signal_uidx');
-SELECT has_index('public', 'paper_trade_events', 'paper_trade_event_sequence_uidx');
-SELECT has_index('public', 'paper_trade_events', 'paper_trade_event_key_uidx');
-SELECT has_index('public', 'signals', 'active_signal_history_idx');
-
--- --- Restrictive links -------------------------------------------------------
-SELECT has_fk('public', 'paper_trades', 'signal_id');
 SELECT ok(EXISTS (
   SELECT 1 FROM pg_constraint c
   JOIN pg_class t ON t.oid = c.conrelid
   JOIN pg_namespace n ON n.oid = t.relnamespace
+  WHERE n.nspname = 'public' AND t.relname = 'paper_trades'
+    AND c.conname = 'paper_trades_directional_levels'
+), 'paper_trades has the directional_levels check');
+
+-- --- Unique keys -------------------------------------------------------------
+SELECT has_index('public', 'scan_runs', 'scan_runs_fingerprint_uidx', 'scan_runs fingerprint unique index');
+SELECT has_index('public', 'signals', 'canonical_signal_fingerprint_uidx', 'signals canonical fingerprint unique index');
+SELECT has_index('public', 'paper_trades', 'paper_trades_signal_uidx', 'paper_trades signal unique index');
+SELECT has_index('public', 'paper_trade_events', 'paper_trade_event_sequence_uidx', 'paper_trade_events sequence unique index');
+SELECT has_index('public', 'paper_trade_events', 'paper_trade_event_key_uidx', 'paper_trade_events event_key unique index');
+SELECT has_index('public', 'signals', 'active_signal_history_idx', 'signals active history index');
+
+-- --- Restrictive links -------------------------------------------------------
+SELECT ok(EXISTS (
+  SELECT 1 FROM pg_constraint c
+  JOIN pg_class t ON t.oid = c.conrelid
+  JOIN pg_namespace n ON n.oid = t.relnamespace
+  JOIN pg_class rt ON rt.oid = c.confrelid
+  JOIN pg_namespace rn ON rn.oid = rt.relnamespace
+  WHERE n.nspname = 'public' AND t.relname = 'paper_trades'
+    AND c.contype = 'f'
+    AND rn.nspname = 'public' AND rt.relname = 'signals'
+), 'paper_trades.signal_id is a foreign key to signals');
+SELECT ok(EXISTS (
+  SELECT 1 FROM pg_constraint c
+  JOIN pg_class t ON t.oid = c.conrelid
+  JOIN pg_namespace n ON n.oid = t.relnamespace
+  JOIN pg_class rt ON rt.oid = c.confrelid
+  JOIN pg_namespace rn ON rn.oid = rt.relnamespace
   WHERE n.nspname = 'public' AND t.relname = 'paper_trade_events'
     AND c.contype = 'f' AND c.confdeltype = 'r'
-    AND pg_get_constraintdef(c.oid) ILIKE '%REFERENCES public.paper_trades%'
+    AND rn.nspname = 'public' AND rt.relname = 'paper_trades'
 ), 'paper_trade_events -> paper_trades is ON DELETE RESTRICT');
 SELECT ok(EXISTS (
   SELECT 1 FROM pg_constraint c
   JOIN pg_class t ON t.oid = c.conrelid
   JOIN pg_namespace n ON n.oid = t.relnamespace
+  JOIN pg_class rt ON rt.oid = c.confrelid
+  JOIN pg_namespace rn ON rn.oid = rt.relnamespace
   WHERE n.nspname = 'public' AND t.relname = 'signal_market_snapshots'
     AND c.contype = 'f' AND c.confdeltype = 'r'
-    AND pg_get_constraintdef(c.oid) ILIKE '%REFERENCES public.signals%'
+    AND rn.nspname = 'public' AND rt.relname = 'signals'
 ), 'signal_market_snapshots -> signals is ON DELETE RESTRICT');
 
 -- --- Singleton worker-health row --------------------------------------------
-SELECT col_is_pk('public', 'paper_worker_health', 'id');
+SELECT col_is_pk('public', 'paper_worker_health', 'id', 'paper_worker_health.id is primary key');
 SELECT ok(EXISTS (
   SELECT 1 FROM pg_constraint c
   JOIN pg_class t ON t.oid = c.conrelid
@@ -95,7 +115,13 @@ SELECT ok(EXISTS (
 ), 'paper_worker_health is a singleton pinned to xauusd');
 
 -- --- Canonical provenance check on signals ----------------------------------
-SELECT has_constraint('public', 'signals', 'signals_canonical_provenance_check');
+SELECT ok(EXISTS (
+  SELECT 1 FROM pg_constraint c
+  JOIN pg_class t ON t.oid = c.conrelid
+  JOIN pg_namespace n ON n.oid = t.relnamespace
+  WHERE n.nspname = 'public' AND t.relname = 'signals'
+    AND c.conname = 'signals_canonical_provenance_check'
+), 'signals has the canonical provenance check');
 SELECT ok(EXISTS (
   SELECT 1 FROM information_schema.columns
   WHERE table_schema = 'public' AND table_name = 'signals' AND column_name = 'archived_at'
@@ -114,11 +140,11 @@ SELECT is(
 );
 
 -- --- Snapshot tables are RLS-protected and unreadable by authenticated -------
-SELECT row_security_active('public', 'market_snapshots');
-SELECT row_security_active('public', 'signal_market_snapshots');
+SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.market_snapshots'::regclass), 'market_snapshots has RLS enabled');
+SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.signal_market_snapshots'::regclass), 'signal_market_snapshots has RLS enabled');
 SELECT set_has(
-  (SELECT array_agg(rolname) FROM pg_roles WHERE rolname = 'authenticated'),
-  ARRAY['authenticated'],
+  $$SELECT rolname FROM pg_roles WHERE rolname = 'authenticated'$$,
+  $$SELECT 'authenticated'$$,
   'authenticated role exists for the denial checks'
 );
 
