@@ -647,7 +647,7 @@ git commit -m "feat: add B-single paper trade state machine"
 **Interfaces:**
 - Produces tables `paper_trading_profiles`, `paper_worker_health`, `scan_runs`, `market_snapshots`, `signal_market_snapshots`, `paper_trades`, `paper_trade_events`; signal provenance columns; five catalog rows.
 
-- [ ] **Step 1: Write executable static schema test first**
+- [x] **Step 1: Write executable static schema test first**
 
 Read both migrations with `readFileSync(new URL(..., import.meta.url), "utf8")`. Assert exact table names, fixed checks, unique keys, `ON DELETE RESTRICT`, `archived_at`, all five missing strategy IDs, and absence of `DROP TABLE`, `DELETE FROM public.signals`, or signal-history cascade creation.
 
@@ -663,13 +663,13 @@ for (const id of ["rsi_divergence", "macd_divergence", "climax_exhaustion", "sto
 }
 ```
 
-- [ ] **Step 2: Run and confirm missing-migration failure**
+- [x] **Step 2: Run and confirm missing-migration failure**
 
 ```powershell
 node --test src/lib/paper-schema-contract.test.ts
 ```
 
-- [ ] **Step 3: Create expansion migration**
+- [x] **Step 3: Create expansion migration**
 
 Create enums for scan status and paper-trade state. Add nullable canonical columns to `signals`:
 
@@ -767,19 +767,19 @@ CREATE INDEX active_signal_history_idx ON public.signals (user_id, created_at DE
 
 Give authenticated users own-row `SELECT` on profile/run/trade/event tables. Give authenticated users read-only `SELECT` on the singleton `paper_worker_health` row because it contains bounded non-secret health fields. Profile mutations use a later RPC. Give no authenticated grant on `market_snapshots`. Profiles default disabled. Do not revoke existing signal writes in this migration.
 
-- [ ] **Step 4: Backfill five strategy rows**
+- [x] **Step 4: Backfill five strategy rows**
 
 Insert exact category/timeframe/description metadata from `IMPLEMENTED_STRATEGIES` for `rsi_divergence`, `macd_divergence`, `climax_exhaustion`, `stop_run_reversal`, and `failed_breakout`. Use `ON CONFLICT (id) DO UPDATE`. Insert enabled `strategy_settings` for every existing user only when absent.
 
-- [ ] **Step 5: Write pgTAP schema test**
+- [x] **Step 5: Write pgTAP schema test**
 
 `001_xauusd_paper_schema.test.sql` asserts all seven tables, fixed symbol/lot checks, unique signal/trade keys, profile default false, snapshot authenticated denial, signal/snapshot restrictive links, singleton worker-health constraint, and five catalog rows. Wrap in `BEGIN; SELECT plan(...); ... SELECT * FROM finish(); ROLLBACK;`.
 
-- [ ] **Step 6: Update generated application types mechanically**
+- [x] **Step 6: Update generated application types mechanically**
 
 Add Row/Insert/Update/Relationships entries for all seven new tables, new signal columns, and new enums. Do not reformat unrelated generated sections.
 
-- [ ] **Step 7: Run available tests**
+- [x] **Step 7: Run available tests**
 
 ```powershell
 node --test src/lib/paper-schema-contract.test.ts
@@ -795,7 +795,7 @@ supabase test db
 
 Current machine lacks both. Record database-runtime verification as infrastructure-blocked; do not claim pgTAP passed.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```powershell
 git add -- supabase/migrations/20260811010000_xauusd_paper_expand.sql supabase/migrations/20260811010100_xauusd_strategy_catalog_backfill.sql supabase/tests/database/001_xauusd_paper_schema.test.sql src/lib/paper-schema-contract.test.ts src/integrations/supabase/types.ts
