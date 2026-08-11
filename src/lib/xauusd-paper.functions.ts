@@ -30,9 +30,9 @@ export type { PaperPerformanceReport, PaperShadowLearningReport, PaperSignalList
 
 const SIGNAL_VIEW_SELECT =
   "id, pair, direction, mode, timeframe, entry, stop_loss, take_profit_1, " +
-  "take_profit_2, confluence, contributing_strategies, created_at, archived_at, " +
+  "take_profit_2, atr, confluence, contributing_strategies, rationale, created_at, archived_at, " +
   "engine_version, policy_version, execution_policy_version, generated_by, scan_fingerprint, " +
-  "paper_trades(state, entry_price, exit_price, result_r), " +
+  "paper_trades(state, entry_price, entry_time, tp1_armed_at, exit_price, exit_time, result_r), " +
   "market_snapshots(provider, instrument, provider_time), " +
   "scan_runs(engine_accounting)";
 

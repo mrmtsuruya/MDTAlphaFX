@@ -1,23 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { generateSignals, listSignals, scoreSignalPerformance } from "@/lib/signals.functions";
-import {
-  getMarketCandles,
-  getMarketDataStatus,
-  getMarketQuotes,
-} from "@/lib/market-data.functions";
+import { useQuery } from "@tanstack/react-query";
+import { listXauusdPaperSignals, type PaperSignalListItem } from "@/lib/xauusd-paper.functions";
+import { getMarketCandles, getMarketQuotes } from "@/lib/market-data.functions";
 import { MARKET_TIMEFRAMES } from "@/lib/market-data.server";
-import { classifyOrder, rForStatus, summarizeSignal, type OrderTicket } from "@/lib/order-ticket";
+import { classifyOrder, summarizeSignal, type OrderTicket } from "@/lib/order-ticket";
 import {
   buildLocationOverlay,
   buildOverlays,
   type ChartOverlays,
-  type OverlayCandle,
   type OverlayMarker,
 } from "@/lib/chart-overlays";
-import { Star, Radio, Zap, CircleAlert } from "lucide-react";
+import { Star, Radio, CircleAlert } from "lucide-react";
 import { TradingViewChart } from "@/components/tradingview-chart";
 import {
   createChart,
@@ -43,13 +38,13 @@ export const Route = createFileRoute("/_authenticated/chart")({
       {
         name: "description",
         content:
-          "Real-time OANDA chart with per-pair 28-strategy scanning and trade-level overlays.",
+          "Real-time OANDA chart with canonical paper-trade levels, strategy markup and overlays.",
       },
       { property: "og:title", content: "Live Chart — MDTAlphaFX" },
       {
         property: "og:description",
         content:
-          "Real-time OANDA chart with per-pair 28-strategy scanning and trade-level overlays.",
+          "Real-time OANDA chart with canonical paper-trade levels, strategy markup and overlays.",
       },
     ],
   }),
@@ -91,7 +86,7 @@ const VIEWS: { id: ChartView; label: string; hint: string }[] = [
   {
     id: "signal",
     label: "signal",
-    hint: "The terminal's chart: engine entry/SL/TP levels, strategy markup, live tick engine.",
+    hint: "The terminal's chart: canonical paper entry/SL/TP levels and strategy markup.",
   },
   {
     id: "analysis",
@@ -125,7 +120,12 @@ function saveFavorites(favorites: string[]) {
   }
 }
 
+// Canonical rows are mapped into this local shape so the existing chart,
+// ticket and technical-read code keeps working unchanged. news_context is
+// always null — canonical signals carry `rationale` + engine accounting in the
+// DTO instead of the old jsonb blob.
 type ScanSignal = {
+  id?: string;
   pair: string;
   direction: "long" | "short";
   mode?: string;
@@ -188,51 +188,24 @@ const CANDLE_POLL_MS: Record<Granularity, number> = {
 // chart is honestly reporting that rather than pretending to be live.
 const STALE_TICK_MS = 90_000;
 
-type ScanMode = "auto" | "intraday" | "scalper";
-type ScanScope = "sweep" | "mtf";
-
-const SCAN_MODES: ScanMode[] = ["auto", "intraday", "scalper"];
-
-const SCAN_SCOPES: { id: ScanScope; label: string; hint: string }[] = [
-  {
-    id: "sweep",
-    label: "sweep_tf",
-    hint: "Scan every timeframe the enabled strategies cover and keep the strongest setup.",
-  },
-  {
-    id: "mtf",
-    label: "mtf_tide",
-    hint: "Single entry timeframe, gated by the higher-timeframe tide.",
-  },
-];
-
-// Which timeframes a sweep covers per risk mode. AUTO is every chartable
-// timeframe, with the risk profile resolved per timeframe on the server.
-const SWEEP_SETS: Record<ScanMode, Granularity[]> = {
-  auto: ["M1", "M5", "M15", "M30", "H1", "H4", "D1"],
-  scalper: ["M1", "M5", "M15", "M30"],
-  intraday: ["M15", "M30", "H1", "H4", "D1"],
-};
-
-function modeForTimeframe(tf: Granularity): "intraday" | "scalper" {
-  return tf === "M1" || tf === "M5" || tf === "M15" || tf === "M30" ? "scalper" : "intraday";
+function toScanSignal(dto: PaperSignalListItem): ScanSignal {
+  return {
+    id: dto.id,
+    pair: dto.pair,
+    direction: dto.direction,
+    mode: dto.mode,
+    timeframe: dto.timeframe,
+    entry: dto.entry,
+    stop_loss: dto.stopLoss,
+    take_profit_1: dto.takeProfit1,
+    take_profit_2: dto.takeProfit2,
+    atr: dto.atr,
+    confluence: dto.confluence,
+    contributing_strategies: dto.contributingStrategies,
+    rationale: dto.rationale,
+    news_context: null,
+  };
 }
-
-type SweepAttempt = {
-  timeframe: string;
-  mode: string;
-  direction: "long" | "short" | null;
-  confluence: number;
-  strategies: number;
-  reason?: string;
-  /**
-   * Present when this timeframe declined but had a setup forming. Typed as
-   * unknown-ish here for the same reason the rest of this block is a local
-   * mirror: it arrives as jsonb and nothing guarantees its shape client-side.
-   */
-  armed?: ArmedSetupView | null;
-  modeVerdict?: string;
-};
 
 function Chart() {
   // Gold-first: the user primarily trades XAUUSD and it is a pinned favorite.
@@ -242,6 +215,17 @@ function Chart() {
   const [timeframe, setTimeframe] = useState<Granularity>("H1");
   const [result, setResult] = useState<ScanSignal | null>(null);
   const [view, setView] = useState<ChartView>("signal");
+
+  // Canonical paper rows for the current pair + timeframe — the ONLY source of
+  // signals now that browser scanning is retired. The worker owns XAUUSD only;
+  // other pairs simply have no canonical history.
+  const paperSignalsFn = useServerFn(listXauusdPaperSignals);
+  const paperSignalsQ = useQuery({
+    queryKey: ["xauusd-paper-signals", false],
+    queryFn: () => paperSignalsFn({ data: { archived: false } }),
+    refetchInterval: 60_000,
+    retry: false,
+  });
 
   // ONE owner for the live quote, deliberately hoisted here.
   //
@@ -262,7 +246,6 @@ function Chart() {
     retry: false,
   });
   const liveQuote = chartQuotes.data?.quotes?.[0] ?? null;
-  const [scanMessage, setScanMessage] = useState<string | null>(null);
 
   const filteredPairs = PAIRS.filter((p) =>
     p.toLowerCase().includes(pairQuery.trim().toLowerCase()),
@@ -283,8 +266,18 @@ function Chart() {
   // Clear stale results when the chart symbol changes.
   useEffect(() => {
     setResult(null);
-    setScanMessage(null);
   }, [symbol]);
+
+  // Auto-select the newest canonical signal for the current pair + timeframe
+  // once it arrives, so the chart draws the latest paper trade's levels without
+  // a manual click. Only fires while nothing is selected yet.
+  const newestForChart = paperSignalsQ.data
+    ?.filter((s) => s.pair === symbol && s.timeframe === timeframe)
+    .sort((a, b) => Date.parse(b.timestampUtc) - Date.parse(a.timestampUtc))[0];
+  useEffect(() => {
+    if (newestForChart && !result) setResult(toScanSignal(newestForChart));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newestForChart?.id]);
 
   return (
     <div className="p-6 space-y-4 h-[calc(100vh-3.5rem)] flex flex-col">
@@ -294,11 +287,11 @@ function Chart() {
         </div>
         <div className="flex flex-col gap-1.5 items-end">
           <div className="flex gap-1 flex-wrap items-center">
-            {/* SIGNAL is the terminal's own chart: engine levels, strategy
-                markup, live tick engine. ANALYSIS is TradingView's widget:
-                drawing tools and their indicator library, but a cross-origin
-                iframe nothing can be drawn into. Two views instead of one
-                compromise. */}
+            {/* SIGNAL is the terminal's own chart: canonical paper levels,
+                strategy markup, live tick engine. ANALYSIS is TradingView's
+                widget: drawing tools and their indicator library, but a
+                cross-origin iframe nothing can be drawn into. Two views
+                instead of one compromise. */}
             <div
               className="mr-2 flex rounded-sm border border-cyber-border bg-cyber-surface p-0.5"
               role="radiogroup"
@@ -414,8 +407,8 @@ function Chart() {
 
       <div className="flex-1 grid gap-4 lg:grid-cols-[1fr_380px] min-h-0">
         {/* Only the left panel swaps. PairScanner stays mounted in both views,
-            so BID/ASK/SPREAD, RUN_SCAN and the result card are untouched by the
-            choice — they never read the chart. */}
+            so BID/ASK/SPREAD and the read-only signal history are untouched by
+            the choice — they never read the chart. */}
         {view === "signal" ? (
           <MarketChart symbol={symbol} granularity={timeframe} result={result} quote={liveQuote} />
         ) : (
@@ -432,7 +425,8 @@ function Chart() {
           onToggleFavorite={() => toggleFavorite(symbol)}
           result={result}
           setResult={setResult}
-          setScanMessage={setScanMessage}
+          paperSignals={paperSignalsQ.data ?? []}
+          paperLoading={paperSignalsQ.isLoading}
         />
       </div>
     </div>
@@ -1177,7 +1171,7 @@ function LegendItem({ color, label, value }: { color: string; label: string; val
 }
 
 // ---------------------------------------------------------------------------
-// PairScanner — same panel as before, state lifted so the chart can react.
+// PairScanner — read-only research over the canonical paper history.
 // ---------------------------------------------------------------------------
 
 function PairScanner({
@@ -1189,7 +1183,8 @@ function PairScanner({
   onToggleFavorite,
   result,
   setResult,
-  setScanMessage,
+  paperSignals,
+  paperLoading,
 }: {
   pair: string;
   timeframe: Granularity;
@@ -1199,79 +1194,17 @@ function PairScanner({
   onToggleFavorite: () => void;
   result: ScanSignal | null;
   setResult: (r: ScanSignal | null) => void;
-  setScanMessage: (m: string | null) => void;
+  paperSignals: PaperSignalListItem[];
+  paperLoading: boolean;
 }) {
-  const genFn = useServerFn(generateSignals);
-  const quotesFn = useServerFn(getMarketQuotes);
-  const statusFn = useServerFn(getMarketDataStatus);
-  const [scanMessage, setLocalMessage] = useState<string | null>(null);
-  // The pair the in-flight scan was requested for, so a late response for a
-  // previously selected symbol is never rendered under the new symbol's header.
-  const requestedPairRef = useRef<string | null>(null);
-
-  // Risk profile. AUTO derives it from the timeframe being scanned (per
-  // timeframe in a sweep); the explicit options force one profile — previously
-  // this was hard-derived from the chart's timeframe, so picking H1 on the
-  // chart silently locked the scanner into intraday with no way to override.
-  const [riskMode, setRiskMode] = useState<ScanMode>("auto");
-  // SWEEP runs every timeframe the enabled strategies cover and keeps the
-  // strongest setup; MTF keeps the classic single-entry + higher-TF tide scan.
-  const [scope, setScope] = useState<ScanScope>("sweep");
-
-  const sweepTimeframes = SWEEP_SETS[riskMode];
-  // The profile the classic (MTF) path will resolve to, for the header chip.
-  const resolvedMode: "intraday" | "scalper" =
-    riskMode === "auto" ? modeForTimeframe(timeframe) : riskMode;
-
-  const status = useQuery({
-    queryKey: ["market-data-status"],
-    queryFn: () => statusFn(),
-    refetchInterval: 5_000,
-    retry: false,
-  });
-
-  const gen = useMutation({
-    mutationFn: () => {
-      requestedPairRef.current = pair;
-      if (scope === "sweep") {
-        // Sweep: run the engine on every timeframe in the selected set and
-        // return the highest-confluence setup. Scoped to the selected pair so
-        // the feed's token bucket stays comfortable.
-        return genFn({
-          data: { mode: riskMode, pairs: [pair], sweep: true, sweepTimeframes },
-        });
-      }
-      // MTF scan: the server confirms the direction on the higher timeframes
-      // (15M/30M/1H/4H/1D intraday, 5M/15M/30M scalper) and generates the
-      // entry on the mode's lower timeframe (5M / 1M).
-      return genFn({ data: { mode: riskMode, timeframe, pairs: [pair], mtf: true } });
-    },
-    onSuccess: (data) => {
-      // Bail if the user switched symbols while the scan was in flight.
-      if (requestedPairRef.current !== pair) return;
-      const found = data.signals.find((s) => s.pair === pair);
-      if (found) {
-        setResult(found as ScanSignal);
-        setScanMessage(null);
-        setLocalMessage(null);
-      } else {
-        setResult(null);
-        const msg =
-          data.warnings.find((w) => w.startsWith(pair)) ?? `${pair}: no confluence setup right now`;
-        setScanMessage(msg);
-        setLocalMessage(msg);
-      }
-    },
-    onError: (e: Error) => {
-      if (requestedPairRef.current !== pair) return;
-      setResult(null);
-      setScanMessage(e.message);
-      setLocalMessage(e.message);
-    },
-  });
-
-  const rateLimited = status.data?.rate_limit?.limited === true;
-  const feedReady = status.data?.configured === true;
+  // Browser scanning is retired: canonical signals come only from the
+  // unattended auto-paper worker (XAUUSD, 0.01-lot, no broker connection). This
+  // panel is READ-ONLY research over the worker's history plus the selected
+  // signal's levels — it can never generate a signal itself.
+  const rows = paperSignals
+    .filter((s) => s.pair === pair && s.timeframe === timeframe)
+    .sort((a, b) => Date.parse(b.timestampUtc) - Date.parse(a.timestampUtc))
+    .slice(0, 3);
 
   return (
     <aside className="rounded-lg border border-cyber-border bg-cyber-surface p-4 flex flex-col gap-3 overflow-y-auto">
@@ -1290,14 +1223,6 @@ function PairScanner({
             <span className="text-[10px] font-mono text-neon-accent">{timeframe}</span>
           </div>
         </div>
-        {/* Only surfaced when something is wrong. The healthy OANDA_FEED state
-            was constant chrome; a degraded feed still needs to be visible,
-            because a rate-limited bucket silently changes what a scan sees. */}
-        {(rateLimited || !feedReady) && (
-          <span className="rounded-sm border border-neon-warn/40 px-2 py-0.5 text-[9px] font-mono text-neon-warn">
-            {rateLimited ? "RATE_LIMITED…" : "FEED_OFFLINE"}
-          </span>
-        )}
       </div>
 
       {quote && (
@@ -1317,184 +1242,34 @@ function PairScanner({
         </div>
       )}
 
-      {/* Generation lives in ANALYSIS; SIGNAL is for reading what came out of
-          it. Running a scan from the view that cannot draw the result was the
-          redundant half. The header above (pair, BID/ASK/SPREAD) is shared. */}
+      {/* SIGNAL is for reading the worker's canonical history; ANALYSIS holds
+          the selected signal's research card. Neither can generate a signal —
+          the unattended auto-paper worker owns generation now. */}
       {view === "signal" && (
-        <PairSignalHistory pair={pair} selected={result} onSelect={setResult} />
+        <PairSignalHistory
+          pair={pair}
+          timeframe={timeframe}
+          selected={result}
+          onSelect={setResult}
+          rows={rows}
+          loading={paperLoading}
+        />
       )}
 
       {view === "analysis" && (
         <>
-          <div className="space-y-1.5">
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-              // RISK_MODE
-            </div>
-            <div
-              className="flex rounded-sm border border-cyber-border bg-cyber-bg p-0.5"
-              role="radiogroup"
-              aria-label="Risk mode"
-            >
-              {SCAN_MODES.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  role="radio"
-                  aria-checked={riskMode === m}
-                  onClick={() => setRiskMode(m)}
-                  className={`flex-1 rounded-sm px-2 py-1.5 text-[10px] font-mono uppercase tracking-widest transition ${
-                    riskMode === m
-                      ? m === "scalper"
-                        ? "bg-neon-warn/10 text-neon-warn"
-                        : "bg-neon-accent/10 text-neon-accent"
-                      : "text-muted-foreground hover:text-white"
-                  }`}
-                >
-                  {m}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-              // SCAN_SCOPE
-            </div>
-            <div
-              className="flex rounded-sm border border-cyber-border bg-cyber-bg p-0.5"
-              role="radiogroup"
-              aria-label="Scan scope"
-            >
-              {SCAN_SCOPES.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={scope === s.id}
-                  onClick={() => setScope(s.id)}
-                  title={s.hint}
-                  className={`flex-1 rounded-sm px-2 py-1.5 text-[10px] font-mono uppercase tracking-widest transition ${
-                    scope === s.id
-                      ? "bg-neon-accent/10 text-neon-accent"
-                      : "text-muted-foreground hover:text-white"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {(scope === "sweep"
-                ? sweepTimeframes
-                : resolvedMode === "scalper"
-                  ? (["M1", "M5", "M15", "M30"] as Granularity[])
-                  : (["M5", "M15", "M30", "H1", "H4", "D1"] as Granularity[])
-              ).map((tf) => (
-                <span
-                  key={tf}
-                  className="rounded-sm border border-cyber-border bg-cyber-bg px-1.5 py-0.5 text-[9px] font-mono text-neon-long"
-                >
-                  {tf}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <div className="flex-1 rounded-sm border border-cyber-border bg-cyber-bg px-2 py-1.5 font-mono text-[10px] text-muted-foreground">
-              {scope === "sweep"
-                ? `SWEEP · ${sweepTimeframes.length}_TF${riskMode === "auto" ? " · PER_TF_RISK" : ""}`
-                : `${resolvedMode === "scalper" ? "SCALPER" : "INTRADAY"}_RISK · ${timeframe}`}
-            </div>
-            <button
-              onClick={() => gen.mutate()}
-              disabled={gen.isPending || !feedReady}
-              className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-2 text-[10px] font-mono font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                riskMode === "scalper"
-                  ? "border-neon-warn/40 bg-neon-warn/10 text-neon-warn hover:bg-neon-warn/20"
-                  : "border-neon-accent/40 bg-neon-accent/10 text-neon-accent hover:bg-neon-accent/20"
-              }`}
-            >
-              <Zap className="size-3" />
-              {gen.isPending ? "SCANNING…" : "RUN_SCAN"}
-            </button>
-          </div>
-
-          {gen.isPending && (
-            <div className="rounded-sm border border-cyber-border bg-cyber-bg px-3 py-2 font-mono text-[10px] text-muted-foreground">
-              {scope === "sweep"
-                ? `SWEEPING_${sweepTimeframes.join("_")}`
-                : resolvedMode === "scalper"
-                  ? "MTF_SCAN_1M_ENTRY_M5_M15_M30_TIDE"
-                  : "MTF_SCAN_5M_ENTRY_15M_30M_1H_4H_1D_TIDE"}
-              …
-            </div>
-          )}
-
-          {result && (
-            <div className="rounded-sm border border-neon-accent/30 bg-cyber-bg p-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-xs font-bold text-white">
-                  {result.pair} ·{" "}
-                  <span
-                    className={result.direction === "long" ? "text-neon-long" : "text-neon-short"}
-                  >
-                    {result.direction.toUpperCase()}
-                  </span>{" "}
-                  · {result.timeframe}
-                </span>
-                <span className="font-mono text-xs text-neon-accent">{result.confluence}%</span>
-              </div>
-
-              {/* Why this is a scalp and not a swing, with the evidence behind it. */}
-              <ReasoningStrip signal={result} />
-
-              {/* The placeable order, re-derived from the live mid on every tick. */}
-              <OrderTicketCard signal={result} mid={quote ? (quote.bid + quote.ask) / 2 : null} />
-
-              <div className="space-y-1">
-                <div className="text-[9px] font-mono uppercase text-muted-foreground">
-                  TECHNICAL_READ
-                </div>
-                {summarizeSignal(result).map((line, index) => (
-                  <p key={index} className="text-[11px] leading-snug text-muted-foreground">
-                    <span className="text-neon-accent">{index + 1}.</span> {line}
-                  </p>
-                ))}
-              </div>
-              <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
-                <ScanField label="ENTRY" value={result.entry} />
-                <ScanField label="ATR" value={result.atr} />
-                <ScanField label="SL" value={result.stop_loss} tone="short" />
-                <ScanField label="TP1" value={result.take_profit_1} tone="long" />
-                <ScanField label="TP2" value={result.take_profit_2} tone="long" />
-                <ScanField
-                  label="EXPIRES"
-                  value={`${EXPIRY_LABEL[result.timeframe as Granularity] ?? "90m"}`}
-                />
-              </div>
-              <div>
-                <div className="text-[9px] font-mono uppercase text-muted-foreground">
-                  VERIFIED STRATEGY VOTES
-                </div>
-                <div className="mt-0.5 text-[11px] font-mono text-white">
-                  {result.contributing_strategies.join(" · ")}
-                </div>
-              </div>
-              {result.rationale && (
-                <p className="text-[11px] text-muted-foreground">{result.rationale}</p>
-              )}
-              <SweepBreakdown signal={result} />
-              <ScanContext signal={result} />
-              <MarketSourceTag signal={result} />
-            </div>
-          )}
-
-          {!result && !gen.isPending && scanMessage && (
-            <div className="rounded-sm border border-neon-warn/40 bg-neon-warn/5 px-3 py-2 flex items-start gap-2">
-              <CircleAlert className="size-3.5 text-neon-warn mt-0.5 shrink-0" />
-              <div className="text-[11px] text-muted-foreground">{scanMessage}</div>
-            </div>
+          <DisabledScanNotice />
+          {result ? (
+            <ResearchCard
+              signal={result}
+              dto={rows.find((r) => r.entry === result.entry)}
+              mid={quote ? (quote.bid + quote.ask) / 2 : null}
+            />
+          ) : (
+            <p className="font-mono text-[10px] leading-relaxed text-muted-foreground">
+              Select a signal from the SIGNAL view to inspect its order ticket, technical read and
+              paper provenance.
+            </p>
           )}
         </>
       )}
@@ -1502,12 +1277,34 @@ function PairScanner({
   );
 }
 
-const OUTCOME_LABEL: Record<string, { text: string; tone: string }> = {
-  // B-single: TP1 was reached, then the breakeven stop took it out. Flat, not a win.
-  hit_tp1: { text: "BE_AFTER_TP1", tone: "text-muted-foreground" },
-  hit_tp2: { text: "TP2_HIT", tone: "text-neon-long" },
-  hit_sl: { text: "SL_HIT", tone: "text-neon-short" },
-  invalidated: { text: "INVALIDATED", tone: "text-muted-foreground" },
+/**
+ * Manual scan controls are retired. Signals are generated only by the
+ * unattended auto-paper worker (XAUUSD, 0.01 lot, no broker connection) — this
+ * panel reads its history and can never call a generator.
+ */
+function DisabledScanNotice() {
+  return (
+    <div className="flex items-start gap-2 rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-2.5 py-2">
+      <CircleAlert className="mt-0.5 size-3 shrink-0 text-neon-warn" />
+      <p className="font-mono text-[9.5px] leading-snug text-muted-foreground">
+        SCANS_RETIRED — signals come from the unattended auto-paper worker only.{" "}
+        <Link to="/dashboard" className="text-neon-accent underline-offset-2 hover:underline">
+          AUTO_PAPER →
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+/** Canonical paper trade states — the worker's B-single machine, not a guess. */
+const PAPER_STATE_LABEL: Record<string, { text: string; tone: string }> = {
+  waiting_entry: { text: "WAITING_ENTRY", tone: "text-muted-foreground" },
+  open: { text: "OPEN", tone: "text-neon-accent" },
+  tp1_protected: { text: "TP1_PROTECTED", tone: "text-neon-accent" },
+  closed_tp2: { text: "TP2_HIT", tone: "text-neon-long" },
+  closed_breakeven: { text: "BE_AFTER_TP1", tone: "text-muted-foreground" },
+  closed_stop: { text: "SL_HIT", tone: "text-neon-short" },
+  expired: { text: "EXPIRED", tone: "text-muted-foreground" },
 };
 
 function ageLabel(iso: string) {
@@ -1518,106 +1315,56 @@ function ageLabel(iso: string) {
 }
 
 /**
- * The last three signals this pair produced, with what actually happened to
- * each one.
- *
- * Every generated signal is paper-traded by the engine whether or not you would
- * have taken it — `scoreSignalPerformance` replays the candle path, resolves it
- * to TP1/TP2/SL/invalidated, persists that, and `signal-learning` turns the
- * record into per-strategy trust multipliers. This panel is the visible end of
- * that loop, and it also DRIVES it: the scoring poll runs here too, so leaving
- * the chart open advances the learning rather than requiring the Signal Center
- * to be the open tab.
- *
- * Clicking a row loads it onto the chart with its levels and strategy markup.
+ * The last three canonical signals this pair produced, with what the paper
+ * engine actually did with each one (B-single: TP1 then breakeven, TP2, SL, or
+ * expiry). Clicking a row draws its levels and strategy markup on the chart.
  */
 function PairSignalHistory({
   pair,
+  timeframe,
   selected,
   onSelect,
+  rows,
+  loading,
 }: {
   pair: string;
+  timeframe: Granularity;
   selected: ScanSignal | null;
   onSelect: (signal: ScanSignal | null) => void;
+  rows: PaperSignalListItem[];
+  loading: boolean;
 }) {
-  const listFn = useServerFn(listSignals);
-  const scoreFn = useServerFn(scoreSignalPerformance);
-
-  // Both polls are deliberately SLOWER here than on the Signal Center.
-  //
-  // Neither is free against the feed's token bucket: `listSignals` batches a
-  // quote fetch for every pair holding an open signal, and
-  // `scoreSignalPerformance` pulls a candle path PER PAIR to replay it — two
-  // tokens each on gold, because of the futures-to-spot rebase. Stacking those
-  // at the Signal Center's cadence on top of this page's 2s quote poll pinned
-  // the bucket at RATE_LIMITED continuously; measured, not guessed.
-  //
-  // A minute is ample for this panel. Signals do not arrive faster than that,
-  // a fresh scan sets the chart's result directly rather than waiting on a
-  // refetch, and an outcome resolving 30s later costs nothing — the learning
-  // loop is not latency-sensitive. The query keys match the Signal Center's, so
-  // with both pages open React Query dedupes to one request at the faster
-  // interval rather than doubling the load.
-  const signals = useQuery({
-    queryKey: ["signals"],
-    queryFn: () => listFn(),
-    refetchInterval: 120_000,
-    retry: false,
-  });
-  // Five minutes, not thirty seconds. `scoreSignalPerformance` is inherently
-  // bursty: it replays a candle path for EVERY pair holding a live signal, two
-  // tokens apiece on gold. At 60s that burst outran the bucket's 1/s refill and
-  // held the feed at RATE_LIMITED continuously — measured on this page, not
-  // assumed. Outcome resolution has no latency requirement whatsoever; a fill
-  // recorded five minutes late trains the model identically. The Signal Center
-  // keeps its 30s cadence, and the shared query key means that faster interval
-  // wins whenever that page is also open.
-  useQuery({
-    queryKey: ["signal-performance"],
-    queryFn: () => scoreFn(),
-    refetchInterval: 300_000,
-    retry: false,
-  });
-
-  const rows = (signals.data?.signals ?? []).filter((s) => s.pair === pair).slice(0, 3);
-
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between">
         <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
           // LAST_3_SIGNALS
         </span>
-        <span className="font-mono text-[8px] uppercase tracking-wider text-muted-foreground">
-          paper-traded
+        <span className="font-mono text-[8px] uppercase tracking-wider text-neon-accent">
+          paper · 0.01 lot
         </span>
       </div>
 
-      {signals.isLoading && rows.length === 0 && (
+      {loading && rows.length === 0 && (
         <p className="font-mono text-[10px] text-muted-foreground">LOADING…</p>
       )}
 
-      {!signals.isLoading && rows.length === 0 && (
+      {!loading && rows.length === 0 && (
         <p className="font-mono text-[10px] leading-relaxed text-muted-foreground">
-          No signals for {pair} yet. Switch to ANALYSIS and run a scan — results land here and are
-          tracked to TP1/TP2/SL automatically.
+          No canonical signals for {pair} on {timeframe} yet. The auto-paper worker generates XAUUSD
+          signals unattended — enable it from the Dashboard.
         </p>
       )}
 
       {rows.map((signal) => {
-        const status = signal.live_status ?? signal.status;
-        const outcome = OUTCOME_LABEL[status];
-        const r = rForStatus(status);
-        const ticket = outcome ? null : classifyOrder(signal, signal.live_mid);
-        const isSelected =
-          selected != null &&
-          selected.entry === signal.entry &&
-          selected.timeframe === signal.timeframe &&
-          selected.direction === signal.direction;
+        const state = PAPER_STATE_LABEL[signal.trade.state];
+        const isSelected = selected?.id === signal.id;
+        const terminal = signal.trade.resultR != null;
         return (
           <button
             key={signal.id}
             type="button"
-            onClick={() => onSelect(signal as unknown as ScanSignal)}
+            onClick={() => onSelect(toScanSignal(signal))}
             className={`w-full rounded-sm border px-2.5 py-2 text-left font-mono transition ${
               isSelected
                 ? "border-neon-accent/50 bg-neon-accent/5"
@@ -1635,26 +1382,39 @@ function PairSignalHistory({
                   {signal.timeframe} · {signal.confluence}%
                 </span>
               </span>
-              <span className="text-[8px] text-muted-foreground">
-                {ageLabel(signal.created_at as string)} ago
+              <span
+                className="text-[8px] text-muted-foreground"
+                title={`UTC ${signal.timestampUtc}`}
+              >
+                {ageLabel(signal.timestampUtc)} ago
               </span>
             </div>
-            <div className="mt-1 flex items-baseline justify-between gap-2">
-              <span
-                className={`text-[10px] ${outcome ? outcome.tone : TICKET_TEXT_TONE[ticket!.tone]}`}
-              >
-                {outcome ? outcome.text : ticket!.label}
+            <div className="mt-0.5 flex items-baseline justify-between gap-2">
+              <span className={`text-[9px] ${state ? state.tone : "text-muted-foreground"}`}>
+                {state ? state.text : signal.trade.state.toUpperCase()}
               </span>
-              {r != null ? (
+              {terminal ? (
                 <span
-                  className={`text-[10px] ${r > 0 ? "text-neon-long" : r < 0 ? "text-neon-short" : "text-muted-foreground"}`}
+                  className={`text-[10px] ${
+                    signal.trade.resultR! > 0
+                      ? "text-neon-long"
+                      : signal.trade.resultR! < 0
+                        ? "text-neon-short"
+                        : "text-muted-foreground"
+                  }`}
                 >
-                  {r > 0 ? "+" : ""}
-                  {r.toFixed(2)}R
+                  {signal.trade.resultR! > 0 ? "+" : ""}
+                  {signal.trade.resultR!.toFixed(2)}R
                 </span>
               ) : (
                 <span className="text-[8px] uppercase text-muted-foreground">open</span>
               )}
+            </div>
+            <div
+              className="mt-1 text-[8px] text-muted-foreground"
+              title={`UTC ${signal.timestampUtc}`}
+            >
+              {signal.timestampPht}
             </div>
           </button>
         );
@@ -1662,20 +1422,13 @@ function PairSignalHistory({
 
       {rows.length > 0 && (
         <p className="pt-0.5 font-mono text-[8px] leading-relaxed text-muted-foreground">
-          Every signal is scored as if taken, so the engine learns from all of them. Click one to
-          draw it on the chart.
+          Every signal is paper-traded by the engine and resolved to TP1/TP2/SL automatically. Click
+          one to draw it on the chart.
         </p>
       )}
     </div>
   );
 }
-
-const TICKET_TEXT_TONE: Record<OrderTicket["tone"], string> = {
-  long: "text-neon-long",
-  short: "text-neon-short",
-  warn: "text-neon-warn",
-  dead: "text-muted-foreground",
-};
 
 const EXPIRY_LABEL: Record<Granularity, string> = {
   M1: "10m",
@@ -1748,485 +1501,98 @@ function OrderTicketCard({ signal, mid }: { signal: ScanSignal; mid: number | nu
   );
 }
 
-// Per-timeframe sweep breakdown: what every timeframe returned, and which one
-// won. Makes it obvious that the scan is no longer pinned to a single TF.
 /**
- * Structural mirror of `ArmedSetup` from `@/lib/armed-setup`, declared locally
- * because this arrives as jsonb over the wire and is `unknown` client-side —
- * the same reason `SweepAttempt` is read defensively below.
+ * The research card for a canonical paper signal. The engine's jsonb breadcrumb
+ * (mode verdict, sweep breakdown, macro events, strategy census) is not stored
+ * on canonical rows — their DTO carries `rationale` + engine accounting
+ * instead, so the read is assembled from those.
  */
-type ArmedSetupView = {
-  direction: "long" | "short";
-  conditions: { label: string; met: boolean }[];
-  metCount: number;
-  totalCount: number;
-  trigger: { price: number; description: string } | null;
-  invalidation: { price: number; description: string } | null;
-  expiresInBars: number;
-};
-
-/** Reads the engine's jsonb breadcrumb without assuming any of it is present. */
-function engineBlock(newsContext: unknown) {
-  const context =
-    newsContext && !Array.isArray(newsContext) && typeof newsContext === "object"
-      ? (newsContext as Record<string, unknown>)
-      : null;
-  return context?.strategy_engine as
-    | {
-        mode?: { verdict: string; reason: string; bias: string | null };
-        regime?: {
-          regime: string;
-          adx: number;
-          trendDirection: string | null;
-          atrPercentile: number;
-          efficiencyRatio: number;
-        } | null;
-        location?: {
-          swingPosition: number;
-          label: string;
-          chasing: boolean;
-          headroomAtr: number | null;
-          multiplier: number;
-        } | null;
-        sweep?: { requested?: string[]; evaluated?: SweepAttempt[]; winner?: string };
-      }
-    | undefined;
-}
-
-const VERDICT_TONE: Record<string, string> = {
-  intraday: "border-neon-accent/40 bg-neon-accent/10 text-neon-accent",
-  scalp: "border-neon-long/40 bg-neon-long/10 text-neon-long",
-  wait: "border-neon-warn/40 bg-neon-warn/10 text-neon-warn",
-  stand_down: "border-neon-short/40 bg-neon-short/10 text-neon-short",
-};
-
-/**
- * The engine's judgement, stated as evidence rather than as a verdict alone.
- *
- * This is the teaching surface: the mode call, the regime that produced it, and
- * where in the swing range price actually sits. A "wait" with no explanation
- * trains obedience; a "wait" next to "0.84 of the swing range" eventually
- * trains the reader to spot the chase themselves.
- */
-function ReasoningStrip({ signal }: { signal: ScanSignal }) {
-  const engine = engineBlock(signal.news_context);
-  const mode = engine?.mode;
-  const regime = engine?.regime;
-  const location = engine?.location;
-  if (!mode && !regime && !location) return null;
-
+function ResearchCard({
+  signal,
+  dto,
+  mid,
+}: {
+  signal: ScanSignal;
+  dto: PaperSignalListItem | undefined;
+  mid: number | null;
+}) {
   return (
-    <div className="space-y-1.5 rounded-sm border border-cyber-border bg-cyber-bg px-2 py-1.5">
-      {mode && (
-        <div className="flex items-start gap-2">
-          <span
-            className={`shrink-0 rounded-sm border px-1.5 py-0.5 font-mono text-[9px] uppercase ${
-              VERDICT_TONE[mode.verdict] ?? "border-cyber-border text-muted-foreground"
-            }`}
-          >
-            {mode.verdict.replace("_", " ")}
-          </span>
-          <p className="text-[11px] leading-snug text-muted-foreground">{mode.reason}</p>
-        </div>
-      )}
-      <div className="flex flex-wrap gap-x-3 gap-y-0.5 font-mono text-[9px]">
-        {regime && (
-          <span className="text-muted-foreground">
-            REGIME <span className="text-white">{regime.regime.replace("_", " ")}</span>
-            <span className="ml-1 opacity-60">
-              ADX {Math.round(regime.adx)} · EFF {regime.efficiencyRatio.toFixed(2)} · ATR{" "}
-              {Math.round(regime.atrPercentile * 100)}pct
-            </span>
-          </span>
-        )}
-        {location && (
-          <span className="text-muted-foreground">
-            LOCATION{" "}
-            <span className={location.chasing ? "text-neon-warn" : "text-white"}>
-              {location.swingPosition.toFixed(2)} {location.label}
-            </span>
-            {location.chasing && <span className="ml-1 text-neon-warn">CHASING</span>}
-            <span className="ml-1 opacity-60">
-              ×{location.multiplier.toFixed(2)}
-              {location.headroomAtr !== null && ` · ${location.headroomAtr.toFixed(1)} ATR room`}
-            </span>
-          </span>
-        )}
+    <div className="rounded-sm border border-neon-accent/30 bg-cyber-bg p-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-xs font-bold text-white">
+          {signal.pair} ·{" "}
+          <span className={signal.direction === "long" ? "text-neon-long" : "text-neon-short"}>
+            {signal.direction.toUpperCase()}
+          </span>{" "}
+          · {signal.timeframe}
+        </span>
+        <span className="font-mono text-xs text-neon-accent">{signal.confluence}%</span>
       </div>
-    </div>
-  );
-}
 
-/**
- * A setup that is forming but has not triggered. The engine used to discard
- * this entirely and report "no setup" — every condition below was already
- * computed and thrown away.
- */
-function ArmedSetupCard({ armed, verdict }: { armed: ArmedSetupView; verdict?: string }) {
-  return (
-    <div className="space-y-1 rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-2 py-1.5">
-      <div className="flex items-center justify-between font-mono text-[9px]">
-        <span className="text-neon-warn">
-          {armed.direction.toUpperCase()} · ARMED
-          {verdict ? <span className="ml-1 opacity-70">{verdict.replace("_", " ")}</span> : null}
-        </span>
-        <span className="text-muted-foreground">
-          {armed.metCount}/{armed.totalCount} CONDITIONS
-        </span>
+      <div className="rounded-sm border border-neon-accent/30 bg-neon-accent/5 px-2 py-1 font-mono text-[8.5px] uppercase tracking-wider text-neon-accent">
+        PAPER ONLY · 0.01 LOT · NO BROKER CONNECTION
       </div>
-      <div className="space-y-0.5">
-        {armed.conditions.map((condition) => (
-          <div key={condition.label} className="flex items-start gap-1.5 text-[10px]">
-            <span
-              className={`font-mono ${condition.met ? "text-neon-long" : "text-muted-foreground"}`}
-            >
-              [{condition.met ? "x" : " "}]
-            </span>
-            <span className={condition.met ? "text-muted-foreground" : "text-white"}>
-              {condition.label}
-            </span>
-          </div>
+
+      <OrderTicketCard signal={signal} mid={mid} />
+
+      <div className="space-y-1">
+        <div className="text-[9px] font-mono uppercase text-muted-foreground">TECHNICAL_READ</div>
+        {summarizeSignal(signal).map((line, index) => (
+          <p key={index} className="text-[11px] leading-snug text-muted-foreground">
+            <span className="text-neon-accent">{index + 1}.</span> {line}
+          </p>
         ))}
       </div>
-      <div className="space-y-0.5 font-mono text-[9px] text-muted-foreground">
-        {armed.trigger && (
-          <div>
-            TRIGGER <span className="text-neon-accent">{armed.trigger.description}</span>
-          </div>
-        )}
-        {armed.invalidation && (
-          <div>
-            INVALIDATES <span className="text-neon-short">{armed.invalidation.description}</span>
-          </div>
-        )}
-        <div>EXPIRES IN {armed.expiresInBars} BARS</div>
+      <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
+        <ScanField label="ENTRY" value={signal.entry} />
+        <ScanField label="ATR" value={signal.atr} />
+        <ScanField label="SL" value={signal.stop_loss} tone="short" />
+        <ScanField label="TP1" value={signal.take_profit_1} tone="long" />
+        <ScanField label="TP2" value={signal.take_profit_2} tone="long" />
+        <ScanField
+          label="EXPIRES"
+          value={`${EXPIRY_LABEL[signal.timeframe as Granularity] ?? "90m"}`}
+        />
       </div>
-    </div>
-  );
-}
-
-function SweepBreakdown({ signal }: { signal: ScanSignal }) {
-  const context =
-    signal.news_context &&
-    !Array.isArray(signal.news_context) &&
-    typeof signal.news_context === "object"
-      ? (signal.news_context as Record<string, unknown>)
-      : null;
-  const engine = context?.strategy_engine as
-    | { sweep?: { requested?: string[]; evaluated?: SweepAttempt[]; winner?: string } }
-    | undefined;
-  const sweep = engine?.sweep;
-  const evaluated = sweep?.evaluated ?? [];
-  if (evaluated.length === 0) return null;
-
-  return (
-    <div className="rounded-sm border border-cyber-border bg-cyber-bg px-2 py-1.5 space-y-1">
-      <div className="flex items-center justify-between text-[9px] font-mono">
-        <span className="text-neon-accent">TF_SWEEP</span>
-        <span className="text-muted-foreground">
-          {evaluated.filter((a) => a.direction).length}/{evaluated.length} WITH_SETUP
-        </span>
+      <div>
+        <div className="text-[9px] font-mono uppercase text-muted-foreground">
+          VERIFIED STRATEGY VOTES
+        </div>
+        <div className="mt-0.5 text-[11px] font-mono text-white">
+          {signal.contributing_strategies.join(" · ")}
+        </div>
       </div>
-      <div className="space-y-0.5">
-        {evaluated.map((attempt) => {
-          const won = attempt.timeframe === sweep?.winner;
-          return (
-            <div
-              key={attempt.timeframe}
-              title={attempt.reason ?? undefined}
-              className={`flex items-center justify-between rounded-sm px-1.5 py-0.5 text-[9px] font-mono ${
-                won ? "bg-neon-accent/10 text-neon-accent" : "text-muted-foreground"
-              }`}
-            >
-              <span>
-                {attempt.timeframe}
-                <span className="ml-1 opacity-60">{attempt.mode}</span>
-                {won && " ← BEST"}
-              </span>
-              {attempt.direction ? (
-                <span
-                  className={attempt.direction === "long" ? "text-neon-long" : "text-neon-short"}
-                >
-                  {attempt.direction.toUpperCase()} {attempt.confluence}% · {attempt.strategies}v
-                </span>
-              ) : attempt.armed ? (
-                // "no setup" was never the whole truth — this timeframe has a
-                // setup forming, it just has not triggered yet.
-                <span className="text-neon-warn">
-                  ARMED {(attempt.armed as ArmedSetupView).metCount}/
-                  {(attempt.armed as ArmedSetupView).totalCount}
-                </span>
-              ) : (
-                <span className="text-muted-foreground">no setup</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-      {/* The most-formed armed setup across the sweep, expanded in full. */}
-      {(() => {
-        const best = evaluated
-          .filter((a): a is SweepAttempt & { armed: ArmedSetupView } => Boolean(a.armed))
-          .sort((a, b) => b.armed.metCount - a.armed.metCount)[0];
-        return best ? <ArmedSetupCard armed={best.armed} verdict={best.modeVerdict} /> : null;
-      })()}
-    </div>
-  );
-}
-
-function ScanContext({ signal }: { signal: { news_context: unknown } }) {
-  const context =
-    signal.news_context &&
-    !Array.isArray(signal.news_context) &&
-    typeof signal.news_context === "object"
-      ? (signal.news_context as Record<string, unknown>)
-      : null;
-  if (!context) return null;
-  const engine = context.strategy_engine as
-    | {
-        downweighted?: string[];
-        evaluated?: string[];
-        incompatible?: string[];
-        catalog_only?: string[];
-        votes?: { strategyId: string }[];
-        weights?: { entries?: { strategyId: string; weight: number; downweighted: boolean }[] };
-        learning?: {
-          multipliers?: { strategyId: string; multiplier: number; verdict: string }[];
-        };
-        mtf?: {
-          confirmed?: "long" | "short" | null;
-          alignment?: number;
-          agreementScore?: number;
-          plan?: { entryTf?: string; directionTfs?: string[] };
-          biases?: {
-            tf: string;
-            direction: "long" | "short" | "neutral";
-            strength: number;
-            votes: number;
-            strategies?: string[];
-          }[];
-        };
-      }
-    | undefined;
-  const macro = context.macro as
-    | {
-        events?: { currency: string; title: string; time: string; impact: string }[];
-        cot?: { net: number; netPct: number; reportDate: string } | null;
-      }
-    | undefined;
-
-  const downweighted = engine?.downweighted ?? [];
-  const learning = engine?.learning?.multipliers ?? [];
-  const mtf = engine?.mtf;
-
-  // Strategy census. "Why did only 2 of my strategies vote?" has four distinct
-  // answers and the engine already records all of them; they were just never
-  // shown. The sets are disjoint by construction in scanCandlesForSignal:
-  //   catalog_only  enabled in the DB but not implemented in the engine
-  //   incompatible  implemented, but this timeframe is not in its definition
-  //   evaluated     implemented AND timeframe-compatible
-  //     of which downweighted = walk-forward weight < DOWNWEIGHT_FLOOR, so it
-  //     is blocked from contributing even when its pattern fires
-  //   voted         survived all of that AND actually found its setup
-  const census = (() => {
-    const evaluated = engine?.evaluated ?? [];
-    const incompatible = engine?.incompatible ?? [];
-    const catalogOnly = engine?.catalog_only ?? [];
-    const voted = engine?.votes?.length ?? 0;
-    const enabled = evaluated.length + incompatible.length + catalogOnly.length;
-    if (enabled === 0) return null;
-    return {
-      enabled,
-      incompatible: incompatible.length,
-      catalogOnly: catalogOnly.length,
-      evaluated: evaluated.length,
-      downweighted: downweighted.length,
-      active: evaluated.length - downweighted.length,
-      voted,
-      incompatibleIds: incompatible,
-      catalogOnlyIds: catalogOnly,
-    };
-  })();
-  const events = macro?.events ?? [];
-  const cot = macro?.cot ?? null;
-  const hasMacro = events.length > 0 || cot != null;
-
-  return (
-    <div className="space-y-2">
-      {mtf && (
-        <div
-          className={`rounded-sm border px-2 py-1.5 text-[9px] font-mono ${
-            mtf.confirmed
-              ? "border-neon-accent/30 bg-neon-accent/5"
-              : "border-cyber-border bg-cyber-bg"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span
-              className={
-                mtf.confirmed === "long"
-                  ? "text-neon-long"
-                  : mtf.confirmed === "short"
-                    ? "text-neon-short"
-                    : "text-muted-foreground"
-              }
-            >
-              {mtf.confirmed
-                ? `MTF_TIDE ${mtf.confirmed.toUpperCase()} · ${mtf.agreementScore}% ALIGNMENT`
-                : "MTF_TIDE SPLIT"}
-            </span>
-            {mtf.plan?.entryTf && (
-              <span className="text-muted-foreground">ENTRY_ON_{mtf.plan.entryTf}</span>
-            )}
-          </div>
-          <div className="mt-1 flex gap-1 flex-wrap">
-            {(mtf.biases ?? []).map((bias) => (
-              <span
-                key={bias.tf}
-                className={`rounded-sm border px-1 py-0.5 text-[8px] ${
-                  bias.direction === "long"
-                    ? "border-neon-long/30 text-neon-long"
-                    : bias.direction === "short"
-                      ? "border-neon-short/30 text-neon-short"
-                      : "border-cyber-border text-muted-foreground"
-                }`}
-                title={(bias.strategies ?? []).join(", ") || bias.tf}
-              >
-                {bias.tf} {bias.direction === "long" ? "▲" : bias.direction === "short" ? "▼" : "·"}
-                {bias.votes > 0 ? ` ${bias.votes}v` : ""}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-      {census && (
-        <div className="rounded-sm border border-cyber-border bg-cyber-bg px-2 py-1.5 font-mono text-[9px] space-y-1">
-          <div className="flex items-baseline justify-between">
-            <span className="uppercase tracking-widest text-muted-foreground">
-              // STRATEGY_CENSUS
-            </span>
-            <span className="text-muted-foreground">
-              {census.voted} of {census.enabled} voted
-            </span>
-          </div>
-          {/* Bar widths are shares of the enabled catalog, so the drop-off from
-              catalog to actual votes is readable at a glance. */}
-          <div className="flex h-1.5 overflow-hidden rounded-sm">
-            <div
-              className="bg-neon-long"
-              style={{ width: `${(census.voted / census.enabled) * 100}%` }}
-              title={`${census.voted} voted`}
-            />
-            <div
-              className="bg-neon-accent/40"
-              style={{ width: `${((census.active - census.voted) / census.enabled) * 100}%` }}
-              title={`${census.active - census.voted} ran but found no setup`}
-            />
-            <div
-              className="bg-neon-warn/50"
-              style={{ width: `${(census.downweighted / census.enabled) * 100}%` }}
-              title={`${census.downweighted} blocked by walk-forward`}
-            />
-            <div
-              className="bg-muted-foreground/25"
-              style={{ width: `${(census.incompatible / census.enabled) * 100}%` }}
-              title={`${census.incompatible} not valid on this timeframe`}
-            />
-            <div
-              className="bg-neon-short/40"
-              style={{ width: `${(census.catalogOnly / census.enabled) * 100}%` }}
-              title={`${census.catalogOnly} enabled but not implemented`}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[8.5px] text-muted-foreground">
+      {signal.rationale && <p className="text-[11px] text-muted-foreground">{signal.rationale}</p>}
+      {dto && (
+        <>
+          <div className="flex items-start gap-1.5 rounded-sm border border-neon-long/30 bg-neon-long/5 px-2 py-1 text-[9px] font-mono text-neon-long">
+            <Radio className="mt-0.5 size-2.5 shrink-0" />
             <span>
-              <span className="text-neon-long">{census.voted}</span> found their setup
-            </span>
-            <span>
-              <span className="text-white">{census.active - census.voted}</span> ran, no setup
-            </span>
-            <span>
-              <span className="text-neon-warn">{census.downweighted}</span> blocked · walk-forward
-            </span>
-            <span title={census.incompatibleIds.join(", ")}>
-              <span className="text-white">{census.incompatible}</span> wrong timeframe
-            </span>
-            {census.catalogOnly > 0 && (
-              <span className="col-span-2" title={census.catalogOnlyIds.join(", ")}>
-                <span className="text-neon-short">{census.catalogOnly}</span> enabled but not
-                implemented in the engine
+              {dto.provider.name} · {dto.provider.instrument}
+              <span className="block text-[8.5px] text-muted-foreground">
+                PROVIDER_TIME {dto.provider.providerTime} UTC · {dto.timestampPht} PHT
               </span>
-            )}
+            </span>
           </div>
-          <p className="leading-snug text-muted-foreground">
-            A strategy only votes when its pattern is actually present, so a low count is normal —
-            what matters is how many were even allowed to look.
-          </p>
-        </div>
-      )}
-      {learning.length > 0 && (
-        <div className="rounded-sm border border-neon-accent/30 bg-neon-accent/5 px-2 py-1.5 text-[9px] font-mono">
-          <span className="text-neon-accent">SELF_TUNED</span>{" "}
-          <span className="text-muted-foreground">
-            {learning.map((l) => `${l.strategyId}×${l.multiplier}`).join(", ")} — trust adjusted
-            from resolved outcomes
-          </span>
-        </div>
-      )}
-      {downweighted.length > 0 && (
-        <div className="rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-2 py-1.5 text-[9px] font-mono">
-          <span className="text-neon-warn">DOWNWEIGHTED</span>{" "}
-          <span className="text-muted-foreground">
-            {downweighted.join(", ")} — failed recent walk-forward accuracy
-          </span>
-        </div>
-      )}
-      {hasMacro && (
-        <div className="rounded-sm border border-cyber-border bg-cyber-bg px-2 py-1.5 text-[9px] font-mono space-y-1">
-          {cot && (
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">COT {cot.reportDate}</span>
-              <span className={cot.net >= 0 ? "text-neon-long" : "text-neon-short"}>
-                {cot.net >= 0 ? "LONG" : "SHORT"} {Math.abs(cot.netPct)}%
-              </span>
+          {dto.engine.accounting && (
+            <div className="rounded-sm border border-cyber-border bg-cyber-bg px-2 py-1.5 font-mono text-[9px] space-y-0.5">
+              <div className="uppercase tracking-widest text-muted-foreground">
+                // ENGINE_ACCOUNTING
+              </div>
+              <div className="text-muted-foreground">
+                <span className="text-white">{dto.engine.accounting.evaluated.length}</span>{" "}
+                evaluated ·{" "}
+                <span className="text-white">{dto.engine.accounting.abstained.length}</span>{" "}
+                abstained ·{" "}
+                <span className="text-white">{dto.engine.accounting.failed.length}</span> failed
+              </div>
+              <div className="text-[8px] text-muted-foreground">
+                v{dto.engine.version || "?"} · policy {dto.engine.policyVersion || "?"}
+              </div>
             </div>
           )}
-          {events.map((event, index) => (
-            <div key={index} className="truncate">
-              <span
-                className={event.impact === "High" ? "text-neon-warn" : "text-muted-foreground"}
-              >
-                {event.currency} {event.impact} {event.time}Z
-              </span>{" "}
-              <span className="text-muted-foreground">{event.title}</span>
-            </div>
-          ))}
-        </div>
+        </>
       )}
-    </div>
-  );
-}
-
-function MarketSourceTag({ signal }: { signal: { news_context: unknown } }) {
-  const context = signal.news_context;
-  const marketData =
-    context && !Array.isArray(context) && typeof context === "object"
-      ? (context as Record<string, unknown>).market_data
-      : null;
-  if (!marketData || typeof marketData !== "object") {
-    return (
-      <div className="rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-2 py-1 text-[9px] font-mono text-neon-warn">
-        UNVERIFIED_PRICE
-      </div>
-    );
-  }
-  const details = marketData as Record<string, unknown>;
-  const note = typeof details.source_note === "string" ? details.source_note : null;
-  return (
-    <div className="rounded-sm border border-neon-long/30 bg-neon-long/5 px-2 py-1 text-[9px] font-mono text-neon-long">
-      <Radio className="mr-1 inline size-2.5" />
-      {String(details.provider)} • {String(details.price_type)}
-      {note && <div className="mt-0.5 text-[9px] text-neon-warn">⚠ {note}</div>}
     </div>
   );
 }

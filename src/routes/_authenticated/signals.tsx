@@ -1,39 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
-  listSignals,
-  generateSignals,
-  invalidateSignal,
-  scoreSignalPerformance,
-  getLearningReport,
-  type LearningReport,
-  type PerformanceReport,
-} from "@/lib/signals.functions";
-import { getMarketDataStatus } from "@/lib/market-data.functions";
+  getXauusdPaperHealth,
+  getXauusdPaperPerformance,
+  getXauusdPaperProfile,
+  getXauusdShadowLearning,
+  listXauusdPaperSignals,
+  setXauusdPaperEnabled,
+  type PaperPerformanceReport,
+  type PaperShadowLearningReport,
+  type PaperSignalListItem,
+} from "@/lib/xauusd-paper.functions";
+import { XauusdAutoPaperPanel } from "@/components/xauusd-auto-paper-panel";
 import {
   consultSignalWithLocalCli,
   getLocalCliHealth,
   type LocalCliProvider,
   type LocalCliSignal,
 } from "@/lib/local-cli-client";
-import {
-  classifyOrder,
-  isResolvedStatus,
-  summarizeSignal,
-  type OrderTicket,
-} from "@/lib/order-ticket";
-import { SignalRow } from "./dashboard";
-
-const TICKET_TONE: Record<OrderTicket["tone"], string> = {
-  long: "border-neon-long/40 bg-neon-long/10 text-neon-long",
-  short: "border-neon-short/40 bg-neon-short/10 text-neon-short",
-  warn: "border-neon-warn/40 bg-neon-warn/10 text-neon-warn",
-  dead: "border-cyber-border bg-cyber-surface text-muted-foreground",
-};
-import { useState } from "react";
-import { toast } from "sonner";
-import { Bot, BrainCircuit, CircleAlert, Radio, Terminal } from "lucide-react";
+import { Bot, BrainCircuit, Terminal } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/signals")({
   head: () => ({
@@ -51,40 +39,43 @@ export const Route = createFileRoute("/_authenticated/signals")({
 });
 
 function Signals() {
-  const listFn = useServerFn(listSignals);
-  const genFn = useServerFn(generateSignals);
-  const invalidateFn = useServerFn(invalidateSignal);
-  const scoreFn = useServerFn(scoreSignalPerformance);
-  const learningFn = useServerFn(getLearningReport);
-  const marketStatusFn = useServerFn(getMarketDataStatus);
+  const profileFn = useServerFn(getXauusdPaperProfile);
+  const healthFn = useServerFn(getXauusdPaperHealth);
+  const listFn = useServerFn(listXauusdPaperSignals);
+  const perfFn = useServerFn(getXauusdPaperPerformance);
+  const learningFn = useServerFn(getXauusdShadowLearning);
+  const setEnabledFn = useServerFn(setXauusdPaperEnabled);
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<"all" | "intraday" | "scalper">("all");
-  const [scanMode, setScanMode] = useState<"intraday" | "scalper">("intraday");
-  const [cliProvider, setCliProvider] = useState<LocalCliProvider>("codex");
+  const [archive, setArchive] = useState<"active" | "archive">("active");
   const [selected, setSelected] = useState<string | null>(null);
+  const [cliProvider, setCliProvider] = useState<LocalCliProvider>("codex");
   const [consultResult, setConsultResult] = useState<{
     signalId: string;
     provider: LocalCliProvider;
     output: string;
   } | null>(null);
 
-  const q = useQuery({ queryKey: ["signals"], queryFn: () => listFn() });
-  const perf = useQuery({
-    queryKey: ["signal-performance"],
-    queryFn: () => scoreFn(),
+  const profileQ = useQuery({ queryKey: ["xauusd-paper-profile"], queryFn: () => profileFn() });
+  const healthQ = useQuery({
+    queryKey: ["xauusd-paper-health"],
+    queryFn: () => healthFn(),
+    refetchInterval: 5_000,
+    retry: false,
+  });
+  const signalsQ = useQuery({
+    queryKey: ["xauusd-paper-signals", archive === "archive"],
+    queryFn: () => listFn({ data: { archived: archive === "archive" } }),
+  });
+  const perfQ = useQuery({
+    queryKey: ["xauusd-paper-performance"],
+    queryFn: () => perfFn(),
     refetchInterval: 30_000,
     retry: false,
   });
-  const learning = useQuery({
-    queryKey: ["signal-learning"],
+  const learningQ = useQuery({
+    queryKey: ["xauusd-shadow-learning"],
     queryFn: () => learningFn(),
     refetchInterval: 30_000,
-    retry: false,
-  });
-  const marketStatus = useQuery({
-    queryKey: ["market-data-status"],
-    queryFn: () => marketStatusFn(),
-    refetchInterval: 5_000,
     retry: false,
   });
   const cliStatus = useQuery({
@@ -94,25 +85,15 @@ function Signals() {
     retry: false,
   });
 
-  const gen = useMutation({
-    mutationFn: (mode: "intraday" | "scalper") => genFn({ data: { mode } }),
-    onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: ["signals"] });
-      qc.invalidateQueries({ queryKey: ["market-quotes"] });
-      if (data.warnings.length > 0) {
-        toast.warning(`Scan completed with ${data.warnings.length} unavailable pair(s)`);
-      } else {
-        toast.success(`${data.signals.length} signals generated`);
-      }
+  const toggleEnabled = useMutation({
+    mutationFn: (enabled: boolean) => setEnabledFn({ data: { enabled } }),
+    onSuccess: (_data, enabled) => {
+      qc.invalidateQueries({ queryKey: ["xauusd-paper-profile"] });
+      qc.invalidateQueries({ queryKey: ["xauusd-paper-health"] });
+      qc.invalidateQueries({ queryKey: ["xauusd-paper-signals"] });
+      toast.success(enabled ? "Auto-paper enabled." : "Auto-paper disabled.");
     },
     onError: (e: Error) => toast.error(e.message),
-  });
-  const inv = useMutation({
-    mutationFn: (id: string) => invalidateFn({ data: { id } }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["signals"] });
-      toast.success("Signal invalidated");
-    },
   });
   const consult = useMutation({
     mutationFn: ({
@@ -138,146 +119,72 @@ function Signals() {
     },
   });
 
-  const signals = (q.data?.signals ?? []).filter((s) =>
-    filter === "all" ? true : s.mode === filter,
-  );
-  const feedReady = marketStatus.data?.configured === true;
-  const rateLimited = marketStatus.data?.rate_limit?.limited === true;
+  const signals = signalsQ.data ?? [];
   const activeCliStatus = cliStatus.data?.providers[cliProvider];
   const activeCliReady =
     activeCliStatus?.available === true && activeCliStatus.authenticated === true;
 
   return (
     <div className="p-6 space-y-4 animate-fade-up">
-      <header className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            // SIGNAL_CENTER
-          </div>
-          <h1 className="text-2xl font-bold text-white">Signal Center</h1>
+      <header>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          // SIGNAL_CENTER
         </div>
-        <div className="flex items-end gap-3 flex-wrap">
-          <div>
-            <div className="mb-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-              // SCAN_MODE
-            </div>
-            <div
-              className="flex rounded-sm border border-cyber-border bg-cyber-surface p-0.5"
-              role="radiogroup"
-              aria-label="Scan mode"
-            >
-              {(["intraday", "scalper"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  role="radio"
-                  aria-checked={scanMode === mode}
-                  onClick={() => setScanMode(mode)}
-                  className={`rounded-sm px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest transition ${
-                    scanMode === mode
-                      ? mode === "scalper"
-                        ? "bg-neon-warn/10 text-neon-warn"
-                        : "bg-neon-accent/10 text-neon-accent"
-                      : "text-muted-foreground hover:text-white"
-                  }`}
-                >
-                  {mode}
-                </button>
-              ))}
-            </div>
-          </div>
-          <button
-            onClick={() => gen.mutate(scanMode)}
-            disabled={gen.isPending || !feedReady}
-            className={`h-[35px] rounded-sm border px-4 text-[10px] font-mono font-bold transition disabled:cursor-not-allowed disabled:opacity-40 ${
-              scanMode === "scalper"
-                ? "border-neon-warn/40 bg-neon-warn/10 text-neon-warn hover:bg-neon-warn/20"
-                : "border-neon-accent/40 bg-neon-accent/10 text-neon-accent hover:bg-neon-accent/20"
-            }`}
-          >
-            {gen.isPending ? "SCANNING…" : rateLimited ? "RATE_LIMITED…" : "RUN_SCAN"}
-          </button>
-        </div>
+        <h1 className="text-2xl font-bold text-white">Signal Center</h1>
       </header>
 
-      {marketStatus.isLoading ? (
-        <div className="rounded-lg border border-cyber-border bg-cyber-surface p-3 text-xs font-mono text-muted-foreground">
-          CHECKING_LIVE_FEED…
-        </div>
-      ) : rateLimited ? (
-        <div className="rounded-lg border border-neon-warn/40 bg-neon-warn/5 p-3 flex items-center gap-3">
-          <Radio className="size-4 text-neon-warn" />
-          <div>
-            <div className="text-xs font-mono font-bold text-neon-warn">
-              OANDA_FEED_RATE_LIMITED_RETRYING…
-            </div>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              Feed rate limit reached. Retrying automatically — scans are temporarily throttled.
-            </p>
-          </div>
-        </div>
-      ) : feedReady ? (
-        <div className="rounded-lg border border-neon-long/30 bg-neon-long/5 p-3 flex items-center gap-3">
-          <Radio className="size-4 text-neon-long" />
-          <div>
-            <div className="text-xs font-mono font-bold text-neon-long">
-              {marketStatus.data?.provider ?? "LIVE"}_FEED_CONNECTED
-            </div>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">
-              Retail-grade OANDA prices via TradingView — no API key required. Entries use the same
-              live instrument feed shown in Live Chart.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-lg border border-neon-warn/40 bg-neon-warn/5 p-4 flex items-start gap-3">
-          <CircleAlert className="size-4 text-neon-warn mt-0.5" />
-          <div>
-            <div className="text-sm font-bold text-white">Live market feed unavailable</div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              The free market data feed is currently unreachable. Scans are disabled so synthetic
-              prices cannot be mistaken for live quotes.
-            </p>
-          </div>
-        </div>
-      )}
+      <XauusdAutoPaperPanel
+        profile={profileQ.data}
+        health={healthQ.data}
+        mutating={toggleEnabled.isPending}
+        onEnabledChange={(enabled) => toggleEnabled.mutate(enabled)}
+      />
 
-      <PerformancePanel report={perf.data} loading={perf.isLoading} />
+      <PerformancePanel report={perfQ.data} loading={perfQ.isLoading} />
 
-      <LearningPanel report={learning.data} loading={learning.isLoading} />
+      <LearningPanel report={learningQ.data} loading={learningQ.isLoading} />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
         <section className="rounded-lg border border-cyber-border bg-cyber-surface">
           <div className="flex items-center justify-between gap-3 border-b border-cyber-border px-4 py-2.5">
             <div>
               <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                // HISTORY_FILTER
+                // HISTORY
               </div>
               <div className="mt-0.5 text-[11px] text-muted-foreground">
-                Show stored signal results
+                Canonical worker signals — read-only, one 0.01-lot paper trade each
               </div>
             </div>
             <div className="flex gap-1" aria-label="Signal history filter">
-              {(["all", "intraday", "scalper"] as const).map((historyFilter) => (
+              {(["active", "archive"] as const).map((tab) => (
                 <button
-                  key={historyFilter}
+                  key={tab}
                   type="button"
-                  onClick={() => setFilter(historyFilter)}
+                  onClick={() => {
+                    setArchive(tab);
+                    setSelected(null);
+                  }}
                   className={`rounded-sm border px-2.5 py-1 text-[9px] font-mono uppercase tracking-widest transition ${
-                    filter === historyFilter
+                    archive === tab
                       ? "border-neon-accent/40 bg-neon-accent/10 text-neon-accent"
                       : "border-cyber-border bg-cyber-bg text-muted-foreground hover:text-white"
                   }`}
                 >
-                  {historyFilter}
+                  {tab === "active" ? "ACTIVE" : "ARCHIVE"}
                 </button>
               ))}
             </div>
           </div>
           <div className="divide-y divide-cyber-border max-h-[70vh] overflow-auto">
-            {q.isLoading && <div className="p-6 text-sm text-muted-foreground">Loading…</div>}
-            {!q.isLoading && signals.length === 0 && (
-              <div className="p-6 text-sm text-muted-foreground">No signals. Run a scan.</div>
+            {signalsQ.isLoading && (
+              <div className="p-6 text-sm text-muted-foreground">Loading…</div>
+            )}
+            {!signalsQ.isLoading && signals.length === 0 && (
+              <div className="p-6 text-sm text-muted-foreground">
+                {archive === "active"
+                  ? "No active paper signals yet. Enable Auto-Paper above and the worker publishes eligible XAUUSD signals automatically."
+                  : "No archived paper signals yet — terminal signals are archived after 30 days."}
+              </div>
             )}
             {signals.map((s) => (
               <div
@@ -288,7 +195,7 @@ function Signals() {
                 }}
                 className={`cursor-pointer ${selected === s.id ? "bg-cyber-surface-2" : ""}`}
               >
-                <SignalRow signal={s} />
+                <PaperSignalRow signal={s} />
               </div>
             ))}
           </div>
@@ -300,85 +207,137 @@ function Signals() {
           </h2>
           {!selected ? (
             <p className="mt-3 text-sm text-muted-foreground">
-              Select a signal to inspect and consult AI.
+              Select a signal to inspect its paper-trade path and consult AI.
             </p>
           ) : (
             (() => {
               const s = signals.find((x) => x.id === selected);
               if (!s)
                 return <p className="mt-3 text-sm text-muted-foreground">Signal not found.</p>;
-              const verified = s.market_data_verified === true;
-              const resolved = isResolvedStatus(s.live_status ?? s.status);
-              const ticket = classifyOrder(s, s.live_mid);
               return (
                 <div className="mt-3 space-y-3 font-mono text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-white font-bold">
                       {s.pair} · {s.direction.toUpperCase()}
                     </span>
-                    <span className={verified ? "text-neon-accent" : "text-neon-warn"}>
-                      {verified ? `${s.confluence}%` : "LEGACY"}
-                    </span>
+                    <span className="text-neon-accent">{s.confluence}%</span>
                   </div>
-                  {verified ? (
-                    <>
-                      {!resolved && (
-                        <div
-                          className={`rounded-sm border px-2.5 py-2 ${TICKET_TONE[ticket.tone]}`}
-                        >
-                          <div className="flex items-baseline justify-between gap-2">
-                            <span className="text-sm font-bold tracking-wide">{ticket.label}</span>
-                            <span className="text-[9px] opacity-80">
-                              {ticket.closed ? "NO_ENTRY" : `${ticket.distanceR}R FROM_PRICE`}
-                            </span>
+
+                  <div className="rounded-sm border border-neon-accent/30 bg-neon-accent/5 px-2 py-1.5 text-[10px] font-bold text-neon-accent">
+                    {s.paperLabel}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <InspectorField label="ENTRY" value={s.entry} />
+                    <InspectorField label="ATR" value={s.atr} />
+                    <InspectorField label="SL" value={s.stopLoss} tone="short" />
+                    <InspectorField label="TP1" value={s.takeProfit1} tone="long" />
+                    <InspectorField label="TP2" value={s.takeProfit2} tone="long" />
+                    <InspectorField label="TF · LOT" value={`${s.timeframe} · ${s.lotSize}`} />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <InspectorField
+                      label="FILL"
+                      value={
+                        s.trade.entryPrice != null
+                          ? `${s.trade.entryPrice}${s.trade.entryTime ? ` @ ${formatTs(s.trade.entryTime)}` : ""}`
+                          : "PENDING"
+                      }
+                    />
+                    <InspectorField
+                      label="TP1 PROTECTION"
+                      value={
+                        s.trade.state === "tp1_protected"
+                          ? "ARMED"
+                          : s.trade.tp1ArmedAt
+                            ? formatTs(s.trade.tp1ArmedAt)
+                            : "NOT_ARMED"
+                      }
+                    />
+                    <InspectorField
+                      label="EXIT"
+                      value={
+                        s.trade.exitPrice != null
+                          ? `${s.trade.exitPrice}${s.trade.exitTime ? ` @ ${formatTs(s.trade.exitTime)}` : ""}`
+                          : "—"
+                      }
+                    />
+                    <InspectorField
+                      label="R RESULT"
+                      value={
+                        s.trade.resultR != null
+                          ? `${s.trade.resultR > 0 ? "+" : ""}${s.trade.resultR}R`
+                          : "OPEN"
+                      }
+                      tone={
+                        s.trade.resultR != null
+                          ? s.trade.resultR > 0
+                            ? "long"
+                            : s.trade.resultR < 0
+                              ? "short"
+                              : "muted"
+                          : undefined
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <div className="mb-1 rounded-sm border border-cyber-border bg-cyber-bg px-2 py-1.5">
+                      <div className="flex items-center justify-between text-[9px] text-muted-foreground">
+                        <span>ENGINE ACCOUNTING</span>
+                        <span className="text-neon-accent">
+                          v{s.engine.version} · {s.engine.policyVersion}
+                        </span>
+                      </div>
+                      <div className="mt-1 space-y-0.5 text-[10px] text-muted-foreground">
+                        <AccountingLine
+                          label="EVALUATED"
+                          items={s.engine.accounting.evaluated}
+                          cls="text-neon-long"
+                        />
+                        <AccountingLine
+                          label="ABSTAINED"
+                          items={s.engine.accounting.abstained}
+                          cls="text-white"
+                        />
+                        <AccountingLine
+                          label="INCOMPATIBLE"
+                          items={s.engine.accounting.incompatible}
+                          cls="text-muted-foreground"
+                        />
+                        <AccountingLine
+                          label="EXCLUDED"
+                          items={s.engine.accounting.excluded}
+                          cls="text-neon-warn"
+                        />
+                        {s.engine.accounting.failed.length > 0 && (
+                          <div className="flex gap-1 flex-wrap">
+                            <span className="uppercase text-[9px] text-neon-short">FAILED:</span>
+                            {s.engine.accounting.failed.map((f) => (
+                              <span key={f.strategyId} className="text-neon-short">
+                                {f.strategyId}({f.code})
+                              </span>
+                            ))}
                           </div>
-                          <p className="mt-0.5 text-[10px] leading-snug opacity-90">
-                            {ticket.note}
-                          </p>
-                        </div>
-                      )}
-                      <div className="grid grid-cols-2 gap-2">
-                        <Field label="Entry" value={s.entry} />
-                        <Field label="ATR" value={s.atr} />
-                        <Field label="SL" value={s.stop_loss} tone="short" />
-                        <Field label="TP1" value={s.take_profit_1} tone="long" />
-                        <Field label="TP2" value={s.take_profit_2} tone="long" />
-                        <Field label="TF" value={s.timeframe} />
+                        )}
                       </div>
-                      <div>
-                        <div className="text-[10px] uppercase text-muted-foreground">
-                          Technical read
-                        </div>
-                        <div className="mt-0.5 space-y-0.5">
-                          {summarizeSignal(s).map((line, index) => (
-                            <p
-                              key={index}
-                              className="text-[11px] leading-snug text-muted-foreground"
-                            >
-                              <span className="text-neon-accent">{index + 1}.</span> {line}
-                            </p>
-                          ))}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] uppercase text-muted-foreground">
-                          Verified strategy votes
-                        </div>
-                        <div className="text-[11px] text-white">
-                          {(s.contributing_strategies as string[]).join(" · ")}
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="rounded-sm border border-neon-warn/40 bg-neon-warn/5 p-3">
-                      <div className="font-bold text-neon-warn">LEGACY_DEMO_LEVELS_HIDDEN</div>
-                      <p className="mt-1 font-sans text-[11px] leading-relaxed text-muted-foreground">
-                        Entry, stop, targets, confluence, and strategy labels were synthetic. They
-                        are intentionally hidden and cannot be treated as a trading setup.
-                      </p>
                     </div>
-                  )}
-                  <MarketSource signal={s} />
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] uppercase text-muted-foreground">
+                      Provider evidence
+                    </div>
+                    <div className="mt-0.5 rounded-sm border border-neon-long/30 bg-neon-long/5 px-2 py-1.5 text-[10px] text-neon-long">
+                      {s.provider.name} · {s.provider.instrument} ·{" "}
+                      {formatTs(s.provider.providerTime)}
+                    </div>
+                    <div className="mt-1 text-[9px] text-muted-foreground" title={s.timestampUtc}>
+                      Generated {s.timestampPht}
+                    </div>
+                  </div>
+
                   <div className="rounded-sm border border-cyber-border bg-cyber-bg p-2.5">
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest text-muted-foreground">
@@ -451,21 +410,7 @@ function Signals() {
                         consult.mutate({
                           signalId: s.id,
                           provider: cliProvider,
-                          signal: {
-                            pair: s.pair,
-                            direction: s.direction,
-                            mode: s.mode,
-                            timeframe: s.timeframe,
-                            entry: s.entry,
-                            stopLoss: s.stop_loss,
-                            takeProfit1: s.take_profit_1,
-                            takeProfit2: s.take_profit_2,
-                            atr: s.atr,
-                            confluence: s.confluence,
-                            status: s.live_status ?? s.status,
-                            verified: s.market_data_verified === true,
-                            strategies: s.contributing_strategies as string[],
-                          },
+                          signal: toLocalCliSignal(s),
                         })
                       }
                       disabled={consult.isPending || !activeCliReady}
@@ -475,12 +420,6 @@ function Signals() {
                       {consult.isPending
                         ? "ANALYZING…"
                         : `ASK_${cliProvider === "codex" ? "CODEX" : "CLAUDE"}`}
-                    </button>
-                    <button
-                      onClick={() => inv.mutate(s.id)}
-                      className="rounded-sm border border-neon-short/40 bg-neon-short/10 px-2 py-1.5 text-[10px] font-mono text-neon-short hover:bg-neon-short/20"
-                    >
-                      INVALIDATE
                     </button>
                   </div>
                   {consultResult?.signalId === s.id && consultResult.provider === cliProvider && (
@@ -498,86 +437,199 @@ function Signals() {
   );
 }
 
+function toLocalCliSignal(s: PaperSignalListItem): LocalCliSignal {
+  return {
+    pair: s.pair,
+    direction: s.direction,
+    mode: s.mode,
+    timeframe: s.timeframe,
+    entry: s.entry,
+    stopLoss: s.stopLoss,
+    takeProfit1: s.takeProfit1,
+    takeProfit2: s.takeProfit2,
+    atr: s.atr,
+    confluence: s.confluence,
+    status: s.trade.state,
+    verified: true,
+    strategies: s.contributingStrategies,
+  };
+}
+
+function formatTs(iso: string): string {
+  const date = new Date(iso);
+  if (!Number.isFinite(date.getTime())) return iso;
+  return (
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Manila",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date) + " PHT"
+  );
+}
+
+const TRADE_STATE_LABEL: Record<string, string> = {
+  waiting_entry: "WAITING_ENTRY",
+  open: "OPEN",
+  tp1_protected: "TP1_PROTECTED",
+  closed_tp2: "TP2 +2.0R",
+  closed_breakeven: "SCRATCHED 0.0R",
+  closed_stop: "SL −1.0R",
+  expired: "EXPIRED",
+};
+
+function PaperSignalRow({ signal }: { signal: PaperSignalListItem }) {
+  const long = signal.direction === "long";
+  const stateLabel = TRADE_STATE_LABEL[signal.trade.state] ?? signal.trade.state;
+  const stateTone =
+    signal.trade.state === "closed_tp2"
+      ? "text-neon-long"
+      : signal.trade.state === "closed_stop"
+        ? "text-neon-short"
+        : signal.trade.state === "closed_breakeven" || signal.trade.state === "expired"
+          ? "text-muted-foreground"
+          : "text-neon-accent";
+  return (
+    <div className="grid grid-cols-12 gap-2 px-4 py-3 items-center font-mono text-xs hover:bg-cyber-surface-2 transition">
+      <div className="col-span-2 flex items-center gap-2">
+        <span
+          className={`inline-block size-2 rounded-full ${long ? "bg-neon-long" : "bg-neon-short"}`}
+        />
+        <span className="text-white font-bold">{signal.pair}</span>
+        <span className={long ? "text-neon-long" : "text-neon-short"}>
+          {signal.direction.toUpperCase()}
+        </span>
+      </div>
+      <div className="col-span-1 text-muted-foreground">{signal.timeframe}</div>
+      <div className="col-span-1 text-white">{signal.entry}</div>
+      <div className="col-span-1 text-neon-short">{signal.stopLoss}</div>
+      <div className="col-span-1 text-neon-long">{signal.takeProfit1}</div>
+      <div className="col-span-1 text-neon-long">{signal.takeProfit2}</div>
+      <div className="col-span-1">
+        <span className={`uppercase text-[10px] ${stateTone}`}>{stateLabel}</span>
+      </div>
+      <div className="col-span-1 text-[10px] text-muted-foreground">
+        {signal.trade.resultR != null
+          ? `${signal.trade.resultR > 0 ? "+" : ""}${signal.trade.resultR}R`
+          : "0.01 lot"}
+      </div>
+      <div className="col-span-3 text-[10px] text-muted-foreground truncate">
+        <span className="text-white" title={signal.timestampUtc}>
+          {signal.timestampPht}
+        </span>
+        <span className="ml-2">{signal.contributingStrategies.slice(0, 2).join(" · ")}</span>
+      </div>
+    </div>
+  );
+}
+
+function AccountingLine({ label, items, cls }: { label: string; items: string[]; cls: string }) {
+  return (
+    <div className="flex gap-1 flex-wrap">
+      <span className="uppercase text-[9px] text-muted-foreground">{label}:</span>
+      {items.length === 0 ? (
+        <span className="text-muted-foreground">—</span>
+      ) : (
+        <span className={cls}>{items.join(", ")}</span>
+      )}
+    </div>
+  );
+}
+
+function InspectorField({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  tone?: "long" | "short" | "muted";
+}) {
+  const color =
+    tone === "long"
+      ? "text-neon-long"
+      : tone === "short"
+        ? "text-neon-short"
+        : tone === "muted"
+          ? "text-muted-foreground"
+          : "text-white";
+  return (
+    <div>
+      <div className="text-[10px] uppercase text-muted-foreground">{label}</div>
+      <div className={color}>{String(value)}</div>
+    </div>
+  );
+}
+
 function PerformancePanel({
   report,
   loading,
 }: {
-  report: PerformanceReport | undefined;
+  report: PaperPerformanceReport | undefined;
   loading: boolean;
 }) {
   return (
     <section className="rounded-lg border border-cyber-border bg-cyber-surface">
       <div className="px-4 py-3 border-b border-cyber-border">
         <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-          // PAPER_TRADING_SCORE
+          // PAPER_TRADING_SCORE · CANONICAL
         </div>
         <div className="mt-0.5 text-[11px] text-muted-foreground">
-          Live evaluation of stored signals vs the OANDA feed — hit-rate and R-multiple per
-          strategy, updated every 30s
+          Resolved outcomes from the unattended worker's 0.01-lot ledger — breakeven scratches count
+          toward the resolved denominator but neither win nor lose.
         </div>
       </div>
-      {loading && <div className="p-4 text-sm text-muted-foreground">Scoring live signals…</div>}
-      {!loading && report && report.scored === 0 && (
+      {loading && <div className="p-4 text-sm text-muted-foreground">Loading paper record…</div>}
+      {!loading && report && report.resolved === 0 && report.stale === 0 && (
         <div className="p-4 text-sm text-muted-foreground">
-          No live signals to score yet. Run a scan and the engine starts keeping score.
+          No resolved paper trades yet — the worker's ledger is empty until Auto-Paper is enabled
+          and signals resolve to TP2 / breakeven / SL.
         </div>
       )}
-      {!loading && report && report.scored > 0 && (
+      {!loading && report && (report.resolved > 0 || report.stale > 0) && (
         <div className="p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-5 font-mono">
-            <ScoreStat label="TRACKED" value={report.scored} />
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-6 font-mono">
             <ScoreStat label="RESOLVED" value={report.resolved} />
+            <ScoreStat label="WINS" value={report.wins} tone="long" />
+            <ScoreStat label="SCRATCHES" value={report.scratches} />
+            <ScoreStat label="LOSSES" value={report.losses} tone="short" />
             <ScoreStat
               label="WIN_RATE"
-              value={`${report.winRate}%`}
-              tone={report.winRate >= 50 ? "long" : "short"}
+              value={`${Math.round(report.winRate * 100)}%`}
+              tone={report.winRate >= 0.5 ? "long" : "short"}
             />
             <ScoreStat
-              label="AVG_R"
-              value={report.avgR > 0 ? `+${report.avgR}` : report.avgR}
-              tone={report.avgR >= 0 ? "long" : "short"}
-            />
-            <ScoreStat
-              label="PROFIT_FACTOR"
-              value={report.profitFactor}
-              tone={report.profitFactor >= 1 ? "long" : "short"}
+              label="TOTAL_R"
+              value={report.totalR > 0 ? `+${report.totalR}` : report.totalR}
+              tone={report.totalR >= 0 ? "long" : "short"}
             />
           </div>
-          <div className="text-[10px] font-mono text-muted-foreground">
-            TOTAL_R:{" "}
-            <span className={report.totalR >= 0 ? "text-neon-long" : "text-neon-short"}>
-              {report.totalR >= 0 ? `+${report.totalR}` : report.totalR}
-            </span>{" "}
-            · BEST STRATEGIES
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {report.byStrategy.slice(0, 8).map((strategy) => (
-              <span
-                key={strategy.strategyId}
-                className={`rounded-sm border px-2 py-1 font-mono text-[10px] ${
-                  strategy.totalR > 0
-                    ? "border-neon-long/30 bg-neon-long/5 text-neon-long"
-                    : strategy.totalR < 0
-                      ? "border-neon-short/30 bg-neon-short/5 text-neon-short"
-                      : "border-cyber-border text-muted-foreground"
-                }`}
-              >
-                {strategy.strategyId} {strategy.wins}/{strategy.signals} · R
-                {strategy.totalR > 0 ? `+${strategy.totalR}` : strategy.totalR}
-              </span>
-            ))}
-          </div>
+          {report.stale > 0 && (
+            <div className="text-[10px] font-mono text-muted-foreground">
+              {report.stale} expired without touching a level (stale — excluded from the resolved
+              record).
+            </div>
+          )}
         </div>
       )}
     </section>
   );
 }
 
+const VERDICT_TONE: Record<string, string> = {
+  boost: "border-neon-long/40 bg-neon-long/5 text-neon-long",
+  cool: "border-neon-short/40 bg-neon-short/5 text-neon-short",
+  hold: "border-cyber-border text-muted-foreground",
+  insufficient: "border-cyber-border text-muted-foreground",
+};
+
 function LearningPanel({
   report,
   loading,
 }: {
-  report: LearningReport | undefined;
+  report: PaperShadowLearningReport | undefined;
   loading: boolean;
 }) {
   return (
@@ -586,164 +638,53 @@ function LearningPanel({
         <div>
           <div className="font-mono text-[9px] uppercase tracking-widest text-neon-accent">
             <BrainCircuit className="mr-1 inline size-3" />
-            // AUTONOMOUS_LEARNING_LOOP
+            // AUTONOMOUS_LEARNING_LOOP · CANONICAL
           </div>
           <div className="mt-0.5 text-[11px] text-muted-foreground">
-            The engine reweights itself from resolved outcomes on every scan — no manual tuning.
+            Candidate trust multipliers derived from the worker's canonical paper outcomes.
           </div>
         </div>
-        <span
-          className={`shrink-0 rounded-sm border px-2 py-1 text-[9px] font-mono uppercase tracking-widest ${
-            report && report.resolved >= 3
-              ? "border-neon-long/40 bg-neon-long/5 text-neon-long"
-              : "border-neon-warn/40 bg-neon-warn/5 text-neon-warn"
-          }`}
-        >
-          {loading
-            ? "LEARNING…"
-            : report && report.resolved >= 3
-              ? `SELF_TUNING · ${report.adjustmentsApplied} ADJUSTED`
-              : "GATHERING_SAMPLES…"}
+        <span className="shrink-0 rounded-sm border border-neon-warn/40 bg-neon-warn/5 px-2 py-1 text-[9px] font-mono uppercase tracking-widest text-neon-warn">
+          SHADOW ONLY · NOT APPLIED
         </span>
       </div>
 
       {loading && (
-        <div className="p-4 text-sm text-muted-foreground">Learning from resolved trades…</div>
+        <div className="p-4 text-sm text-muted-foreground">Learning from paper trades…</div>
       )}
-      {!loading && report && report.resolved === 0 && report.stale === 0 && (
+      {!loading && report && report.sampleSize === 0 && (
         <div className="p-4 text-sm text-muted-foreground">
-          No resolved trades yet. Run scans and let the market resolve them to TP1/TP2/SL — the loop
-          starts tuning after ~3 outcomes per strategy.
+          No canonical paper outcomes yet. Once the worker resolves trades, candidate multipliers
+          appear here for review — nothing is applied to live weights.
         </div>
       )}
-      {!loading && report && (report.resolved > 0 || report.stale > 0) && (
-        <div className="p-4 space-y-4">
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-5 font-mono">
-            <ScoreStat label="RESOLVED" value={report.resolved} />
-            <ScoreStat label="WINS" value={report.wins} tone="long" />
-            <ScoreStat label="LOSSES" value={report.losses} tone="short" />
-            <ScoreStat
-              label="WIN_RATE"
-              value={`${report.winRate}%`}
-              tone={report.winRate >= 50 ? "long" : "short"}
-            />
-            <ScoreStat
-              label="TOTAL_R"
-              value={report.totalR > 0 ? `+${report.totalR}` : report.totalR}
-              tone={report.totalR >= 0 ? "long" : "short"}
-            />
+      {!loading && report && report.sampleSize > 0 && (
+        <div className="p-4 space-y-3">
+          <div className="text-[10px] font-mono text-muted-foreground">
+            SAMPLE_SIZE: {report.sampleSize} terminal canonical trades
           </div>
-
-          <div className="grid gap-3 lg:grid-cols-2">
-            <div className="rounded-sm border border-cyber-border bg-cyber-bg p-3">
-              <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-neon-long">
-                <span className="inline-block size-1.5 rounded-full bg-neon-long" />
-                WHAT_WENT_GOOD → BOOSTED
+          <div className="flex flex-wrap gap-1.5">
+            {report.candidates.map((candidate) => (
+              <div
+                key={`${candidate.strategyId}:${candidate.mode}`}
+                className={`rounded-sm border px-2 py-1 font-mono text-[10px] ${VERDICT_TONE[candidate.verdict] ?? "border-cyber-border text-muted-foreground"}`}
+              >
+                <span className="font-bold text-white">{candidate.strategyId}</span>{" "}
+                <span className="text-muted-foreground">
+                  ×{candidate.candidateMultiplier.toFixed(2)} · {candidate.mode}
+                </span>{" "}
+                <span className="text-muted-foreground">
+                  {candidate.wins}W/{candidate.scratches}S/{candidate.losses}L ·{" "}
+                  {candidate.totalR >= 0 ? "+" : ""}
+                  {candidate.totalR}R
+                </span>
               </div>
-              {report.strengths.length === 0 && (
-                <div className="text-[11px] text-muted-foreground">
-                  No strategy has proven itself yet. Resolved outcomes will surface them here.
-                </div>
-              )}
-              <div className="flex flex-wrap gap-1.5">
-                {report.strengths.map((s) => (
-                  <div
-                    key={`${s.strategyId}:${s.mode}`}
-                    className="rounded-sm border border-neon-long/30 bg-neon-long/5 px-2 py-1 font-mono text-[10px]"
-                  >
-                    <span className="text-neon-long">BOOST ×{s.multiplier}</span>{" "}
-                    <span className="text-white">{s.strategyId}</span>{" "}
-                    <span className="text-muted-foreground">
-                      {s.wins}/{s.resolved} · {s.mode}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-sm border border-cyber-border bg-cyber-bg p-3">
-              <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-neon-short">
-                <span className="inline-block size-1.5 rounded-full bg-neon-short" />
-                WHAT_WENT_WRONG → COOLED
-              </div>
-              {report.weaknesses.length === 0 && (
-                <div className="text-[11px] text-muted-foreground">
-                  Nothing is bleeding R right now — the loop is holding all trust weights.
-                </div>
-              )}
-              <div className="flex flex-wrap gap-1.5">
-                {report.weaknesses.map((s) => (
-                  <div
-                    key={`${s.strategyId}:${s.mode}`}
-                    className="rounded-sm border border-neon-short/30 bg-neon-short/5 px-2 py-1 font-mono text-[10px]"
-                  >
-                    <span className="text-neon-short">
-                      {s.excluded ? "EXCLUDED ×" : "COOL ×"}
-                      {s.multiplier}
-                    </span>{" "}
-                    <span className="text-white">{s.strategyId}</span>{" "}
-                    <span className="text-muted-foreground">
-                      {s.wins}/{s.resolved} · {s.mode}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
-
-          {report.autopsies.length > 0 && (
-            <div>
-              <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                // RECENT_AUTOPSIES
-              </div>
-              <div className="space-y-1.5">
-                {report.autopsies.map((a) => (
-                  <div
-                    key={a.id}
-                    className="rounded-sm border border-cyber-border bg-cyber-bg px-3 py-2 text-[11px]"
-                  >
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                      <span className="font-mono font-bold text-white">
-                        {a.pair} · {a.direction.toUpperCase()} · {a.mode} {a.timeframe}
-                      </span>
-                      <span
-                        className={`font-mono text-[9px] ${
-                          a.status === "hit_sl"
-                            ? "text-neon-short"
-                            : a.status === "invalidated"
-                              ? "text-neon-warn"
-                              : "text-neon-long"
-                        }`}
-                      >
-                        {a.status === "hit_tp2"
-                          ? "TP2 +2.0R"
-                          : a.status === "hit_tp1"
-                            ? "BE after TP1 0.0R"
-                            : a.status === "hit_sl"
-                              ? "SL −1.0R"
-                              : "EXPIRED"}
-                      </span>
-                    </div>
-                    <div className="mt-1 text-muted-foreground">{a.diagnosis}</div>
-                    <div className="mt-0.5 text-neon-accent">→ {a.lesson}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="rounded-sm border border-cyber-border bg-cyber-bg p-3">
-            <div className="mb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              // NEXT_ITERATION
-            </div>
-            <ul className="space-y-1">
-              {report.recommendations.map((rec, index) => (
-                <li key={index} className="flex gap-2 text-[11px] text-muted-foreground">
-                  <span className="text-neon-accent">▸</span>
-                  {rec}
-                </li>
-              ))}
-            </ul>
+          <div className="rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-3 py-2 text-[11px] text-neon-warn">
+            SHADOW ONLY · NOT APPLIED — these multipliers are candidates for review. Promotion needs
+            a later design covering minimum samples, walk-forward validation, approval, and
+            rollback. The engine never writes strategy_settings from this report.
           </div>
         </div>
       )}
@@ -766,42 +707,6 @@ function ScoreStat({
     <div className="rounded-sm border border-cyber-border bg-cyber-bg px-3 py-2">
       <div className="text-[9px] uppercase text-muted-foreground">{label}</div>
       <div className={`text-lg font-bold ${color}`}>{String(value)}</div>
-    </div>
-  );
-}
-
-function MarketSource({ signal }: { signal: { news_context: unknown } }) {
-  const context = signal.news_context;
-  const marketData =
-    context && !Array.isArray(context) && typeof context === "object"
-      ? (context as Record<string, unknown>).market_data
-      : null;
-  if (!marketData || typeof marketData !== "object") {
-    return (
-      <div className="rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-2 py-1.5 text-[10px] text-neon-warn">
-        LEGACY_SYNTHETIC • UNVERIFIED_PRICE
-      </div>
-    );
-  }
-
-  const details = marketData as Record<string, unknown>;
-  const note = typeof details.source_note === "string" ? details.source_note : null;
-  return (
-    <div className="rounded-sm border border-neon-long/30 bg-neon-long/5 px-2 py-1.5 text-[10px] text-neon-long">
-      {String(details.provider)} • {String(details.price_type)} •{" "}
-      {new Date(String(details.timestamp)).toLocaleString()}
-      {note && <div className="mt-1 text-[9px] text-neon-warn">⚠ {note}</div>}
-    </div>
-  );
-}
-
-function Field({ label, value, tone }: { label: string; value: unknown; tone?: "long" | "short" }) {
-  const color =
-    tone === "long" ? "text-neon-long" : tone === "short" ? "text-neon-short" : "text-white";
-  return (
-    <div>
-      <div className="text-[10px] uppercase text-muted-foreground">{label}</div>
-      <div className={`${color}`}>{String(value)}</div>
     </div>
   );
 }

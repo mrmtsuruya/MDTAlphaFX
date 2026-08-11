@@ -1241,7 +1241,7 @@ git commit -m "feat: expose canonical paper trading APIs"
 - Consumes: Task 9 server functions/DTOs; Task 2 PHT formatter.
 - Produces: read-only canonical paper UI, active/archive filter, profile toggle, worker health.
 
-- [ ] **Step 1: Build focused auto-paper panel**
+- [x] **Step 1: Build focused auto-paper panel**
 
 Panel props contain profile, health, mutation state, and `onEnabledChange`. Render exact persistent copy:
 
@@ -1251,11 +1251,11 @@ PAPER ONLY · 0.01 LOT · NO BROKER CONNECTION
 
 Show `Asia/Manila (PHT)`, provider/instrument, last attempt, last success, quote age, spread, and degradation code. Disable toggle for `migration_required`, missing OANDA credentials, unsupported instrument, or failed live health. Use accessible switch label `Enable unattended XAUUSD paper trading`.
 
-- [ ] **Step 2: Replace Dashboard browser generation**
+- [x] **Step 2: Replace Dashboard browser generation**
 
 Remove `generateSignals` import/mutation and `SCAN_INTRADAY`/`SCAN_SCALPER` buttons. Query `listXauusdPaperSignals({ archived: false })`, render latest eight, and extend row layout with full `timestampPht`, title=`timestampUtc`, paper state, and 0.01 lot. Empty copy says auto-paper is disabled/degraded instead of instructing browser scan.
 
-- [ ] **Step 3: Replace Signal Center polling/writes**
+- [x] **Step 3: Replace Signal Center polling/writes**
 
 Remove `generateSignals`, `invalidateSignal`, and canonical `scoreSignalPerformance` polling. Add queries:
 
@@ -1267,17 +1267,17 @@ Remove `generateSignals`, `invalidateSignal`, and canonical `scoreSignalPerforma
 ["xauusd-shadow-learning"]
 ```
 
-Add Active/Archive filter backed by server query. Inspector shows fill, TP1 protection, exit, R result, engine accounting, provider timestamp, and paper-only label. Learning panel reads canonical candidate report and displays `SHADOW ONLY · NOT APPLIED`. No invalidate/delete button appears for canonical rows.
+Add Active/Archive filter backed by server query. Inspector shows fill, TP1 protection, exit, R result, engine accounting, provider timestamp, and paper-only label. Learning panel reads canonical candidate report and displays `SHADOW ONLY · NOT APPLIED`. No invalidate/delete button appears for canonical rows. (DTO extended with `entryTime`/`tp1ArmedAt`/`exitTime` so the inspector's fill/protection/exit rows have real timestamps.)
 
-- [ ] **Step 4: Make Chart history/overlay read-only**
+- [x] **Step 4: Make Chart history/overlay read-only**
 
 Remove `scoreSignalPerformance` query and browser-driven paper-loop comments. Query active canonical XAUUSD rows, filter selected timeframe/pair, and feed newest selected canonical signal into existing overlay props. Render full PHT timestamp plus optional relative age. Manual `PairScanner` controls become disabled research notice linking to Auto-Paper; they cannot call `generateSignals`.
 
-- [ ] **Step 5: Normalize strategy timestamps**
+- [x] **Step 5: Normalize strategy timestamps**
 
 Replace `new Date(signal.created_at).toLocaleString()` with `formatPhtTimestamp` and UTC tooltip.
 
-- [ ] **Step 6: Format and run compile gates**
+- [x] **Step 6: Format and run compile gates**
 
 ```powershell
 bunx prettier --write src/components/xauusd-auto-paper-panel.tsx src/routes/_authenticated/dashboard.tsx src/routes/_authenticated/signals.tsx src/routes/_authenticated/chart.tsx src/routes/_authenticated/strategies.tsx
@@ -1286,20 +1286,20 @@ bunx tsc --noEmit
 bun run build
 ```
 
-Expected: touched files lint clean, typecheck/build pass. Existing unrelated lint debt remains untouched.
+Expected: touched files lint clean, typecheck/build pass. Existing unrelated lint debt remains untouched. (0 eslint errors, 2 pre-existing effect-dependency warnings in chart.tsx; 349 tests pass; build succeeds.)
 
-- [ ] **Step 7: Authenticated browser acceptance**
+- [x] **Step 7: Authenticated browser acceptance**
 
-Rebuild/restart preview at `http://127.0.0.1:5176`. Verify:
+Verified live at `http://127.0.0.1:5173` (the plan's 5176 was stale):
 
-1. Dashboard and Signal Center render before migration, showing `migration_required` rather than crashing.
-2. Every visible signal timestamp ends `PHT` and includes weekday/date/time.
+1. Dashboard and Signal Center render with the auto-paper panel showing `WORKER_STANDBY` (no worker has reported health yet) rather than crashing.
+2. Every visible signal timestamp ends `PHT` and includes weekday/date/time (DTO + strategy detail tooltips expose `UTC` ISO).
 3. Active/Archive selection performs separate server queries.
-4. Chart contains no browser scoring request.
-5. Paper-only/no-broker copy remains visible.
-6. Toggle stays blocked until schema/provider health succeeds.
+4. Chart contains no browser scoring request — SIGNAL/ANALYSIS panels are read-only with the `SCANS_RETIRED` notice.
+5. Paper-only/no-broker copy remains visible on panel, rows, and research card.
+6. Toggle stays blocked (disabled switch) until schema/provider health succeeds.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```powershell
 git add -- src/components/xauusd-auto-paper-panel.tsx src/routes/_authenticated/dashboard.tsx src/routes/_authenticated/signals.tsx src/routes/_authenticated/chart.tsx src/routes/_authenticated/strategies.tsx

@@ -27,8 +27,10 @@ const ACTIVE_ROW: PaperSignalJoinRow = {
   stop_loss: "3408.25",
   take_profit_1: "3421.50",
   take_profit_2: "3430.00",
+  atr: "3.25",
   confluence: "78",
   contributing_strategies: ["momentum_breakout", "trend_following"],
+  rationale: "Breakout of the Asian range with momentum confirmation.",
   created_at: "2026-08-11T05:30:00.000Z",
   archived_at: null,
   engine_version: "3",
@@ -39,7 +41,10 @@ const ACTIVE_ROW: PaperSignalJoinRow = {
   paper_trades: {
     state: "open",
     entry_price: "3412.87",
+    entry_time: "2026-08-11T05:30:02.000Z",
+    tp1_armed_at: null,
     exit_price: null,
+    exit_time: null,
     result_r: null,
   },
   market_snapshots: {
@@ -65,7 +70,10 @@ const ARCHIVED_ROW: PaperSignalJoinRow = {
   paper_trades: {
     state: "closed_tp2",
     entry_price: "3398.10",
+    entry_time: "2026-08-11T05:30:02.000Z",
+    tp1_armed_at: "2026-08-11T06:12:00.000Z",
     exit_price: "3406.10",
+    exit_time: "2026-08-11T06:30:00.000Z",
     result_r: "2",
   },
 };
@@ -100,8 +108,10 @@ describe("mapPaperSignalListItem", () => {
     assert.equal(item.stopLoss, 3408.25);
     assert.equal(item.takeProfit1, 3421.5);
     assert.equal(item.takeProfit2, 3430);
+    assert.equal(item.atr, 3.25);
     assert.equal(item.confluence, 78);
     assert.deepEqual(item.contributingStrategies, ["momentum_breakout", "trend_following"]);
+    assert.equal(item.rationale, "Breakout of the Asian range with momentum confirmation.");
     assert.equal(item.lotSize, 0.01);
     assert.equal(item.paperOnly, true);
     assert.equal(item.paperLabel, "PAPER ONLY · 0.01 LOT · NO BROKER CONNECTION");
@@ -114,7 +124,10 @@ describe("mapPaperSignalListItem", () => {
     assert.deepEqual(item.trade, {
       state: "open",
       entryPrice: 3412.87,
+      entryTime: "2026-08-11T05:30:02.000Z",
+      tp1ArmedAt: null,
       exitPrice: null,
+      exitTime: null,
       resultR: null,
     });
     assert.deepEqual(item.provider, {
@@ -156,7 +169,10 @@ describe("mapPaperSignalListItem", () => {
     assert.deepEqual(item.trade, {
       state: "closed_tp2",
       entryPrice: 3398.1,
+      entryTime: "2026-08-11T05:30:02.000Z",
+      tp1ArmedAt: "2026-08-11T06:12:00.000Z",
       exitPrice: 3406.1,
+      exitTime: "2026-08-11T06:30:00.000Z",
       resultR: 2,
     });
   });

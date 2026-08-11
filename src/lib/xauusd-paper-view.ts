@@ -39,13 +39,19 @@ export type PaperTradeJoin =
   | {
       state: string;
       entry_price: number | string | null;
+      entry_time?: string | null;
+      tp1_armed_at?: string | null;
       exit_price: number | string | null;
+      exit_time?: string | null;
       result_r: number | string | null;
     }
   | {
       state: string;
       entry_price: number | string | null;
+      entry_time?: string | null;
+      tp1_armed_at?: string | null;
       exit_price: number | string | null;
+      exit_time?: string | null;
       result_r: number | string | null;
     }[]
   | null;
@@ -61,8 +67,10 @@ export type PaperSignalJoinRow = {
   stop_loss: number | string;
   take_profit_1: number | string;
   take_profit_2: number | string;
+  atr: number | string;
   confluence: number | string;
   contributing_strategies: string[];
+  rationale: string | null;
   created_at: string;
   archived_at: string | null;
   engine_version: string | null;
@@ -89,8 +97,10 @@ export type PaperSignalListItem = {
   stopLoss: number;
   takeProfit1: number;
   takeProfit2: number;
+  atr: number;
   confluence: number;
   contributingStrategies: string[];
+  rationale: string | null;
   lotSize: 0.01;
   paperOnly: true;
   paperLabel: typeof PAPER_ONLY_LABEL;
@@ -100,7 +110,10 @@ export type PaperSignalListItem = {
   trade: {
     state: PaperTradeState;
     entryPrice: number | null;
+    entryTime: string | null;
+    tp1ArmedAt: string | null;
     exitPrice: number | null;
+    exitTime: string | null;
     resultR: number | null;
   };
   provider: {
@@ -214,8 +227,10 @@ export function mapPaperSignalListItem(row: PaperSignalJoinRow): PaperSignalList
     stopLoss: toFinite(row.stop_loss, "stop_loss"),
     takeProfit1: toFinite(row.take_profit_1, "take_profit_1"),
     takeProfit2: toFinite(row.take_profit_2, "take_profit_2"),
+    atr: toFinite(row.atr, "atr"),
     confluence: toFinite(row.confluence, "confluence"),
     contributingStrategies: row.contributing_strategies,
+    rationale: row.rationale ?? null,
     lotSize: PAPER_LOT_SIZE,
     paperOnly: true,
     paperLabel: PAPER_ONLY_LABEL,
@@ -225,7 +240,10 @@ export function mapPaperSignalListItem(row: PaperSignalJoinRow): PaperSignalList
     trade: {
       state: trade.state as PaperTradeState,
       entryPrice: toNullableFinite(trade.entry_price, "entry_price"),
+      entryTime: "entry_time" in trade ? (trade.entry_time ?? null) : null,
+      tp1ArmedAt: "tp1_armed_at" in trade ? (trade.tp1_armed_at ?? null) : null,
       exitPrice: toNullableFinite(trade.exit_price, "exit_price"),
+      exitTime: "exit_time" in trade ? (trade.exit_time ?? null) : null,
       resultR: toNullableFinite(trade.result_r, "result_r"),
     },
     provider: {

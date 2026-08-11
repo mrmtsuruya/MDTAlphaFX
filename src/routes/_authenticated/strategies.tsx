@@ -13,6 +13,7 @@ import {
   type StrategyLeague,
   type StrategyLeagueRow,
 } from "@/lib/signals.functions";
+import { formatPhtTimestamp, utcIsoTitle } from "@/lib/pht-time";
 
 type Strategy = {
   id: string;
@@ -649,8 +650,11 @@ function StrategyDetailPanel({
                     </span>
                     <span className="text-neon-accent">{signal.confluence}%</span>
                     <StatusChip status={signal.status} />
-                    <span className="ml-auto text-muted-foreground">
-                      {new Date(signal.created_at).toLocaleString()}
+                    <span
+                      className="ml-auto text-muted-foreground"
+                      title={`UTC ${utcIsoTitle(signal.created_at)}`}
+                    >
+                      {formatPhtTimestamp(signal.created_at)}
                     </span>
                   </div>
                 ))}
