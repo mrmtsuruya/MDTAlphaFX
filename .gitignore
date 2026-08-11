@@ -48,3 +48,6 @@ MDTAlphaFX-BACKUP-*.tar.gz
 # Local preview tooling runtime state — a ~14MB SQLite db plus its WAL/SHM.
 # Machine-local and regenerable; nothing here belongs in a synced repo.
 .freebuff/
+
+# Isolated feature worktrees managed by Superpowers/Codex.
+.worktrees/
