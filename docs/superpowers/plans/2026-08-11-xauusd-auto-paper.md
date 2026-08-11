@@ -1384,8 +1384,10 @@ Never print values. VERIFIED on 2026-08-12: `supabase`, `docker`, `deno` all mis
 
 Step 5 verified on 2026-08-12 via the PGlite harness: `002` RLS (12/12 — owner sees own rows, all canonical writes denied with 42501, other user sees nothing) and `005` archive (8/8 — only the 31-day terminal signal archived at fixed p_now, trade archived too, both event ledgers untouched, re-run no-op). 001/003/004/006 remain green (33/7/10/14 — 006 covers configure_xauusd_paper_minute_job: fail-closed without any/partial Vault secrets, scheduled:x job id, xauusd-paper-minute row with `* * * * *`, command embedding the worker URL + apikey + x-worker-secret + empty body, idempotent re-run, archive job intact, authenticated denied with 42501). All 9 migrations apply. The harness is now committed: `bun run test:db` (tools/pgtap-run.mjs + vendored pgTAP under tools/pgtap/, devDependency @electric-sql/pglite). NOTE: the cron migration's `CREATE EXTENSION pg_cron/pg_net/supabase_vault` cannot run in PGlite; the harness strips those three statements and stubs `cron.schedule`, `net.http_post(url,headers,body)` and `vault.decrypted_secrets(name,decrypted_secret)` so the PL/pgSQL bodies still validate. The archive job is scheduled by the migration itself; the minute job only exists after the operator runs `configure_xauusd_paper_minute_job()` with all three Vault secrets present. 357 unit tests (20 static contract), tsc, build, focused lint, diff --check all green; full `bun run lint` shows only pre-existing prettier debt (types.ts generated + earlier-task files; `.worktrees/` doubles the count) — the three focused-list files with debt (xauusd-market-data.ts, oanda-xauusd-provider.ts, paper-trade-state.ts) were prettier-cleaned this task.
 
+Runbook staged: `tools/deploy-xauusd-paper.sh` — dry-run by default (checks `.env` vs `config.toml` project ref, CLI, credentials, secrets file; prints the staged plan, touches nothing), `--go` to execute in the safe order, `--fix-config` to rewrite `project_id` in `config.toml` to the `.env` ref, `SUPABASE_CMD` override for `npx supabase`; secret values are never printed and Vault SQL lands in a 0600 temp file.
+
 ```powershell
-supabase link --project-ref lcyxfrprcpyarhagkryz
+supabase link --project-ref <live ref from .env, e.g. mggqzhcacqthwoygmrhg>
 supabase migration list
 supabase db push --dry-run
 supabase db push

@@ -27,14 +27,15 @@ Verify everything with one command: `bash tools/verify.sh`
 - Vault secrets: `project_url` (e.g. `https://mggqzhcacqthwoygmrhg.supabase.co`), `publishable_key`, `xauusd_worker_cron_secret`.
 - Operator tooling: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_SERVICE_ROLE_KEY`.
 
-**Exact activation sequence (once tooling + credentials exist):**
+**Exact activation sequence (once tooling + credentials exist):** run `tools/deploy-xauusd-paper.sh` — dry-run by default (checks `.env` vs `config.toml` project ref, CLI, credentials, secrets file; prints the staged plan, touches nothing), `--go` to execute in the safe order. Raw commands for reference:
 ```powershell
-supabase link --project-ref mggqzhcacqthwoygmrhg   # after fixing config.toml
+supabase link --project-ref mggqzhcacqthwoygmrhg   # after fixing config.toml (--fix-config does it)
 supabase migration list
 supabase db push            # applies Tasks 6, 7, and the Task 11 cutover + cron
 supabase functions deploy xauusd-paper-worker
 supabase secrets set --env-file "$env:TEMP\xauusd-paper-secrets.env"  # operator-owned, outside repo
-# Store project_url, publishable_key, xauusd_worker_cron_secret in Vault, then:
+# The runbook stages vault.create_secret(...) SQL for project_url, publishable_key,
+# xauusd_worker_cron_secret into a 0600 file; paste into the SQL editor, then:
 # select configure_xauusd_paper_minute_job();  (service-role only; fails unless all 3 Vault secrets exist)
 # Verify provider health row, then enable the owner profile through the authenticated UI toggle.
 ```
