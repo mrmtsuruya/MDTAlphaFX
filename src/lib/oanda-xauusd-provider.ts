@@ -80,7 +80,10 @@ function parseNumber(value: unknown, field: string): number {
   return n;
 }
 
-function parseSide(side: unknown, label: "bid" | "ask"): {
+function parseSide(
+  side: unknown,
+  label: "bid" | "ask",
+): {
   open: number;
   high: number;
   low: number;
@@ -127,7 +130,10 @@ export function createOandaPracticeXauusdProvider(
       },
     });
     if (response.status === 401) {
-      throw new OandaMarketDataError("unauthorized", `OANDA rejected credentials (401) for ${path}`);
+      throw new OandaMarketDataError(
+        "unauthorized",
+        `OANDA rejected credentials (401) for ${path}`,
+      );
     }
     if (!response.ok) {
       throw new OandaMarketDataError(
@@ -197,7 +203,9 @@ export function createOandaPracticeXauusdProvider(
     for (const entry of latestCandles as Record<string, unknown>[]) {
       const tf = GRANULARITY_BY_CODE[String(entry.granularity)];
       if (!tf || !(tf in result)) continue;
-      const candles = Array.isArray(entry.candles) ? (entry.candles as Record<string, unknown>[]) : [];
+      const candles = Array.isArray(entry.candles)
+        ? (entry.candles as Record<string, unknown>[])
+        : [];
       const completed = candles.filter((c) => c.complete === true);
       const last = completed[completed.length - 1];
       if (last) result[tf] = normalizeTime(last.time);

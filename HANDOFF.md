@@ -9,6 +9,41 @@ Verify everything with one command: `bash tools/verify.sh`
 
 ---
 
+## XAUUSD Auto-Paper — activation state (2026-08-12)
+
+**State: NOT LIVE.** Code is complete through Task 11 (RLS cutover + scheduler written, pgTAP-verified); the live project has none of it. Do not claim the auto-paper system works anywhere except the local preview with a bridged dev session.
+
+**Commits (newest first):** `9388298` (Task 10 UI), `155744a` (Task 9 canonical read APIs), `faac17d` (Task 8 worker), `0c5a744` (Task 7 atomic RPCs), `39055aa` (Task 6 schema), `bb9904c` (pgTAP fixes), plus the Task 11 commit (`feat: secure and schedule XAUUSD paper trading`).
+
+**Local gates (all green on 2026-08-12):** 349 unit tests · `bunx tsc --noEmit` · `bun run build` · eslint focused · 20 static contract tests in `src/lib/paper-schema-contract.test.ts` · **70/70 pgTAP assertions** across all five `supabase/tests/database/*.test.sql` files, run against a PGlite harness (WASM Postgres 16 + pgTAP 1.3.3, Supabase role/auth/cron/net/vault stubs). The harness lives in `/tmp/pglite-tap` (not committed) because the machine has no Postgres server, Docker, or Supabase CLI.
+
+**Blocking facts (verified preflight, plan Task 11 Step 8):**
+- Live project `mggqzhcacqthwoygmrhg` (from `.env`) returns `PGRST205` for `scan_runs`, `paper_trading_profiles`, `paper_worker_health` — the Task 6/7 schema is NOT applied there.
+- Committed `supabase/config.toml` targets `lcyxfrprcpyarhagkryz`, which is unreachable; the working `.env` targets `mggqzhcacqthwoygmrhg`. **Resolve this project-ref mismatch before any link/deploy.**
+- No `supabase`/`docker`/`deno` on this machine; `SUPABASE_ACCESS_TOKEN`, `OANDA_ACCOUNT_ID`, `OANDA_API_TOKEN`, `SUPABASE_SERVICE_ROLE_KEY` are all unset.
+
+**Secrets required before activation:**
+- Edge-function secrets: `OANDA_ACCOUNT_ID`, `OANDA_API_TOKEN`, `XAUUSD_WORKER_CRON_SECRET` (matches the worker handler's `x-worker-secret` header).
+- Vault secrets: `project_url` (e.g. `https://mggqzhcacqthwoygmrhg.supabase.co`), `publishable_key`, `xauusd_worker_cron_secret`.
+- Operator tooling: `SUPABASE_ACCESS_TOKEN`, `SUPABASE_SERVICE_ROLE_KEY`.
+
+**Exact activation sequence (once tooling + credentials exist):**
+```powershell
+supabase link --project-ref mggqzhcacqthwoygmrhg   # after fixing config.toml
+supabase migration list
+supabase db push            # applies Tasks 6, 7, and the Task 11 cutover + cron
+supabase functions deploy xauusd-paper-worker
+supabase secrets set --env-file "$env:TEMP\xauusd-paper-secrets.env"  # operator-owned, outside repo
+# Store project_url, publishable_key, xauusd_worker_cron_secret in Vault, then:
+# select configure_xauusd_paper_minute_job();  (service-role only; fails unless all 3 Vault secrets exist)
+# Verify provider health row, then enable the owner profile through the authenticated UI toggle.
+```
+The minute job (`* * * * *` via pg_net POST to `/functions/v1/xauusd-paper-worker` with `x-worker-secret`) only exists after `configure_xauusd_paper_minute_job()` runs. The archive job (`5 16 * * *`) is scheduled by the cron migration itself. **Nothing auto-enables a profile.**
+
+**Definition of live:** migration applied AND worker deployed AND `configure_xauusd_paper_minute_job()` scheduled AND provider health `ok=true` AND owner profile `enabled=true`. Until all five hold, the auto-paper panel correctly shows standby/migration-required states.
+
+---
+
 ## 0. Orientation — read this before touching anything
 
 ### Build from a sandbox copy, not in place

@@ -358,9 +358,12 @@ export function advancePaperTrade(
       barsHeld,
     };
 
-    const touchedSl = trade.direction === "long" ? exitLow <= trade.stopLoss : exitHigh >= trade.stopLoss;
-    const touchedTp2 = trade.direction === "long" ? exitHigh >= trade.takeProfit2 : exitLow <= trade.takeProfit2;
-    const touchedTp1 = trade.direction === "long" ? exitHigh >= trade.takeProfit1 : exitLow <= trade.takeProfit1;
+    const touchedSl =
+      trade.direction === "long" ? exitLow <= trade.stopLoss : exitHigh >= trade.stopLoss;
+    const touchedTp2 =
+      trade.direction === "long" ? exitHigh >= trade.takeProfit2 : exitLow <= trade.takeProfit2;
+    const touchedTp1 =
+      trade.direction === "long" ? exitHigh >= trade.takeProfit1 : exitLow <= trade.takeProfit1;
 
     if (trade.state === "open") {
       // Stop beats every target when ordering is unknowable within the bar.
@@ -389,7 +392,8 @@ export function advancePaperTrade(
     // arming candle already returned above, so a strictly later candle can
     // reach the new stop — the same-candle round trip is never assumed.
     const breakevenLevel = entry;
-    const touchedBE = trade.direction === "long" ? exitLow <= breakevenLevel : exitHigh >= breakevenLevel;
+    const touchedBE =
+      trade.direction === "long" ? exitLow <= breakevenLevel : exitHigh >= breakevenLevel;
     if (touchedBE && touchedTp2) {
       return closeBreakeven(updated, c.time, breakevenLevel, true, {
         bidLow: c.bid.low,
@@ -414,10 +418,14 @@ export function advancePaperTrade(
     if (trade.direction === "long" ? sidePrice <= trade.stopLoss : sidePrice >= trade.stopLoss) {
       return closeStop(seen, q.providerTime, trade.stopLoss, false, { bid: q.bid, ask: q.ask });
     }
-    if (trade.direction === "long" ? sidePrice >= trade.takeProfit2 : sidePrice <= trade.takeProfit2) {
+    if (
+      trade.direction === "long" ? sidePrice >= trade.takeProfit2 : sidePrice <= trade.takeProfit2
+    ) {
       return closeTp2(seen, q.providerTime, { bid: q.bid, ask: q.ask });
     }
-    if (trade.direction === "long" ? sidePrice >= trade.takeProfit1 : sidePrice <= trade.takeProfit1) {
+    if (
+      trade.direction === "long" ? sidePrice >= trade.takeProfit1 : sidePrice <= trade.takeProfit1
+    ) {
       return armTp1(seen, q.providerTime, { bid: q.bid, ask: q.ask });
     }
     return observationOnly(seen, providerTs, { kind: "quote", bid: q.bid, ask: q.ask });
@@ -427,7 +435,9 @@ export function advancePaperTrade(
   if (trade.direction === "long" ? sidePrice <= breakevenLevel : sidePrice >= breakevenLevel) {
     return closeBreakeven(seen, q.providerTime, breakevenLevel, false, { bid: q.bid, ask: q.ask });
   }
-  if (trade.direction === "long" ? sidePrice >= trade.takeProfit2 : sidePrice <= trade.takeProfit2) {
+  if (
+    trade.direction === "long" ? sidePrice >= trade.takeProfit2 : sidePrice <= trade.takeProfit2
+  ) {
     return closeTp2(seen, q.providerTime, { bid: q.bid, ask: q.ask });
   }
   return observationOnly(seen, providerTs, { kind: "quote", bid: q.bid, ask: q.ask });

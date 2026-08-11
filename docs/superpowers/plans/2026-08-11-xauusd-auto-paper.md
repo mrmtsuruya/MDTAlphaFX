@@ -1322,7 +1322,7 @@ git commit -m "feat: show unattended XAUUSD paper trading UI"
 - Consumes: deployed worker/UI/RPCs.
 - Produces: authenticated canonical read-only policy; archive job; explicit worker-schedule configuration function.
 
-- [ ] **Step 1: Extend static security tests first**
+- [x] **Step 1: Extend static security tests first**
 
 Assert cutover SQL revokes authenticated `INSERT`, `UPDATE`, and `DELETE` on `signals`; revokes authenticated `INSERT` on `signal_events`; grants own-row SELECT only for canonical tables; contains no hard delete. Assert cron names/schedules exactly:
 
@@ -1331,17 +1331,17 @@ xauusd-paper-minute   * * * * *
 xauusd-paper-archive  5 16 * * *
 ```
 
-- [ ] **Step 2: Run and confirm failure**
+- [x] **Step 2: Run and confirm failure**
 
 ```powershell
 node --test src/lib/paper-schema-contract.test.ts
 ```
 
-- [ ] **Step 3: Implement forward-only RLS cutover**
+- [x] **Step 3: Implement forward-only RLS cutover**
 
 Drop existing `own signals` and `own signal events` `FOR ALL` policies. Revoke authenticated canonical writes. Create own-row SELECT policies. Profile mutation remains RPC-only. Service role retains required table/RPC access. Do not change legacy rows or delete events.
 
-- [ ] **Step 4: Implement scheduler SQL safely**
+- [x] **Step 4: Implement scheduler SQL safely**
 
 Enable `pg_cron`, `pg_net`, and Vault-supported secret lookup. Schedule archive directly at `5 16 * * *` to call `archive_xauusd_terminal_signals(now())`.
 
@@ -1349,15 +1349,15 @@ Create service-only `configure_xauusd_paper_minute_job()` that refuses to schedu
 
 Official scheduling pattern: [Supabase scheduled Edge Functions](https://supabase.com/docs/guides/functions/schedule-functions).
 
-- [ ] **Step 5: Write pgTAP RLS/archive tests**
+- [x] **Step 5: Write pgTAP RLS/archive tests**
 
 RLS test impersonates authenticated owner and another user, proving own SELECT succeeds while all canonical writes fail. Archive test inserts canonical terminal rows at 29 days and 31 days, calls RPC with fixed `p_now`, proves only 31-day row gains `archived_at`, and proves both event ledgers remain unchanged.
 
-- [ ] **Step 6: Update handoff with exact activation state**
+- [x] **Step 6: Update handoff with exact activation state**
 
 Document commits, local gates, unavailable infrastructure gates, required Vault/Edge secret names, and exact activation commands. State `not live` unless migration, function deployment, cron configuration, provider health, and owner profile enablement have all succeeded.
 
-- [ ] **Step 7: Run complete local gates**
+- [x] **Step 7: Run complete local gates**
 
 ```powershell
 bun run test
@@ -1380,7 +1380,9 @@ Get-ChildItem Env: | Where-Object { $_.Name -in @('SUPABASE_ACCESS_TOKEN','OANDA
 
 Never print values. VERIFIED on 2026-08-12: `supabase`, `docker`, `deno` all missing; `SUPABASE_ACCESS_TOKEN`, `OANDA_ACCOUNT_ID`, `OANDA_API_TOKEN`, `SUPABASE_SERVICE_ROLE_KEY` all unset. REST probes (publishable key, `?select=id&limit=1`) show the live project `mggqzhcacqthwoygmrhg` returns `PGRST205` for `scan_runs`, `paper_trading_profiles`, and `paper_worker_health` — the Task 6/7 paper schema is NOT applied there. The committed `config.toml` project id `lcyxfrprcpyarhagkryz` is unreachable (curl `000`) while the working `.env` points at `mggqzhcacqthwoygmrhg` — resolve this mismatch before any link/deploy. No remote migration/function/secret writes performed.
 
-- [ ] **Step 9: When authorized tools/credentials already exist, deploy in safe order**
+- [ ] **Step 9: When authorized tools/credentials already exist, deploy in safe order** (blocked — see Step 8 verification: no Supabase CLI/deno, no credentials, live project has no paper schema; activation commands documented in HANDOFF.md)
+
+Step 5 verified on 2026-08-12 via the PGlite harness: `002` RLS (12/12 — owner sees own rows, all canonical writes denied with 42501, other user sees nothing) and `005` archive (8/8 — only the 31-day terminal signal archived at fixed p_now, trade archived too, both event ledgers untouched, re-run no-op). 001/003/004 remain green (33/7/10). All 9 migrations apply. NOTE: the cron migration's `CREATE EXTENSION pg_cron/pg_net/supabase_vault` cannot run in PGlite; the harness strips those three statements and stubs `cron.schedule`, `net.http_post(url,headers,body)` and `vault.decrypted_secrets(name,decrypted_secret)` so the PL/pgSQL bodies still validate. The archive job is scheduled by the migration itself; the minute job only exists after the operator runs `configure_xauusd_paper_minute_job()` with all three Vault secrets present. 357 unit tests (20 static contract), tsc, build, focused lint, diff --check all green; full `bun run lint` shows only pre-existing prettier debt (types.ts generated + earlier-task files; `.worktrees/` doubles the count) — the three focused-list files with debt (xauusd-market-data.ts, oanda-xauusd-provider.ts, paper-trade-state.ts) were prettier-cleaned this task.
 
 ```powershell
 supabase link --project-ref lcyxfrprcpyarhagkryz
@@ -1397,7 +1399,7 @@ Operator-provided `$env:TEMP\xauusd-paper-secrets.env` contains `OANDA_ACCOUNT_I
 
 Record current latest scan in PHT, close dashboard tab, wait for newly completed M1 candle, reopen, and verify newer `scan_runs` row exists. If eligible engine signal exists, verify one signal/one 0.01 trade; otherwise verify explicit evaluated/abstained accounting and no fabricated trade.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```powershell
 git add -- supabase/migrations/20260811020000_xauusd_canonical_rls_cutover.sql supabase/migrations/20260811030000_xauusd_paper_cron.sql supabase/tests/database/002_xauusd_paper_rls.test.sql supabase/tests/database/005_xauusd_paper_archive.test.sql src/lib/paper-schema-contract.test.ts HANDOFF.md

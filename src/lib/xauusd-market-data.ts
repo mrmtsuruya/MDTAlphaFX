@@ -53,9 +53,7 @@ export type DataQualityCode =
   | "invalid_stop_distance"
   | "spread_too_wide";
 
-export type ValidationResult =
-  | { ok: true }
-  | { ok: false; code: DataQualityCode; detail: string };
+export type ValidationResult = { ok: true } | { ok: false; code: DataQualityCode; detail: string };
 
 /** Quote maximum age: 15,000 ms — anything older is not the market, it is a museum. */
 const QUOTE_MAX_AGE_MS = 15_000;
@@ -143,10 +141,7 @@ export function validateCandles(
         );
     }
     if (!validSide(candle.bid) || !validSide(candle.ask))
-      return fail(
-        "invalid_ohlc",
-        `bid/ask OHLC invariants violated at ${candle.time}`,
-      );
+      return fail("invalid_ohlc", `bid/ask OHLC invariants violated at ${candle.time}`);
     previousTime = time;
   }
   return { ok: true };
@@ -166,10 +161,7 @@ export function validateSpreadForSignal(
     return fail("invalid_stop_distance", `stop distance ${stopDistance} is not positive`);
   const spread = quote.ask - quote.bid;
   if (spread > 0.1 * stopDistance)
-    return fail(
-      "spread_too_wide",
-      `spread ${spread} exceeds 10% of stop distance ${stopDistance}`,
-    );
+    return fail("spread_too_wide", `spread ${spread} exceeds 10% of stop distance ${stopDistance}`);
   return { ok: true };
 }
 
