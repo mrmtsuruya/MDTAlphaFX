@@ -520,7 +520,7 @@ git commit -m "feat: add read-only OANDA XAUUSD provider"
 - Consumes: `NativeXauusdQuote` and `TwoSidedCandle` from Task 3.
 - Produces: `PAPER_LOT_SIZE`, `PAPER_POLICY_VERSION`, `PAPER_INSTRUMENT_SPEC_VERSION`, `PaperTradeState`, `PaperTrade`, `PaperObservation`, `PaperTransition`, `advancePaperTrade`.
 
-- [ ] **Step 1: Write failing state tests**
+- [x] **Step 1: Write failing state tests**
 
 Cover these exact cases for long and mirrored short fixtures:
 
@@ -547,13 +547,13 @@ assert.deepEqual(
 );
 ```
 
-- [ ] **Step 2: Run and confirm missing-module failure**
+- [x] **Step 2: Run and confirm missing-module failure**
 
 ```powershell
 node --test src/lib/paper-trade-state.test.ts
 ```
 
-- [ ] **Step 3: Implement state and transition types**
+- [x] **Step 3: Implement state and transition types**
 
 ```ts
 export const PAPER_LOT_SIZE = 0.01 as const;
@@ -624,7 +624,7 @@ export function advancePaperTrade(
 
 Use generation quote ask for long entry and quote bid for short entry. Use ask candle OHLC for later long entry, bid candle OHLC for later short entry, bid OHLC for long exit, and ask OHLC for short exit. Reject observations at or before `lastObservedAt`. Every accepted observation advances `lastObservedAt`; candles also update MAE/MFE and `barsHeld`. An observation with no state change emits idempotent key `observation:{providerTimestamp}` and event type `market_observed`. Check initial stop before targets when ordering is ambiguous. Once TP1 is armed, ignore breakeven on that same provider candle by recording `tp1ArmedAt` and requiring a later timestamp.
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 ```powershell
 node --test src/lib/paper-trade-state.test.ts
