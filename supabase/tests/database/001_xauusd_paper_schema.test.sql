@@ -1,7 +1,6 @@
 -- pgTAP schema coverage for the XAUUSD auto-paper canonical tables.
--- Runs only where a real Postgres + pgTAP exist (Docker/Supabase CLI); the
--- local machine currently has neither, so this file is committed as the
--- infrastructure-blocked gate and the static contracts in
+-- Run locally with `node tools/pgtap-run.mjs` (PGlite harness, no Docker)
+-- or via `supabase test db`; the static contracts in
 -- src/lib/paper-schema-contract.test.ts cover the same ground on Node.
 
 BEGIN;

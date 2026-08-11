@@ -2,7 +2,7 @@
 -- users can read only their own signals/signal_events and can no longer write
 -- either table. Impersonation is done the Supabase way: SET LOCAL ROLE
 -- authenticated plus a request.jwt.claims 'sub' that auth.uid() reads.
--- Requires the PGlite/Supabase harness auth stub from run-tests.mjs.
+-- Run locally with `node tools/pgtap-run.mjs 002` (PGlite harness).
 
 BEGIN;
 SELECT plan(12);

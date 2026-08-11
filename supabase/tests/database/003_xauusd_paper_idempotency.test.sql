@@ -1,8 +1,7 @@
 -- pgTAP idempotency coverage for the worker RPCs: a repeated claim or commit
--- must never produce a second scan run, signal, trade, or event. Runs only
--- where a real Postgres + pgTAP exist (Docker/Supabase CLI); the local
--- machine has neither, so this is committed as the infrastructure-blocked
--- gate (static contracts live in src/lib/paper-schema-contract.test.ts).
+-- must never produce a second scan run, signal, trade, or event.
+-- Run locally with `node tools/pgtap-run.mjs 003` (PGlite harness) or via
+-- `supabase test db` (static contracts live in src/lib/paper-schema-contract.test.ts).
 
 BEGIN;
 SELECT plan(7);

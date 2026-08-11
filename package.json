@@ -13,6 +13,7 @@
     "test:order-ticket": "node --test src/lib/order-ticket.test.ts",
     "test:chart-overlays": "node --test src/lib/chart-overlays.test.ts",
     "test": "node --test src/lib/*.test.ts",
+    "test:db": "node tools/pgtap-run.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
@@ -74,6 +75,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.4",
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "^2.7.7",
     "@types/node": "^22.16.5",

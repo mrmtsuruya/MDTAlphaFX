@@ -2,6 +2,7 @@
 -- signals older than 30 days gain archived_at, the matching trade is archived
 -- too, both event ledgers are untouched, and a re-run is a no-op. Fixtures are
 -- canonical worker rows (full provenance) with backdated created_at.
+-- Run locally with `node tools/pgtap-run.mjs 005` (PGlite harness).
 
 BEGIN;
 SELECT plan(8);

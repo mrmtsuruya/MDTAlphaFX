@@ -1,8 +1,8 @@
 -- pgTAP atomicity coverage for worker_apply_paper_transition: state and event
 -- writes are one transaction, a stale version is rejected, a duplicate event
 -- key never appends a second event, and an invalid next state rolls back the
--- whole transition. Runs only where a real Postgres + pgTAP exist; committed
--- as the infrastructure-blocked gate.
+-- whole transition. Run locally with `node tools/pgtap-run.mjs 004`
+-- (PGlite harness) or via `supabase test db`.
 
 BEGIN;
 SELECT plan(10);
