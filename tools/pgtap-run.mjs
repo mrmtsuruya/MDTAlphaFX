@@ -55,8 +55,24 @@ $$;
 -- must resolve at CREATE FUNCTION time; the harness strips the CREATE
 -- EXTENSION statements themselves (see prepForPGlite).
 CREATE SCHEMA cron;
+-- Mirrors real pg_cron's cron.job so tests can assert what got scheduled.
+CREATE TABLE cron.job (
+  jobid bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  jobname text NOT NULL UNIQUE,
+  schedule text NOT NULL,
+  command text NOT NULL,
+  active boolean NOT NULL DEFAULT true
+);
+-- Same upsert-by-jobname semantics as pg_cron >= 1.4.
 CREATE FUNCTION cron.schedule(p_job_name text, p_schedule text, p_command text)
-RETURNS bigint LANGUAGE sql AS $$ SELECT 1::bigint $$;
+RETURNS bigint LANGUAGE sql AS $$
+  INSERT INTO cron.job (jobname, schedule, command)
+  VALUES (p_job_name, p_schedule, p_command)
+  ON CONFLICT (jobname) DO UPDATE SET
+    schedule = EXCLUDED.schedule,
+    command = EXCLUDED.command
+  RETURNING jobid
+$$;
 CREATE SCHEMA net;
 CREATE FUNCTION net.http_post(url text, headers jsonb, body jsonb)
 RETURNS bigint LANGUAGE sql AS $$ SELECT 1::bigint $$;

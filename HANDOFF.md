@@ -15,7 +15,7 @@ Verify everything with one command: `bash tools/verify.sh`
 
 **Commits (newest first):** `9388298` (Task 10 UI), `155744a` (Task 9 canonical read APIs), `faac17d` (Task 8 worker), `0c5a744` (Task 7 atomic RPCs), `39055aa` (Task 6 schema), `bb9904c` (pgTAP fixes), plus the Task 11 commit (`feat: secure and schedule XAUUSD paper trading`).
 
-**Local gates (all green on 2026-08-12):** 357 unit tests · `bunx tsc --noEmit` · `bun run build` · eslint focused · 20 static contract tests in `src/lib/paper-schema-contract.test.ts` · **70/70 pgTAP assertions** across all five `supabase/tests/database/*.test.sql` files. Run the database tests with `bun run test:db` — a committed PGlite harness (`tools/pgtap-run.mjs`, WASM Postgres 16 + pgTAP 1.3.3 vendored under `tools/pgtap/`, Supabase role/auth/cron/net/vault stubs) that needs no Postgres server, Docker, or Supabase CLI. Individual files: `node tools/pgtap-run.mjs 002` etc.
+**Local gates (all green on 2026-08-12):** 357 unit tests · `bunx tsc --noEmit` · `bun run build` · eslint focused · 20 static contract tests in `src/lib/paper-schema-contract.test.ts` · **84/84 pgTAP assertions** across all six `supabase/tests/database/*.test.sql` files. Run the database tests with `bun run test:db` — a committed PGlite harness (`tools/pgtap-run.mjs`, WASM Postgres 16 + pgTAP 1.3.3 vendored under `tools/pgtap/`, Supabase role/auth/cron/net/vault stubs) that needs no Postgres server, Docker, or Supabase CLI. Individual files: `node tools/pgtap-run.mjs 002` etc.
 
 **Blocking facts (verified preflight, plan Task 11 Step 8):**
 - Live project `mggqzhcacqthwoygmrhg` (from `.env`) returns `PGRST205` for `scan_runs`, `paper_trading_profiles`, `paper_worker_health` — the Task 6/7 schema is NOT applied there.
