@@ -1,7 +1,9 @@
 # XAUUSD Auto-Paper Trading Core
 
-**Date:** 2026-08-11  
-**Status:** Approved design  
+**Date:** 2026-08-11
+
+**Status:** Approved design
+
 **Display timezone:** `Asia/Manila` (PHT, UTC+08:00)
 
 ## 1. Goal
