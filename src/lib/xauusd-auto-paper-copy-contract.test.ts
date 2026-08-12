@@ -1,11 +1,11 @@
-// Static contract over the migration-required copy: the auto-paper panel's
+// Static contract over the not-deployed copy: the auto-paper panel's
 // blocked-toggle reason and the dashboard / Signal Center empty states must
 // all render THE SAME sentence, so the pre-deploy messaging can never drift
-// between surfaces again (it already did once: the panel used to say "Schema
-// migration required — run the paper-trading migrations before enabling."
-// while the routes said "…before paper signals can appear."). Read the three
-// sources and pin the exact canonical string; any intentional copy change
-// must update this file too.
+// between surfaces again. The copy is deliberately free of "schema"/
+// "migrations" jargon — the earlier "Schema migration required — run the
+// paper-trading migrations before enabling." read like an expired state
+// instead of "not set up yet". Read the three sources and pin the exact
+// canonical string; any intentional copy change must update this file too.
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -24,18 +24,21 @@ const SIGNALS = readFileSync(
   "utf8",
 );
 
-const CANONICAL_MIGRATION_COPY =
-  "The Auto-Paper schema is not deployed yet — run the paper-trading migrations before paper signals can appear.";
+const CANONICAL_NOT_DEPLOYED_COPY =
+  "Auto-Paper is not deployed yet — paper signals appear once the worker is running.";
 
-// Old phrasings that must never return: the panel's former toggle reason and
-// the Signal Center's former "signals" (vs "paper signals") ending.
+// Old phrasings that must never return: the panel's former "Schema migration
+// required" toggle reason, the schema-jargon canonical sentence, and the
+// Signal Center's former "signals" (vs "paper signals") ending.
 const RETIRED_VARIANTS = [
   "Schema migration required — run the paper-trading migrations before enabling.",
+  "The Auto-Paper schema is not deployed yet — run the paper-trading migrations before paper signals can appear.",
+  "schema is not deployed yet",
+  "paper-trading migrations",
   "before signals can appear",
-  "The auto-paper schema is not deployed yet",
 ];
 
-test("all three surfaces render the identical migration-required sentence", () => {
+test("all three surfaces render the identical not-deployed sentence", () => {
   const surfaces = [
     ["panel toggle reason", PANEL],
     ["dashboard empty state", DASHBOARD],
@@ -43,8 +46,8 @@ test("all three surfaces render the identical migration-required sentence", () =
   ] as const;
   for (const [label, source] of surfaces) {
     assert.ok(
-      source.includes(CANONICAL_MIGRATION_COPY),
-      `${label} must contain the canonical migration-required copy`,
+      source.includes(CANONICAL_NOT_DEPLOYED_COPY),
+      `${label} must contain the canonical not-deployed copy`,
     );
   }
 });

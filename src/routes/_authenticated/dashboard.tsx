@@ -132,7 +132,7 @@ function Dashboard() {
           {!signalsQ.isLoading && signals.length === 0 && (
             <div className="p-6 text-sm text-muted-foreground">
               {healthQ.data?.status === "migration_required"
-                ? "The Auto-Paper schema is not deployed yet — run the paper-trading migrations before paper signals can appear."
+                ? "Auto-Paper is not deployed yet — paper signals appear once the worker is running."
                 : healthQ.data?.code === "no_health_reported"
                   ? "The worker has not reported health yet — paper signals appear once it is deployed and the minute cron is running."
                   : "No paper signals yet. Auto-Paper is disabled or the worker is degraded — enable Auto-Paper above and the worker publishes eligible XAUUSD signals automatically."}

@@ -187,7 +187,7 @@ function Signals() {
               <div className="p-6 text-sm text-muted-foreground">
                 {archive === "active"
                   ? healthQ.data?.status === "migration_required"
-                    ? "The Auto-Paper schema is not deployed yet — run the paper-trading migrations before paper signals can appear."
+                    ? "Auto-Paper is not deployed yet — paper signals appear once the worker is running."
                     : healthQ.data?.code === "no_health_reported"
                       ? "The worker has not reported health yet — paper signals appear once it is deployed and the minute cron is running."
                       : "No active paper signals yet. Enable Auto-Paper above and the worker publishes eligible XAUUSD signals automatically."
@@ -653,7 +653,7 @@ function LearningPanel({
           </div>
         </div>
         <span className="shrink-0 rounded-sm border border-neon-warn/40 bg-neon-warn/5 px-2 py-1 text-[9px] font-mono uppercase tracking-widest text-neon-warn">
-          SHADOW ONLY · NOT APPLIED
+          PAPER ONLY · NOT APPLIED TO LIVE
         </span>
       </div>
 
@@ -690,9 +690,9 @@ function LearningPanel({
             ))}
           </div>
           <div className="rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-3 py-2 text-[11px] text-neon-warn">
-            SHADOW ONLY · NOT APPLIED — these multipliers are candidates for review. Promotion needs
-            a later design covering minimum samples, walk-forward validation, approval, and
-            rollback. The engine never writes strategy_settings from this report.
+            These multipliers are candidates for review — nothing is applied to live weights.
+            Promotion needs a later design covering minimum samples, walk-forward validation,
+            approval, and rollback. The engine never writes strategy_settings from this report.
           </div>
         </div>
       )}

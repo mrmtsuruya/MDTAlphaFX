@@ -33,8 +33,12 @@ export function XauusdAutoPaperPanel({
       cls: "border-neon-warn/40 bg-neon-warn/5 text-neon-warn",
     },
     disabled: { label: "WORKER_STANDBY", cls: "border-cyber-border text-muted-foreground" },
+    // Display label deliberately not "MIGRATION_REQUIRED": at 9px mono that
+    // reads as "migration expired" (same length, same -IRED ending). The state
+    // is that migrations have NOT run yet — NOT_DEPLOYED matches the toggle
+    // reason and cannot be misread as a past-tense failure.
     migration_required: {
-      label: "MIGRATION_REQUIRED",
+      label: "NOT_DEPLOYED",
       cls: "border-neon-warn/40 bg-neon-warn/5 text-neon-warn",
     },
   };
@@ -98,8 +102,12 @@ export function XauusdAutoPaperPanel({
           />
           <PanelField
             label="DEGRADATION"
-            value={health?.status === "healthy" ? "NONE" : (health?.code ?? "unknown")}
-            tone={health?.ok === false ? "short" : "muted"}
+            // Degradation is a runtime concept: only an ENABLED worker whose last
+            // health check failed is degraded. "migration_required" (schema not
+            // deployed) and "no_health_reported" (standby) are not degradation —
+            // showing them here in red read like a live provider failure.
+            value={health?.status === "degraded" ? (health.code ?? "unknown") : "NONE"}
+            tone={health?.status === "degraded" ? "short" : "muted"}
           />
         </div>
 
@@ -137,10 +145,11 @@ function toggleBlocked(health: XauusdPaperHealth | undefined): {
   if (health.status === "migration_required") {
     return {
       blocked: true,
-      // Canonical migration copy — kept identical to the dashboard and Signal
+      // Canonical not-deployed copy — kept identical to the dashboard and Signal
       // Center empty states (see xauusd-auto-paper-copy-contract.test.ts).
-      reason:
-        "The Auto-Paper schema is not deployed yet — run the paper-trading migrations before paper signals can appear.",
+      // Deliberately free of "schema"/"migrations" jargon: that phrasing read
+      // like an expired state instead of "not set up yet".
+      reason: "Auto-Paper is not deployed yet — paper signals appear once the worker is running.",
     };
   }
   if (health.code === "credentials_missing") {
