@@ -160,7 +160,7 @@ export function createSupabasePaperRepository(
         p_ok: input.ok,
         p_code: input.code,
         p_checked_at: input.checkedAt,
-        p_provider: "OANDA_V20_PRACTICE",
+        p_provider: "TV_OANDA_FEED",
         p_instrument: "XAU_USD",
         p_quote_provider_time: input.providerTime,
         p_quote_age_ms: input.quoteAgeMs,

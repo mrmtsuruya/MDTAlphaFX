@@ -28,6 +28,7 @@ import {
 } from "./paper-scan-orchestration.ts";
 import { MTF_PLANS } from "./mtf-engine.ts";
 import { OandaMarketDataError } from "./oanda-xauusd-provider.ts";
+import { KeylessFeedError } from "./tv-keyless-provider.ts";
 
 export type WorkerRunCounts = {
   profiles: number;
@@ -47,6 +48,7 @@ function scanModeFor(timeframe: PaperTimeframe): "intraday" | "scalper" {
 
 function toSafeCode(error: unknown): string {
   if (error instanceof OandaMarketDataError) return error.code;
+  if (error instanceof KeylessFeedError) return error.code;
   if (error instanceof PaperScanError) return error.code;
   return "internal_error";
 }

@@ -4,16 +4,24 @@
 // before any engine runs or any trade is created. A single failed check
 // yields a machine-readable `DataQualityCode` and produces zero signals and
 // zero fills. There is deliberately no "close the gap" or "substitute the
-// close" fallback anywhere: the present TradingView/Yahoo feed is
-// `reference_only` and can never satisfy this contract.
+// close" fallback anywhere: a feed that cannot satisfy the contract produces
+// nothing.
+//
+// Two providers satisfy the contract: the original OANDA v20 practice adapter
+// (account-gated) and the keyless TradingView/Yahoo provider, which serves
+// OANDA's retail XAUUSD feed with no API key and synthesizes two-sided
+// candles from Yahoo mid-OHLC plus the live bid/ask spread (see
+// tv-keyless-provider.ts).
 
 import type { SignalEngineCandle } from "./signal-engine.ts";
 
 export const PAPER_TIMEFRAMES = ["M1", "M5", "M15", "M30", "H1", "H4", "D1"] as const;
 export type PaperTimeframe = (typeof PAPER_TIMEFRAMES)[number];
 
+export type PaperProvider = "OANDA_V20_PRACTICE" | "TV_OANDA_FEED";
+
 export type NativeXauusdQuote = {
-  provider: "OANDA_V20_PRACTICE";
+  provider: PaperProvider;
   instrument: "XAU_USD";
   bid: number;
   ask: number;

@@ -32,7 +32,7 @@ export type PaperEngineAccounting = {
 };
 
 export const PAPER_ONLY_LABEL = "PAPER ONLY · 0.01 LOT · NO BROKER CONNECTION" as const;
-export const PAPER_PROVIDER = "OANDA_V20_PRACTICE" as const;
+export const PAPER_PROVIDER = "TV_OANDA_FEED" as const;
 export const PAPER_INSTRUMENT = "XAU_USD" as const;
 
 export type PaperTradeJoin =

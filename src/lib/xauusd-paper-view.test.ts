@@ -48,7 +48,7 @@ const ACTIVE_ROW: PaperSignalJoinRow = {
     result_r: null,
   },
   market_snapshots: {
-    provider: "OANDA_V20_PRACTICE",
+    provider: "TV_OANDA_FEED",
     instrument: "XAU_USD",
     provider_time: "2026-08-11T05:29:58.123Z",
   },
@@ -131,7 +131,7 @@ describe("mapPaperSignalListItem", () => {
       resultR: null,
     });
     assert.deepEqual(item.provider, {
-      name: "OANDA_V20_PRACTICE",
+      name: "TV_OANDA_FEED",
       instrument: "XAU_USD",
       providerTime: "2026-08-11T05:29:58.123Z",
     });

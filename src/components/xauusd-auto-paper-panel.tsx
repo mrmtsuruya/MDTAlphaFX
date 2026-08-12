@@ -78,7 +78,7 @@ export function XauusdAutoPaperPanel({
             value={
               health?.provider
                 ? `${health.provider} · ${health.instrument}`
-                : "OANDA_V20_PRACTICE · XAU_USD"
+                : "TV_OANDA_FEED · XAU_USD"
             }
           />
           <PanelField
