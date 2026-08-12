@@ -11,16 +11,18 @@ Verify everything with one command: `bash tools/verify.sh`
 
 ## XAUUSD Auto-Paper — activation state (2026-08-12)
 
-**State: NOT LIVE.** Code is complete through Task 11 (RLS cutover + scheduler written, pgTAP-verified); the live project has none of it. Do not claim the auto-paper system works anywhere except the local preview with a bridged dev session.
+**State: MIGRATIONS APPLIED, NOT LIVE.** On 2026-08-12 the Task 6/7/11 migrations were pushed to the live project `mggqzhcacqthwoygmrhg` (`supabase db push`, CLI 2.113.0): all five xauusd migrations applied cleanly, and the auto-paper panel flipped from `NOT_DEPLOYED` to `WORKER_STANDBY` in the live preview. Still NOT LIVE: the worker Edge function is not deployed, the minute cron is not scheduled (no Vault secrets / `configure_xauusd_paper_minute_job()` yet), and no profile is enabled. Do not claim the worker runs anywhere.
 
 **Commits (newest first):** `9388298` (Task 10 UI), `155744a` (Task 9 canonical read APIs), `faac17d` (Task 8 worker), `0c5a744` (Task 7 atomic RPCs), `39055aa` (Task 6 schema), `bb9904c` (pgTAP fixes), plus the Task 11 commit (`feat: secure and schedule XAUUSD paper trading`).
 
 **Local gates (all green on 2026-08-12):** 366 unit tests · `bunx tsc --noEmit` · `bun run build` · eslint focused · 20 static contract tests in `src/lib/paper-schema-contract.test.ts` · **94/94 pgTAP assertions** across all seven `supabase/tests/database/*.test.sql` files. Run the database tests with `bun run test:db` — a committed PGlite harness (`tools/pgtap-run.mjs`, WASM Postgres 16 + pgTAP 1.3.3 vendored under `tools/pgtap/`, Supabase role/auth/cron/net/vault stubs) that needs no Postgres server, Docker, or Supabase CLI. Individual files: `node tools/pgtap-run.mjs 002` etc. `007` is the scheduler end-to-end: it inserts the three Vault secrets, runs `configure_xauusd_paper_minute_job()`, EXECUTEs the stored cron command through the `net.http_post` stub (which records into `net.http_request`), and asserts the recorded request satisfies every `createWorkerHandler` check (POST by construction, `x-worker-secret` equal to the vault secret, empty `{}` body) — the TS acceptance side is proven by `xauusd-paper-handler.test.ts`.
 
-**Blocking facts (verified preflight, plan Task 11 Step 8):**
-- Live project `mggqzhcacqthwoygmrhg` (from `.env`) returns `PGRST205` for `scan_runs`, `paper_trading_profiles`, `paper_worker_health` — the Task 6/7 schema is NOT applied there.
-- Committed `supabase/config.toml` targets `lcyxfrprcpyarhagkryz`, which is unreachable; the working `.env` targets `mggqzhcacqthwoygmrhg`. **Resolve this project-ref mismatch before any link/deploy.**
-- No `supabase`/`docker`/`deno` on this machine; `SUPABASE_ACCESS_TOKEN`, `OANDA_ACCOUNT_ID`, `OANDA_API_TOKEN`, `SUPABASE_SERVICE_ROLE_KEY` are all unset.
+**Deployment facts (as of 2026-08-12, after the push):**
+- `supabase/config.toml` now targets `mggqzhcacqthwoygmrhg` (was the unreachable `lcyxfrprcpyarhagkryz`); `.gitignore` gained `supabase/.temp/` (CLI link state).
+- Supabase CLI 2.113.0 installed globally (npm, user-scoped); project linked; `SUPABASE_ACCESS_TOKEN` provided by the operator (never written to the repo).
+- The remote had NO CLI migration history (schema was created via the dashboard SQL editor). **Baseline reconciliation:** the four legacy migrations (`20260729003507`, `20260729003547`, `20260807000001`, `20260807000002`) were marked applied in `supabase_migrations.schema_migrations` via `supabase db query --linked` (bookkeeping only, no schema change), then `db push` applied the five xauusd migrations (`20260811010000` expand, `20260811010100` catalog backfill, `20260811010200` worker RPCs, `20260811020000` RLS cutover, `20260811030000` cron). All 9 now show Applied/Remote.
+- Verified live: `paper_worker_health`, `scan_runs`, `market_snapshots` return HTTP 200 (were `PGRST205`); `signals` resolves with the new provenance columns; the panel shows `WORKER_STANDBY` + "The worker has not reported health yet…" with `DEGRADATION: NONE`.
+- Still unset on this machine: `OANDA_ACCOUNT_ID`, `OANDA_API_TOKEN`, `SUPABASE_SERVICE_ROLE_KEY` (needed for the worker deploy + secrets + Vault + cron).
 
 **Secrets required before activation:**
 - Edge-function secrets: `OANDA_ACCOUNT_ID`, `OANDA_API_TOKEN`, `XAUUSD_WORKER_CRON_SECRET` (matches the worker handler's `x-worker-secret` header).
