@@ -152,6 +152,16 @@ function toggleBlocked(health: XauusdPaperHealth | undefined): {
       reason: "Unsupported instrument — the worker only trades OANDA practice XAU_USD.",
     };
   }
+  if (health.code === "no_health_reported") {
+    // Schema exists but the worker has never posted a health row: not deployed
+    // yet, or the minute cron has not fired. This is standby, not a feed
+    // failure — the toggle unlocks on the first healthy report.
+    return {
+      blocked: true,
+      reason:
+        "The worker has not reported health yet — it posts once per minute once deployed and the minute cron is running; activation unlocks on the first healthy report.",
+    };
+  }
   if (!health.ok) {
     return {
       blocked: true,

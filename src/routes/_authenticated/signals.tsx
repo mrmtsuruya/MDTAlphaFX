@@ -182,7 +182,11 @@ function Signals() {
             {!signalsQ.isLoading && signals.length === 0 && (
               <div className="p-6 text-sm text-muted-foreground">
                 {archive === "active"
-                  ? "No active paper signals yet. Enable Auto-Paper above and the worker publishes eligible XAUUSD signals automatically."
+                  ? healthQ.data?.status === "migration_required"
+                    ? "The auto-paper schema is not deployed yet — run the paper-trading migrations before signals can appear."
+                    : healthQ.data?.code === "no_health_reported"
+                      ? "The worker has not reported health yet — paper signals appear once it is deployed and the minute cron is running."
+                      : "No active paper signals yet. Enable Auto-Paper above and the worker publishes eligible XAUUSD signals automatically."
                   : "No archived paper signals yet — terminal signals are archived after 30 days."}
               </div>
             )}

@@ -14,6 +14,7 @@
     "test:chart-overlays": "node --test src/lib/chart-overlays.test.ts",
     "test": "node --test src/lib/*.test.ts",
     "test:db": "node tools/pgtap-run.mjs",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

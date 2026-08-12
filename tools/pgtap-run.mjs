@@ -74,8 +74,23 @@ RETURNS bigint LANGUAGE sql AS $$
   RETURNING jobid
 $$;
 CREATE SCHEMA net;
+-- Records every invocation so tests can assert exactly what the stored cron
+-- command posts (same observable pattern as the cron.job stub). The parameter
+-- names must be url/headers/body because the cron command calls net.http_post
+-- with named arguments.
+CREATE TABLE net.http_request (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  url text NOT NULL,
+  headers jsonb NOT NULL,
+  body jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
 CREATE FUNCTION net.http_post(url text, headers jsonb, body jsonb)
-RETURNS bigint LANGUAGE sql AS $$ SELECT 1::bigint $$;
+RETURNS bigint LANGUAGE sql AS $$
+  INSERT INTO net.http_request (url, headers, body)
+  SELECT url, headers, body
+  RETURNING id
+$$;
 CREATE SCHEMA vault;
 CREATE TABLE vault.decrypted_secrets (
   name text PRIMARY KEY,

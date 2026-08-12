@@ -131,8 +131,11 @@ function Dashboard() {
           )}
           {!signalsQ.isLoading && signals.length === 0 && (
             <div className="p-6 text-sm text-muted-foreground">
-              No paper signals yet. Auto-paper is disabled or the worker is degraded — enable it
-              above and the next scan publishes eligible XAUUSD signals automatically.
+              {healthQ.data?.status === "migration_required"
+                ? "The auto-paper schema is not deployed yet — run the paper-trading migrations before paper signals can appear."
+                : healthQ.data?.code === "no_health_reported"
+                  ? "The worker has not reported health yet — paper signals appear once it is deployed and the minute cron is running."
+                  : "No paper signals yet. Auto-paper is disabled or the worker is degraded — enable it above and the next scan publishes eligible XAUUSD signals automatically."}
             </div>
           )}
           {signals.slice(0, 8).map((s) => (

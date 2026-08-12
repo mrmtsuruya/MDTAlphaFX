@@ -7,7 +7,8 @@
 // set_xauusd_paper_enabled RPC; signals/trades are worker-owned and appear
 // here as immutable read-only DTOs.
 //
-// When the schema is missing (42P01 / PGRST205) the functions return a
+// When the schema is missing (42P01 / PGRST205 / PGRST200 / PGRST204 /
+// PGRST202 — see xauusd-paper-schema-detection.ts) the functions return a
 // `migration_required` health state and a disabled profile instead of
 // crashing the authenticated UI.
 
@@ -15,6 +16,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { formatPhtTimestamp, utcIsoTitle } from "./pht-time.ts";
+import { isMissingSchemaError } from "./xauusd-paper-schema-detection.ts";
 import {
   mapPaperSignalListItem,
   mapPaperShadowLearningReport,
@@ -39,13 +41,6 @@ const SIGNAL_VIEW_SELECT =
 const OUTCOME_SELECT =
   "id, pair, direction, mode, timeframe, confluence, contributing_strategies, " +
   "created_at, archived_at, execution_policy_version, generated_by, paper_trades(state)";
-
-/** The supabase error message for a missing table (42P01) or absent schema
- *  cache entry (PGRST205) — the migration_required state, not a crash. */
-function isMissingSchemaError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.includes("42P01") || message.includes("PGRST205");
-}
 
 const DISABLED_PROFILE = {
   enabled: false,
@@ -92,7 +87,13 @@ export const setXauusdPaperEnabled = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("set_xauusd_paper_enabled", {
       p_enabled: data.enabled,
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      // The RPC is a migration artifact: pre-deploy it is PGRST202 (function
+      // missing from the schema cache). Route it like every other schema-missing
+      // error instead of leaking raw PostgREST text to the client.
+      if (isMissingSchemaError(error)) throw new Error("migration_required");
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -171,7 +172,10 @@ export const getXauusdPaperHealth = createServerFn({ method: "GET" })
       provider: health?.provider ?? "",
       instrument: health?.instrument ?? "",
       ok: health?.ok ?? false,
-      code: health?.code ?? "unknown",
+      // No singleton health row = the worker has never reported (not deployed,
+      // or the minute cron never fired). "unknown" would make the panel read
+      // like a live provider failure; this code keeps WORKER_STANDBY honest.
+      code: health?.code ?? "no_health_reported",
       checkedAtPht: health?.checked_at ? formatPhtTimestamp(health.checked_at) : null,
       checkedAtUtc: health?.checked_at ? utcIsoTitle(health.checked_at) : null,
       quoteAgeMs: health?.quote_age_ms ?? null,
