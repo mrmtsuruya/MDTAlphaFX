@@ -1244,7 +1244,7 @@ function PairScanner({
 
       {/* SIGNAL is for reading the worker's canonical history; ANALYSIS holds
           the selected signal's research card. Neither can generate a signal —
-          the unattended auto-paper worker owns generation now. */}
+          the unattended Auto-Paper worker owns generation now. */}
       {view === "signal" && (
         <PairSignalHistory
           pair={pair}
@@ -1279,7 +1279,7 @@ function PairScanner({
 
 /**
  * Manual scan controls are retired. Signals are generated only by the
- * unattended auto-paper worker (XAUUSD, 0.01 lot, no broker connection) — this
+ * unattended Auto-Paper worker (XAUUSD, 0.01 lot, no broker connection) — this
  * panel reads its history and can never call a generator.
  */
 function DisabledScanNotice() {
@@ -1287,7 +1287,7 @@ function DisabledScanNotice() {
     <div className="flex items-start gap-2 rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-2.5 py-2">
       <CircleAlert className="mt-0.5 size-3 shrink-0 text-neon-warn" />
       <p className="font-mono text-[9.5px] leading-snug text-muted-foreground">
-        SCANS_RETIRED — signals come from the unattended auto-paper worker only.{" "}
+        SCANS_RETIRED — signals come from the unattended Auto-Paper worker only.{" "}
         <Link to="/dashboard" className="text-neon-accent underline-offset-2 hover:underline">
           AUTO_PAPER →
         </Link>
@@ -1351,7 +1351,7 @@ function PairSignalHistory({
 
       {!loading && rows.length === 0 && (
         <p className="font-mono text-[10px] leading-relaxed text-muted-foreground">
-          No canonical signals for {pair} on {timeframe} yet. The auto-paper worker generates XAUUSD
+          No canonical signals for {pair} on {timeframe} yet. The Auto-Paper worker generates XAUUSD
           signals unattended — enable it from the Dashboard.
         </p>
       )}

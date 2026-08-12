@@ -137,7 +137,10 @@ function toggleBlocked(health: XauusdPaperHealth | undefined): {
   if (health.status === "migration_required") {
     return {
       blocked: true,
-      reason: "Schema migration required — run the paper-trading migrations before enabling.",
+      // Canonical migration copy — kept identical to the dashboard and Signal
+      // Center empty states (see xauusd-auto-paper-copy-contract.test.ts).
+      reason:
+        "The Auto-Paper schema is not deployed yet — run the paper-trading migrations before paper signals can appear.",
     };
   }
   if (health.code === "credentials_missing") {
