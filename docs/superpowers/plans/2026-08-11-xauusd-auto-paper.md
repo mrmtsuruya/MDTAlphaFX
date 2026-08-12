@@ -1399,6 +1399,8 @@ supabase secrets set --env-file "$env:TEMP\xauusd-paper-secrets.env"
 
 Operator-provided `$env:TEMP\xauusd-paper-secrets.env` contains `OANDA_ACCOUNT_ID`, `OANDA_API_TOKEN`, and `XAUUSD_WORKER_CRON_SECRET`. It stays outside the repository. Store `project_url`, `publishable_key`, and the same worker secret in Vault, call `configure_xauusd_paper_minute_job()`, run provider health, then enable owner profile through authenticated UI. Never print or commit the secret file.
 
+KEYLESS CUTOVER (2026-08-12, supersedes the OANDA requirement): the worker no longer takes a broker account. `src/lib/tv-keyless-provider.ts` implements the same `XauusdMarketDataProvider` contract against the free TradingView scanner feed (OANDA retail XAUUSD bid/ask, no key) and Yahoo Finance candles, synthesizing two-sided OHLC from mid + live spread; the Edge function reads only `XAUUSD_WORKER_CRON_SECRET` + `SUPABASE_SERVICE_ROLE_KEY` (+ platform `SUPABASE_URL`); migration `20260812000000` relaxes the `market_snapshots.provider` CHECK to `('OANDA_V20_PRACTICE','TV_OANDA_FEED')`. The Signal Center now shows an MT5-style open position (`xauusd-paper-position.tsx` + pure `xauusd-paper-pnl.ts`): live price, floating P&L in $ and R, TP1/TP2/SL price ladder. 382 unit tests, tsc, build, prettier, diff --check green; pgTAP suite now 10 migrations, still ALL_PASS.
+
 - [ ] **Step 10: Prove browser independence after activation**
 
 Record current latest scan in PHT, close dashboard tab, wait for newly completed M1 candle, reopen, and verify newer `scan_runs` row exists. If eligible engine signal exists, verify one signal/one 0.01 trade; otherwise verify explicit evaluated/abstained accounting and no fabricated trade.
