@@ -14,7 +14,9 @@ import {
   type PaperShadowLearningReport,
   type PaperSignalListItem,
 } from "@/lib/xauusd-paper.functions";
+import { getMarketQuotes } from "@/lib/market-data.functions";
 import { XauusdAutoPaperPanel } from "@/components/xauusd-auto-paper-panel";
+import { XauusdPaperPosition } from "@/components/xauusd-paper-position";
 import {
   consultSignalWithLocalCli,
   getLocalCliHealth,
@@ -45,6 +47,7 @@ function Signals() {
   const perfFn = useServerFn(getXauusdPaperPerformance);
   const learningFn = useServerFn(getXauusdShadowLearning);
   const setEnabledFn = useServerFn(setXauusdPaperEnabled);
+  const quotesFn = useServerFn(getMarketQuotes);
   const qc = useQueryClient();
   const [archive, setArchive] = useState<"active" | "archive">("active");
   const [selected, setSelected] = useState<string | null>(null);
@@ -78,6 +81,14 @@ function Signals() {
     refetchInterval: 30_000,
     retry: false,
   });
+  // Live XAUUSD quote for the MT5-style floating P&L on the open position.
+  const quoteQ = useQuery({
+    queryKey: ["market-quotes", ["XAUUSD"]],
+    queryFn: () => quotesFn({ data: { pairs: ["XAUUSD"] } }),
+    refetchInterval: 10_000,
+    retry: false,
+  });
+  const xauusdQuote = quoteQ.data?.quotes?.find((q) => q.pair === "XAUUSD");
   const cliStatus = useQuery({
     queryKey: ["local-cli-health"],
     queryFn: getLocalCliHealth,
@@ -234,6 +245,8 @@ function Signals() {
                   <div className="rounded-sm border border-neon-accent/30 bg-neon-accent/5 px-2 py-1.5 text-[10px] font-bold text-neon-accent">
                     {s.paperLabel}
                   </div>
+
+                  <XauusdPaperPosition signal={s} quote={xauusdQuote} />
 
                   <div className="grid grid-cols-2 gap-2">
                     <InspectorField label="ENTRY" value={s.entry} />
