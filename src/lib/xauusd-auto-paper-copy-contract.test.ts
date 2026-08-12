@@ -1,11 +1,15 @@
-// Static contract over the not-deployed copy: the auto-paper panel's
-// blocked-toggle reason and the dashboard / Signal Center empty states must
-// all render THE SAME sentence, so the pre-deploy messaging can never drift
-// between surfaces again. The copy is deliberately free of "schema"/
-// "migrations" jargon — the earlier "Schema migration required — run the
-// paper-trading migrations before enabling." read like an expired state
-// instead of "not set up yet". Read the three sources and pin the exact
-// canonical string; any intentional copy change must update this file too.
+// Static contract over the user-facing auto-paper copy:
+// 1. The panel's blocked-toggle reason and the dashboard / Signal Center
+//    empty states must all render THE SAME sentence, so the pre-deploy
+//    messaging can never drift between surfaces again. The copy is
+//    deliberately free of "schema"/"migrations" jargon — the earlier "Schema
+//    migration required — run the paper-trading migrations before enabling."
+//    read like an expired state instead of "not set up yet".
+// 2. The Signal Center learning panel's badge must keep the canonical
+//    paper-only label, and "SHADOW ONLY" (jargon used nowhere else in the
+//    app) must never return.
+// Read the three sources and pin the exact canonical strings; any
+// intentional copy change must update this file too.
 
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -27,15 +31,24 @@ const SIGNALS = readFileSync(
 const CANONICAL_NOT_DEPLOYED_COPY =
   "Auto-Paper is not deployed yet — paper signals appear once the worker is running.";
 
+// The learning panel's badge: "PAPER ONLY" matches the rest of the app's
+// vocabulary ("PAPER ONLY · 0.01 LOT · NO BROKER CONNECTION"), and
+// "NOT APPLIED TO LIVE" states what the DTO means (applied: false).
+const CANONICAL_LEARNING_BADGE = "PAPER ONLY · NOT APPLIED TO LIVE";
+
 // Old phrasings that must never return: the panel's former "Schema migration
-// required" toggle reason, the schema-jargon canonical sentence, and the
-// Signal Center's former "signals" (vs "paper signals") ending.
+// required" toggle reason, the schema-jargon canonical sentence, the Signal
+// Center's former "signals" (vs "paper signals") ending, and the learning
+// badge's former "SHADOW ONLY" jargon (with its redundant "NOT APPLIED"
+// partner — "shadow" implies not applied, so the pair said it twice).
 const RETIRED_VARIANTS = [
   "Schema migration required — run the paper-trading migrations before enabling.",
   "The Auto-Paper schema is not deployed yet — run the paper-trading migrations before paper signals can appear.",
   "schema is not deployed yet",
   "paper-trading migrations",
   "before signals can appear",
+  "SHADOW ONLY · NOT APPLIED",
+  "SHADOW ONLY",
 ];
 
 test("all three surfaces render the identical not-deployed sentence", () => {
@@ -52,7 +65,14 @@ test("all three surfaces render the identical not-deployed sentence", () => {
   }
 });
 
-test("no retired migration phrasing reappears in any of the three surfaces", () => {
+test("the Signal Center learning badge uses the canonical paper-only label", () => {
+  assert.ok(
+    SIGNALS.includes(CANONICAL_LEARNING_BADGE),
+    "signals.tsx must contain the canonical learning badge",
+  );
+});
+
+test("no retired phrasing reappears in any of the three surfaces", () => {
   for (const [label, source] of [
     ["panel", PANEL],
     ["dashboard", DASHBOARD],
