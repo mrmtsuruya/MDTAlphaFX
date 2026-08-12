@@ -8,10 +8,10 @@
 // cron's empty POST.
 
 import { createClient } from "@supabase/supabase-js";
-import { createTvKeylessXauusdProvider } from "../../src/lib/tv-keyless-provider.ts";
-import { createSupabasePaperRepository } from "../../src/lib/xauusd-paper-repository.ts";
-import { runXauusdPaperCycle } from "../../src/lib/xauusd-paper-worker.ts";
-import { createWorkerHandler } from "../../src/lib/xauusd-paper-handler.ts";
+import { createTvKeylessXauusdProvider } from "../../../src/lib/tv-keyless-provider.ts";
+import { createSupabasePaperRepository } from "../../../src/lib/xauusd-paper-repository.ts";
+import { runXauusdPaperCycle } from "../../../src/lib/xauusd-paper-worker.ts";
+import { createWorkerHandler } from "../../../src/lib/xauusd-paper-handler.ts";
 
 const WORKER_ENGINE_VERSION = "engine-2026-08-11-v1";
 const WORKER_POLICY_VERSION = "policy-2026-08-11-v1";
