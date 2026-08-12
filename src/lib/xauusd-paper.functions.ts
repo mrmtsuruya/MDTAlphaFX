@@ -30,12 +30,16 @@ import {
 
 export type { PaperPerformanceReport, PaperShadowLearningReport, PaperSignalListItem };
 
+// market_snapshots has TWO relationships to signals (the FK via
+// market_snapshot_id AND the many-to-many via signal_market_snapshots), so
+// PostgREST refuses the bare embed with PGRST201. Pin the canonical FK embed
+// so the list query resolves (the panel reads the signal's own snapshot).
 const SIGNAL_VIEW_SELECT =
   "id, pair, direction, mode, timeframe, entry, stop_loss, take_profit_1, " +
   "take_profit_2, atr, confluence, contributing_strategies, rationale, created_at, archived_at, " +
   "engine_version, policy_version, execution_policy_version, generated_by, scan_fingerprint, " +
   "paper_trades(state, entry_price, entry_time, tp1_armed_at, exit_price, exit_time, result_r), " +
-  "market_snapshots(provider, instrument, provider_time), " +
+  "market_snapshots!signals_market_snapshot_id_fkey(provider, instrument, provider_time), " +
   "scan_runs(engine_accounting)";
 
 const OUTCOME_SELECT =

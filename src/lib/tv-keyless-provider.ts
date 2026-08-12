@@ -250,21 +250,28 @@ export function createTvKeylessXauusdProvider(
   }
 
   // Range-based fetch (survives weekend gaps): used for full candle sets.
+  //
+  // Every timeframe is bucketed onto its UTC grid, not just H4. GC=F's raw
+  // timestamps are not epoch-aligned: the current forming bar carries a live
+  // off-grid stamp (e.g. 18:35:15 for a 5m series — it advances every fetch,
+  // so an unbucketed "latest completed" produces a new scan fingerprint every
+  // minute and every entry series ends in a candle_gap), and the daily bars
+  // anchor at 04:00/05:00 UTC (shifting across DST) with occasional partial
+  // session bars at other times. The worker's fail-closed validator demands
+  // consecutive bars differ by whole multiples of the interval, so the raw
+  // series must be normalized here.
   async function fetchYahooRange(
     timeframe: PaperTimeframe,
   ): Promise<{ time: string; open: number; high: number; low: number; close: number }[]> {
     const { interval, range } = TF_YAHOO[timeframe];
     const url = `${YAHOO_CHART}/${YAHOO_SYMBOL}?interval=${interval}&range=${range}`;
     const payload = await yahooFetch(url, timeframe);
-    let bars = parseYahooChart(payload, timeframe);
-    if (timeframe === "H4") {
-      bars = bucketCandles(bars, TF_SECONDS.H4);
-    }
-    return bars;
+    return bucketCandles(parseYahooChart(payload, timeframe), TF_SECONDS[timeframe]);
   }
 
   // Span-based fetch (period1/period2): light, used only to discover the last
-  // completed candle time per timeframe.
+  // completed candle time per timeframe. Bucketed identically to the range
+  // fetch so both agree on what a completed candle is.
   async function fetchYahooSpan(
     timeframe: PaperTimeframe,
     spanSeconds: number,
@@ -275,11 +282,7 @@ export function createTvKeylessXauusdProvider(
     const period1 = period2 - spanSeconds;
     const url = `${YAHOO_CHART}/${YAHOO_SYMBOL}?interval=${interval}&period1=${period1}&period2=${period2}`;
     const payload = await yahooFetch(url, timeframe);
-    let bars = parseYahooChart(payload, timeframe);
-    if (timeframe === "H4") {
-      bars = bucketCandles(bars, TF_SECONDS.H4);
-    }
-    return bars;
+    return bucketCandles(parseYahooChart(payload, timeframe), TF_SECONDS[timeframe]);
   }
 
   async function yahooFetch(url: string, timeframe: PaperTimeframe): Promise<unknown> {

@@ -163,6 +163,85 @@ test("H4 candles are bucketed from 1h bars into 4-hour windows", async () => {
   }
 });
 
+test("off-grid forming bars are bucketed so M5 scans stay valid and fingerprints stable", async () => {
+  // GC=F emits a live forming bar with a non-grid timestamp that advances on
+  // every fetch (e.g. 18:35:15 after 18:35:00). Left raw, the series ends in a
+  // candle_gap and latestCompleted changes each minute, re-claiming the scan.
+  const M5_BARS: Bar[] = [
+    { time: "2026-08-11T07:30:00.000Z", o: 4400.0, h: 4400.5, l: 4399.5, c: 4400.1 },
+    { time: "2026-08-11T07:35:00.000Z", o: 4400.1, h: 4400.6, l: 4399.6, c: 4400.2 },
+    // Forming bar: same 07:35 bucket, off-grid stamp (07:35:15), and a live
+    // tick that updates the bucket's close rather than opening a new bar.
+    { time: "2026-08-11T07:35:15.000Z", o: 4400.2, h: 4400.7, l: 4399.7, c: 4400.4 },
+    // 07:40 is still forming at NOW (07:40:00 + 300s = 07:45 > 07:42:11) —
+    // both it and 07:45 must be filtered out, leaving 07:35 as the last
+    // complete bucket.
+    { time: "2026-08-11T07:40:00.000Z", o: 4400.4, h: 4400.9, l: 4399.9, c: 4400.5 },
+    { time: "2026-08-11T07:45:00.000Z", o: 4400.5, h: 4401.0, l: 4400.0, c: 4400.6 },
+  ];
+  const { fetchImpl } = buildFakeFetch(
+    router({
+      "scanner.tradingview.com": TV_PAYLOAD,
+      "query1.finance.yahoo.com": yahooPayload(M5_BARS),
+    }),
+  );
+  const provider = makeProvider(fetchImpl);
+  const candles = await provider.completedCandles("M5", 400);
+  assert.deepEqual(validateCandles(candles, "M5"), {
+    ok: true,
+  });
+  // The 07:35:15 forming tick must merge into the 07:35 bucket, not open a
+  // separate off-grid bar.
+  const times = candles.map((c) => c.time);
+  assert.ok(!times.includes("2026-08-11T07:35:15.000Z"), "forming tick must not appear as its own bar");
+  const last = candles[candles.length - 1];
+  assert.equal(last.time, "2026-08-11T07:35:00.000Z");
+  // Rebased onto spot (4403.85) from the last raw bar (07:45 close 4400.6),
+  // so the bucket close = 4400.4 + (4403.85 - 4400.6) - half-spread.
+  assert.equal(last.bid.close, 4403.6, "bucket close must carry the last tick in the bucket");
+
+  // latestCompleted must be grid-stable, not advancing with the forming tick,
+  // so the scan fingerprint does not change between real 5m closes.
+  const latest = await provider.latestCompleted(["M5"]);
+  assert.equal(latest.M5, "2026-08-11T07:35:00.000Z");
+});
+
+test("D1 series anchored off midnight (futures session + DST + partial day) is bucketed to whole days", async () => {
+  // GC=F daily bars anchor at 04:00 UTC (shifting to 05:00 across DST) with a
+  // partial session bar at 14:30. Raw consecutive gaps are not multiples of
+  // 86400s, which fails the worker's continuity check; bucketing to UTC
+  // midnight makes every day whole-aligned and merges the partial bar.
+  // All four are complete by NOW (2026-08-11T07:42): each day's bucket closes
+  // 86400s after its midnight start, well before 07:42 on the 11th.
+  const D1_BARS: Bar[] = [
+    { time: "2026-08-07T04:00:00.000Z", o: 4400, h: 4410, l: 4390, c: 4405 },
+    { time: "2026-08-08T04:00:00.000Z", o: 4405, h: 4415, l: 4395, c: 4410 },
+    { time: "2026-08-09T05:00:00.000Z", o: 4410, h: 4420, l: 4400, c: 4415 }, // DST-shifted
+    { time: "2026-08-09T14:30:00.000Z", o: 4415, h: 4425, l: 4405, c: 4420 }, // partial session
+  ];
+  const { fetchImpl } = buildFakeFetch(
+    router({
+      "scanner.tradingview.com": TV_PAYLOAD,
+      "query1.finance.yahoo.com": yahooPayload(D1_BARS),
+    }),
+  );
+  const provider = makeProvider(fetchImpl);
+  const candles = await provider.completedCandles("D1", 400);
+  assert.deepEqual(validateCandles(candles, "D1"), { ok: true });
+  const times = candles.map((c) => c.time);
+  assert.deepEqual(
+    times,
+    ["2026-08-07T00:00:00.000Z", "2026-08-08T00:00:00.000Z", "2026-08-09T00:00:00.000Z"],
+    "DST + partial bars must merge into their UTC day bucket",
+  );
+  const last = candles[candles.length - 1];
+  // Rebased onto spot (4403.85) from the last raw bar (08-09 14:30 close
+  // 4420), so the merged day close = 4420 + (4403.85 - 4420) - half-spread.
+  assert.ok(Math.abs(last.bid.close - 4403.8) < 1e-9, "partial-session close must win the merged day bucket");
+  const latest = await provider.latestCompleted(["D1"]);
+  assert.equal(latest.D1, "2026-08-09T00:00:00.000Z");
+});
+
 test("latestCompleted returns the last complete candle time and null for empty timeframes", async () => {
   const { fetchImpl } = buildFakeFetch(
     router({
