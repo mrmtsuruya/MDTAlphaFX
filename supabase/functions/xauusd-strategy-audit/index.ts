@@ -14,12 +14,18 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { runRealBacktestForPair } from "../../../src/lib/real-backtest.server.ts";
+import { buildAuditRunRows } from "../../../src/lib/strategy-audit-mapper.ts";
 
 const AUDIT_TIMEFRAMES = ["M15", "H1"] as const;
 
 export function buildAuditHandler(opts: {
   expectedSecret: string;
-  runAudit: () => Promise<{ runId: string; timeframes: string[]; rowsWritten: number }>;
+  runAudit: () => Promise<{
+    runId: string;
+    timeframes: string[];
+    rowsWritten: number;
+    debug: unknown;
+  }>;
 }) {
   return async (req: Request): Promise<Response> => {
     if (req.method === "OPTIONS") {
@@ -68,54 +74,34 @@ function buildAuditRunner() {
     const runId = crypto.randomUUID();
     let rowsWritten = 0;
     const timeframes: string[] = [];
+    const debug: unknown[] = [];
 
     for (const timeframe of AUDIT_TIMEFRAMES) {
       const report = await runRealBacktestForPair("XAUUSD", timeframe, 720);
       timeframes.push(timeframe);
+      debug.push({
+        timeframe,
+        totalCandles: report.totalCandles,
+        completeCandles: report.completeCandles,
+        sufficientData: report.sufficientData,
+        insufficiencyReason: report.insufficiencyReason,
+        trades: report.trades.length,
+        inSample: report.inSample ? report.inSample.byStrategy.length : null,
+        outOfSample: report.outOfSample ? report.outOfSample.byStrategy.length : null,
+      });
       if (!report.outOfSample || !report.inSample) continue;
 
-      const windowStart = report.trades.reduce(
-        (min, trade) => (min === "" || trade.signalTime < min ? trade.signalTime : min),
-        "",
-      );
-      const windowEnd = report.trades.reduce(
-        (max, trade) => (trade.signalTime > max ? trade.signalTime : max),
-        "",
-      );
-
-      for (const segment of ["in_sample", "out_of_sample"] as const) {
-        const segmentReport = report[segment];
-        if (!segmentReport) continue;
-        for (const stat of segmentReport.byStrategy) {
-          const row = {
-            run_id: runId,
-            user_id: profile.user_id,
-            pair: "XAUUSD",
-            timeframe,
-            strategy_id: stat.label,
-            segment,
-            resolved: stat.trades - stat.open,
-            wins: stat.wins,
-            scratches: stat.scratches,
-            losses: stat.losses,
-            open: stat.open,
-            win_rate: stat.winRate ?? null,
-            total_r: stat.totalR,
-            expectancy_r: stat.expectancyR ?? null,
-            window_start: windowStart || new Date(0).toISOString(),
-            window_end: windowEnd || new Date().toISOString(),
-            notes: report.notes,
-          };
-          const { error } = await client.from("strategy_audit_runs").upsert(row, {
-            onConflict: "run_id,user_id,timeframe,strategy_id,segment",
-          });
-          if (error) throw error;
-          rowsWritten += 1;
-        }
+      const rows = buildAuditRunRows({ report, runId, userId: profile.user_id });
+      for (const row of rows) {
+        const { error } = await client.from("strategy_audit_runs").upsert(row, {
+          onConflict: "run_id,user_id,timeframe,strategy_id,segment",
+        });
+        if (error) throw error;
       }
+      rowsWritten += rows.length;
     }
 
-    return { runId, timeframes, rowsWritten };
+    return { runId, timeframes, rowsWritten, debug };
   };
 }
 
