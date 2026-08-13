@@ -12,9 +12,11 @@ import {
   mapPaperSignalListItem,
   mapPaperShadowLearningReport,
   summarizePaperPerformance,
+  summarizePaperStrategyHealth,
   PaperViewMappingError,
   type PaperLearningOutcomeRow,
   type PaperSignalJoinRow,
+  type PaperStrategyHealthRow,
 } from "./xauusd-paper-view.ts";
 
 const ACTIVE_ROW: PaperSignalJoinRow = {
@@ -352,4 +354,94 @@ describe("summarizePaperPerformance", () => {
     assert.equal(report.wins, 0);
     assert.equal(report.totalR, 0);
   });
+});
+
+// ---------------------------------------------------------------------------
+// summarizePaperStrategyHealth — the forward-tested scorecard aggregation.
+// ---------------------------------------------------------------------------
+
+function healthRow(
+  strategies: string[],
+  state: string,
+  resultR: number | null,
+  mode = "intraday",
+): PaperStrategyHealthRow {
+  return {
+    id: crypto.randomUUID(),
+    mode,
+    timeframe: "M15",
+    contributing_strategies: strategies,
+    created_at: "2026-08-12T00:00:00.000Z",
+    paper_trades: { state, result_r: resultR },
+  };
+}
+
+it("aggregates wins, scratches, losses and R per contributing strategy", () => {
+  const report = summarizePaperStrategyHealth([
+    healthRow(["ema_trend", "donchian_break"], "closed_tp2", 2),
+    healthRow(["ema_trend", "donchian_break"], "closed_breakeven", 0),
+    healthRow(["ema_trend"], "closed_stop", -1),
+    healthRow(["ema_trend"], "closed_stop", -1),
+    healthRow(["vwap_mean_rev"], "closed_stop", -1),
+  ]);
+  const ema = report.strategies.find((s) => s.strategyId === "ema_trend")!;
+  const donchian = report.strategies.find((s) => s.strategyId === "donchian_break")!;
+  const vwap = report.strategies.find((s) => s.strategyId === "vwap_mean_rev")!;
+  assert.equal(ema.signals, 4);
+  assert.equal(ema.resolved, 4);
+  assert.equal(ema.wins, 1);
+  assert.equal(ema.scratches, 1);
+  assert.equal(ema.losses, 2);
+  assert.equal(ema.totalR, 0); // 2 + 0 - 1 - 1
+  assert.equal(ema.winRate, 25);
+  assert.equal(ema.sampleOk, false);
+  assert.equal(donchian.resolved, 2);
+  assert.equal(donchian.totalR, 2);
+  // Winners sort first.
+  assert.ok(report.strategies[0].strategyId === "donchian_break" || report.strategies[0].strategyId === "ema_trend");
+  assert.equal(report.strategies.at(-1)!.strategyId, "vwap_mean_rev");
+  assert.equal(vwap.totalR, -1);
+  assert.equal(vwap.winRate, 0);
+});
+
+it("counts expired and open trades but never resolves them", () => {
+  const report = summarizePaperStrategyHealth([
+    healthRow(["rsi_momo"], "expired", null),
+    healthRow(["rsi_momo"], "open", null),
+    healthRow(["rsi_momo"], "tp1_protected", null),
+    healthRow(["rsi_momo"], "closed_tp2", 2),
+  ]);
+  const rsi = report.strategies[0];
+  assert.equal(rsi.signals, 4);
+  assert.equal(rsi.resolved, 1);
+  assert.equal(rsi.expired, 1);
+  assert.equal(rsi.open, 2);
+  assert.equal(rsi.winRate, 100);
+});
+
+it("splits by mode and reports null rates for empty strategy ids", () => {
+  const report = summarizePaperStrategyHealth([
+    healthRow(["bos_choch"], "closed_tp2", 2, "scalper"),
+    healthRow(["bos_choch"], "closed_stop", -1, "scalper"),
+    healthRow(["bos_choch"], "closed_tp2", 2, "intraday"),
+  ]);
+  const bos = report.strategies[0];
+  assert.equal(bos.byMode.scalper!.resolved, 2);
+  assert.equal(bos.byMode.scalper!.winRate, 50);
+  assert.equal(bos.byMode.intraday!.resolved, 1);
+  assert.equal(bos.byMode.intraday!.winRate, 100);
+  assert.equal(bos.resolved, 3);
+  assert.equal(bos.totalR, 3);
+});
+
+it("flags the 20-trade sample floor and never fabricates a rate", () => {
+  const rows = Array.from({ length: 25 }, (_, i) =>
+    healthRow(["ichimoku"], i % 2 === 0 ? "closed_tp2" : "closed_stop", i % 2 === 0 ? 2 : -1),
+  );
+  const ichimoku = summarizePaperStrategyHealth(rows).strategies[0];
+  assert.equal(ichimoku.resolved, 25);
+  assert.equal(ichimoku.sampleOk, true);
+  const empty = summarizePaperStrategyHealth([]);
+  assert.equal(empty.strategies.length, 0);
+  assert.equal(empty.resolvedTotal, 0);
 });

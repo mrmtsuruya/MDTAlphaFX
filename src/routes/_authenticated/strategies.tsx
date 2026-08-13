@@ -13,6 +13,7 @@ import {
   type StrategyLeague,
   type StrategyLeagueRow,
 } from "@/lib/signals.functions";
+import { getXauusdPaperStrategyHealth } from "@/lib/xauusd-paper.functions";
 import { formatPhtTimestamp, utcIsoTitle } from "@/lib/pht-time";
 
 type Strategy = {
@@ -774,6 +775,8 @@ function Strategies() {
         onAuditMode={setAuditMode}
       />
 
+      <PaperLedgerHealth />
+
       {selectedStrategy && (
         <StrategyDetailPanel
           detail={detail.data}
@@ -851,3 +854,227 @@ function Strategies() {
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// PaperLedgerHealth — the forward-tested scorecard. The league's walk-forward
+// view is candle-based and explicitly excludes canonical worker rows; this is
+// the ledger's own answer: what the 0.01-lot paper account actually did with
+// each contributing strategy, with the 20-resolved-trade sample floor shown.
+// ---------------------------------------------------------------------------
+
+function PaperLedgerHealth() {
+  const healthFn = useServerFn(getXauusdPaperStrategyHealth);
+  const health = useQuery({
+    queryKey: ["paper-strategy-health"],
+    queryFn: () => healthFn(),
+    refetchInterval: 60_000,
+    retry: false,
+  });
+  const report = health.data;
+
+  return (
+    <section className="rounded-lg border border-cyber-border bg-cyber-surface">
+      <div className="px-4 py-3 border-b border-cyber-border flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-neon-accent">
+            // PAPER_LEDGER_HEALTH
+          </div>
+          <div className="mt-0.5 text-[11px] text-muted-foreground">
+            The 0.01-lot paper account's resolved record per contributing strategy — wins, BE
+            scratches, losses, R. A rate below{" "}
+            <span className="text-white">20 resolved trades</span> is noise, not a verdict.
+          </div>
+        </div>
+        {report && (
+          <span className="rounded-sm border border-cyber-border px-2 py-1 font-mono text-[9px] text-muted-foreground">
+            {report.resolvedTotal} RESOLVED TRADES
+          </span>
+        )}
+      </div>
+
+      {health.isLoading && !report && (
+        <div className="p-4 font-mono text-[10px] text-muted-foreground">LOADING LEDGER…</div>
+      )}
+      {health.isError && (
+        <div className="p-4 font-mono text-[10px] text-neon-warn">
+          LEDGER_UNAVAILABLE — {health.error instanceof Error ? health.error.message : "error"}
+        </div>
+      )}
+      {report && report.strategies.length === 0 && (
+        <div className="p-4 font-mono text-[10px] text-muted-foreground">
+          No resolved paper trades yet. The Auto-Paper worker generates XAUUSD signals unattended —
+          enable it from the Dashboard, then this table fills with what the engine actually did.
+        </div>
+      )}
+      {report && report.strategies.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full font-mono text-[10px]">
+            <thead>
+              <tr className="text-left text-[9px] uppercase tracking-widest text-muted-foreground border-b border-cyber-border">
+                <th className="px-3 py-2">Strategy</th>
+                <th className="px-2 py-2 text-right">Sig</th>
+                <th className="px-2 py-2 text-right">Res</th>
+                <th className="px-2 py-2 text-right">W</th>
+                <th className="px-2 py-2 text-right">BE</th>
+                <th className="px-2 py-2 text-right">L</th>
+                <th className="px-2 py-2 text-right">Win%</th>
+                <th className="px-2 py-2 text-right">TotalR</th>
+                <th className="px-2 py-2 text-right">ExpR</th>
+                <th className="px-3 py-2 text-right">Floor</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-cyber-border">
+              {report.strategies.map((row) => (
+                <tr key={row.strategyId} className="hover:bg-cyber-surface-2">
+                  <td className="px-3 py-1.5">
+                    <span className="text-white">{row.strategyId}</span>
+                    {row.byMode.scalper != null && row.byMode.scalper.resolved > 0 && (
+                      <span className="ml-1.5 text-[8px] text-muted-foreground">
+                        {row.byMode.scalper.signals} scalper
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-2 py-1.5 text-right text-muted-foreground">{row.signals}</td>
+                  <td className="px-2 py-1.5 text-right text-white">{row.resolved}</td>
+                  <td className="px-2 py-1.5 text-right text-neon-long">{row.wins}</td>
+                  <td className="px-2 py-1.5 text-right text-muted-foreground">{row.scratches}</td>
+                  <td className="px-2 py-1.5 text-right text-neon-short">{row.losses}</td>
+                  <td
+                    className={`px-2 py-1.5 text-right ${
+                      row.winRate == null
+                        ? "text-muted-foreground"
+                        : row.winRate >= 50
+                          ? "text-neon-long"
+                          : "text-neon-warn"
+                    }`}
+                  >
+                    {row.winRate == null ? "—" : `${Math.round(row.winRate)}%`}
+                  </td>
+                  <td
+                    className={`px-2 py-1.5 text-right font-bold ${
+                      row.totalR > 0 ? "text-neon-long" : row.totalR < 0 ? "text-neon-short" : "text-white"
+                    }`}
+                  >
+                    {row.totalR > 0 ? "+" : ""}
+                    {row.totalR.toFixed(1)}
+                  </td>
+                  <td className="px-2 py-1.5 text-right text-muted-foreground">
+                    {row.expectancyR == null ? "—" : `${row.expectancyR > 0 ? "+" : ""}${row.expectancyR.toFixed(2)}R`}
+                  </td>
+                  <td className="px-3 py-1.5 text-right">
+                    {row.sampleOk ? (
+                      <span className="rounded-sm border border-neon-long/30 bg-neon-long/5 px-1.5 py-0.5 text-[8px] text-neon-long">
+                        ≥20 ✓
+                      </span>
+                    ) : (
+                      <span className="rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-1.5 py-0.5 text-[8px] text-neon-warn">
+                        SAMPLE&lt;20
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <WalkForwardAuditRuns />
+    </section>
+  );
+}
+
+/** Latest weekly walk-forward audit runs (from the scheduled edge function).
+ *  Gracefully reports when the audit job is not deployed yet. */
+function WalkForwardAuditRuns() {
+  const [runs, setRuns] = useState<WalkForwardAuditRun[] | null>(null);
+  const [state, setState] = useState<"loading" | "ready" | "missing" | "error">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+      const { data, error } = await supabase
+        .from("strategy_audit_runs")
+        .select("run_id, timeframe, segment, strategy_id, resolved, win_rate, total_r, generated_at")
+        .eq("user_id", user.user.id)
+        .order("generated_at", { ascending: false })
+        .limit(60);
+      if (cancelled) return;
+      if (error) {
+        const code = (error as { code?: string }).code ?? "";
+        setState(/PGRST2|42P01/.test(code) ? "missing" : "error");
+        return;
+      }
+      setRuns((data ?? []) as WalkForwardAuditRun[]);
+      setState("ready");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (state === "missing") {
+    return (
+      <div className="border-t border-cyber-border px-4 py-3 font-mono text-[9px] text-muted-foreground">
+        // WALK_FORWARD_AUDIT — the weekly job is not deployed yet. Run{" "}
+        <span className="text-neon-accent">tools/deploy-strategy-audit.sh --go</span> and the
+        weekly scorecards land here.
+      </div>
+    );
+  }
+  if (state === "error") {
+    return (
+      <div className="border-t border-cyber-border px-4 py-3 font-mono text-[9px] text-neon-warn">
+        // WALK_FORWARD_AUDIT — unavailable
+      </div>
+    );
+  }
+  if (state !== "ready" || !runs || runs.length === 0) return null;
+
+  const latestRunAt = new Date(runs[0].generated_at).toISOString();
+  const latestByTf = new Map<string, WalkForwardAuditRun[]>();
+  for (const run of runs) {
+    if (!latestByTf.has(run.timeframe)) latestByTf.set(run.timeframe, []);
+    latestByTf.get(run.timeframe)!.push(run);
+  }
+  return (
+    <div className="border-t border-cyber-border px-4 py-3 space-y-2">
+      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+        // WALK_FORWARD_AUDIT · {formatPhtTimestamp(latestRunAt)}
+      </div>
+      {[...latestByTf.entries()].map(([tf, tfRuns]) => {
+        const oos = tfRuns
+          .filter((r) => r.segment === "out_of_sample")
+          .sort((a, b) => b.total_r - a.total_r)
+          .slice(0, 5);
+        if (oos.length === 0) return null;
+        return (
+          <div key={tf} className="font-mono text-[9px]">
+            <span className="text-neon-accent">{tf} OOS</span>
+            <span className="ml-2 text-muted-foreground">
+              {oos
+                .map(
+                  (r) =>
+                    `${r.strategy_id} ${r.total_r > 0 ? "+" : ""}${r.total_r.toFixed(1)}R`,
+                )
+                .join(" · ")}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+type WalkForwardAuditRun = {
+  run_id: string;
+  timeframe: string;
+  segment: string;
+  strategy_id: string;
+  resolved: number;
+  win_rate: number | null;
+  total_r: number;
+  generated_at: string;
+};

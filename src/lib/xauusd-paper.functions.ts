@@ -22,6 +22,7 @@ import {
   mapPaperSignalListItem,
   mapPaperShadowLearningReport,
   summarizePaperPerformance,
+  summarizePaperStrategyHealth,
   type PaperAccountRow,
   type PaperLearningOutcomeRow,
   type PaperPerformanceReport,
@@ -30,9 +31,11 @@ import {
   type PaperSignalDetailRow,
   type PaperSignalJoinRow,
   type PaperSignalListItem,
+  type PaperStrategyHealthReport,
+  type PaperStrategyHealthRow,
 } from "./xauusd-paper-view.ts";
 
-export type { PaperAccountRow, PaperPerformanceReport, PaperShadowLearningReport, PaperSignalDetail, PaperSignalListItem };
+export type { PaperAccountRow, PaperPerformanceReport, PaperShadowLearningReport, PaperSignalDetail, PaperSignalListItem, PaperStrategyHealthReport };
 
 // market_snapshots has TWO relationships to signals (the FK via
 // market_snapshot_id AND the many-to-many via signal_market_snapshots), so
@@ -304,6 +307,35 @@ export const getXauusdPaperAccount = createServerFn({ method: "GET" })
       throw new Error(error.message);
     }
     return (data ?? []) as unknown as PaperAccountRow[];
+  });
+
+const STRATEGY_HEALTH_SELECT =
+  "id, mode, timeframe, contributing_strategies, created_at, " +
+  "paper_trades(state, result_r, mae_r, mfe_r, bars_held, ambiguous_intrabar, entry_time, exit_time)";
+
+/**
+ * Per-strategy scorecard over the caller's canonical paper ledger: wins,
+ * scratches (BE after TP1), losses, total R, win rate and expectancy per
+ * contributing strategy, with the 20-resolved-trade sample floor flagged.
+ * This is the forward-tested record the league's walk-forward view cannot
+ * see (it excludes canonical rows) — the two are complementary.
+ */
+export const getXauusdPaperStrategyHealth = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data, error } = await supabase
+      .from("signals")
+      .select(STRATEGY_HEALTH_SELECT)
+      .eq("user_id", userId)
+      .eq("generated_by", "xauusd_paper_worker")
+      .order("created_at", { ascending: false })
+      .limit(2000);
+    if (error) {
+      if (isMissingSchemaError(error)) throw new Error("migration_required");
+      throw new Error(error.message);
+    }
+    return summarizePaperStrategyHealth((data ?? []) as unknown as PaperStrategyHealthRow[]);
   });
 
 

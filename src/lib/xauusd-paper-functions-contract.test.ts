@@ -23,6 +23,7 @@ const AUTHENTICATED_FUNCTIONS = [
   "getXauusdPaperPerformance",
   "getXauusdShadowLearning",
   "getXauusdPaperAccount",
+  "getXauusdPaperStrategyHealth",
 ];
 
 function functionBlock(name: string): string {

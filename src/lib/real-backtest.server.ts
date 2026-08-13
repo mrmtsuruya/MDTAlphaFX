@@ -8,7 +8,12 @@
 import { fetchMarketCandles, type MarketTimeframe } from "./market-data.server.ts";
 import { runRealBacktest, type RealBacktestReport } from "./real-backtest.ts";
 import { ALL_ENGINE_STRATEGY_IDS } from "./strategy-weights.ts";
-import type { SignalEngineCandle, SignalMode } from "./signal-engine.ts";
+import type {
+  MarketRegime,
+  SignalEngineCandle,
+  SignalMode,
+  StrategyTriggerVariant,
+} from "./signal-engine.ts";
 
 const SCALP_TIMEFRAMES = new Set<MarketTimeframe>(["M1", "M5", "M15", "M30"]);
 
@@ -21,6 +26,7 @@ export async function runRealBacktestForPair(
   timeframe: MarketTimeframe,
   count = 720,
   trainFraction = 0.6,
+  opts: { regimeOverride?: MarketRegime | "none"; variants?: Partial<Record<string, StrategyTriggerVariant>> } = {},
 ): Promise<RealBacktestReport> {
   const marketCandles = await fetchMarketCandles(pair, timeframe, count);
   const candles: SignalEngineCandle[] = marketCandles.map((candle) => ({
@@ -40,5 +46,7 @@ export async function runRealBacktestForPair(
     candles,
     strategyIds: [...ALL_ENGINE_STRATEGY_IDS],
     trainFraction,
+    ...(opts.regimeOverride ? { regimeOverride: opts.regimeOverride } : {}),
+    ...(opts.variants ? { variants: opts.variants } : {}),
   });
 }

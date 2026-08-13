@@ -87,6 +87,17 @@ close-at-TP1, trail 1.0×ATR after TP1, and early-BE-at-+0.5R are re-simulated o
 candles against the live B-single control, so an exit-policy change is promoted only when
 the ledger says it wins. Analysis only — the worker keeps `b_single_v1`.
 
+**Strategy scorecard + weekly audit** (Strategies → PAPER LEDGER HEALTH) — per-strategy
+forward-tested record from the paper ledger: wins, BE scratches, losses, win rate, total R
+and expectancy, with the 20-resolved-trade sample floor flagged. A scheduled
+`xauusd-strategy-audit` edge function (weekly pg_cron, vault-gated, `tools/deploy-strategy-audit.sh`)
+runs the real-data walk-forward on M15+H1 and writes per-strategy scorecards that the same
+view displays, so the trend cluster and the mean-reversion flip are watched continuously.
+The backtest harness also exposes `regimeOverride` (measure what regime routing is worth)
+and per-strategy `relaxed` trigger variants (measure whether loosening a rare strategy's
+gates fires more without degrading outcomes) — analysis knobs only, the live worker scans
+with standard triggers.
+
 **Backtester** — `REAL_DATA_WALK_FORWARD` on the live feed with the actual 36-strategy
 scanner, side-aware resolution, Level Diagnostics (clears 30+ resolved trades → whether
 TP1 at 1.25R is misplaced on real gold).

@@ -43,9 +43,11 @@
 
 import {
   scanCandlesForSignal,
+  type MarketRegime,
   type SignalEngineCandle,
   type SignalMode,
   type SignalTimeframe,
+  type StrategyTriggerVariant,
 } from "./signal-engine.ts";
 import { breakevenLevel, halfSpread } from "./costs.ts";
 import { analyseReplay, type ReplayAnalytics } from "./replay-analytics.ts";
@@ -310,6 +312,8 @@ export function runRealBacktest({
   candles,
   strategyIds,
   trainFraction = 0.6,
+  regimeOverride,
+  variants,
 }: {
   pair: string;
   mode: SignalMode;
@@ -319,6 +323,13 @@ export function runRealBacktest({
   strategyIds: string[];
   /** Fraction of the complete series treated as the earlier ("in-sample") segment. Default 60%, matching strategy-weights.ts. */
   trainFraction?: number;
+  /**
+   * Pin or disable the regime read for every scan in the walk. `"none"`
+   * measures what regime routing is worth (see scanCandlesForSignal).
+   */
+  regimeOverride?: MarketRegime | "none";
+  /** Per-strategy trigger strictness (see scanCandlesForSignal). */
+  variants?: Partial<Record<string, StrategyTriggerVariant>>;
 }): RealBacktestReport {
   const notes: string[] = [];
   const complete = candles.filter((candle) => candle.complete);
@@ -386,6 +397,8 @@ export function runRealBacktest({
         quote,
         candles: window,
         enabledStrategyIds: strategyIds,
+        ...(regimeOverride ? { regimeOverride } : {}),
+        ...(variants ? { variants } : {}),
       });
     } catch {
       // Not enough usable data at this point in the window (e.g. an ATR

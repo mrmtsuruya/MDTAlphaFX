@@ -2082,3 +2082,103 @@ test("clock injection: the scan derives its clock from the last complete bar", (
     "news_reactive should fire: the event is 20 minutes after the bar being scanned",
   );
 });
+
+// ---------------------------------------------------------------------------
+// Trigger variants: relaxed must fire where standard deliberately does not.
+// These pin that the diagnostic knob exists and works — the harness uses it
+// to measure whether loosening rare strategies helps before anything ships.
+// ---------------------------------------------------------------------------
+
+function steadyUpTrend(count = 90): SignalEngineCandle[] {
+  // Steady drift up; the last bar continues the trend (no SuperTrend flip),
+  // so standard's flip-only gate stays closed while relaxed can vote.
+  return Array.from({ length: count }, (_, index) => {
+    const close = 100 + index * 0.05;
+    return {
+      time: new Date(Date.UTC(2026, 6, 1, 0, index * 5)).toISOString(),
+      open: close - 0.03,
+      high: close + 0.2,
+      low: close - 0.2,
+      close,
+      complete: true,
+      volume: 100 + index,
+    };
+  });
+}
+
+test("supertrend relaxed fires on an established trend where standard waits for a flip", () => {
+  const candles = steadyUpTrend();
+  const atr = latestAtr(candles);
+  const standard = evaluateStrategy("supertrend", candles, atr, "intraday", undefined, "standard");
+  const relaxed = evaluateStrategy("supertrend", candles, atr, "intraday", undefined, "relaxed");
+  assert.equal(standard, null, "no flip on the last bar -> standard holds");
+  assert.ok(relaxed, "established direction with band margin -> relaxed votes");
+  assert.equal(relaxed!.strategyId, "supertrend");
+  assert.equal(relaxed!.direction, "long");
+});
+
+test("bollinger_squeeze relaxed accepts a 0.7 ATR release where standard needs 1 ATR", () => {
+  // 40 narrow candles (clear squeeze), then a breakout bar whose true range
+  // is 0.7 ATR — standard's release gate (>=1 ATR intraday) rejects it.
+  const narrow: SignalEngineCandle[] = Array.from({ length: 40 }, (_, index) => ({
+    time: new Date(Date.UTC(2026, 6, 1, 0, index * 5)).toISOString(),
+    open: 100,
+    high: 100.05,
+    low: 99.95,
+    close: 100,
+    complete: true,
+    volume: 100,
+  }));
+  const atr = latestAtr(narrow);
+  const breakout: SignalEngineCandle = {
+    time: new Date(Date.UTC(2026, 6, 1, 3, 20)).toISOString(),
+    open: 100,
+    high: 100 + atr * 0.7,
+    low: 100,
+    close: 100 + atr * 0.7,
+    complete: true,
+    volume: 200,
+  };
+  const candles = [...narrow, breakout];
+  const standard = evaluateStrategy("bollinger_squeeze", candles, atr, "intraday", undefined, "standard");
+  const relaxed = evaluateStrategy("bollinger_squeeze", candles, atr, "intraday", undefined, "relaxed");
+  assert.equal(standard, null, "0.7 ATR release under the 1 ATR gate -> standard holds");
+  assert.ok(relaxed, "0.7 ATR release clears the relaxed 0.5 ATR gate");
+  assert.equal(relaxed!.direction, "long");
+});
+
+test("qullamaggie_breakout relaxed accepts 1.15x compression where standard needs 1.1x", () => {
+  // A gently drifting box: per-candle range 2, 20-bar window spans ~2.28
+  // (19 bars x 0.015 drift + 2) -> compression ratio ~1.14. Standard requires
+  // <= 1.1; relaxed accepts up to 1.25.
+  const candles: SignalEngineCandle[] = Array.from({ length: 70 }, (_, index) => {
+    const drift = index * 0.015; // window max-min spans ~2.28 by bar 60
+    const close = 100 + drift;
+    return {
+      time: new Date(Date.UTC(2026, 6, 1, 0, index * 5)).toISOString(),
+      open: close - 1,
+      high: close + 1,
+      low: close - 1,
+      close,
+      complete: true,
+      volume: 100 + index,
+    };
+  });
+  const atr = latestAtr(candles);
+  const priorHigh = Math.max(...candles.slice(-21, -1).map((c) => c.high));
+  const breakout: SignalEngineCandle = {
+    time: new Date(Date.UTC(2026, 6, 1, 5, 50)).toISOString(),
+    open: candles.at(-1)!.close,
+    high: priorHigh + atr * 0.6,
+    low: candles.at(-1)!.close - 0.5,
+    close: priorHigh + atr * 0.6,
+    complete: true,
+    volume: 400,
+  };
+  const series = [...candles, breakout];
+  const standard = evaluateStrategy("qullamaggie_breakout", series, atr, "intraday", undefined, "standard");
+  const relaxed = evaluateStrategy("qullamaggie_breakout", series, atr, "intraday", undefined, "relaxed");
+  assert.equal(standard, null, "1.15x compression over the 1.1x gate -> standard holds");
+  assert.ok(relaxed, "1.15x compression clears the relaxed 1.25x gate");
+  assert.equal(relaxed!.direction, "long");
+});

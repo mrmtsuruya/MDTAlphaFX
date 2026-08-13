@@ -611,3 +611,150 @@ export function summarizePaperAccount(
     maxDrawdownUsd,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Paper-ledger strategy health — the forward-tested scorecard.
+// ---------------------------------------------------------------------------
+
+/** Lean row shape for the per-strategy aggregation over the canonical ledger. */
+export type PaperStrategyHealthTrade = {
+  state: string;
+  result_r: number | string | null;
+  mae_r?: number | string | null;
+  mfe_r?: number | string | null;
+  bars_held?: number | null;
+  ambiguous_intrabar?: boolean | null;
+  entry_time?: string | null;
+  exit_time?: string | null;
+};
+
+export type PaperStrategyHealthRow = {
+  id: string;
+  mode: string;
+  timeframe: string;
+  contributing_strategies: string[];
+  created_at: string;
+  paper_trades?: PaperStrategyHealthTrade | PaperStrategyHealthTrade[] | null;
+};
+
+/** Per-strategy aggregation over resolved canonical paper trades. */
+export type PaperStrategyHealthStat = {
+  strategyId: string;
+  /** Signals the strategy contributed to (resolved + open + expired). */
+  signals: number;
+  /** Trades resolved to a terminal state (wins + scratches + losses). */
+  resolved: number;
+  wins: number;
+  scratches: number;
+  losses: number;
+  expired: number;
+  open: number;
+  /** wins / resolved; null when nothing resolved (never fabricated). */
+  winRate: number | null;
+  totalR: number;
+  /** totalR over resolved; null when nothing resolved. */
+  expectancyR: number | null;
+  /** True once >= SAMPLE_FLOOR resolved trades exist — below that, rates are noise. */
+  sampleOk: boolean;
+  /** Mode split so intraday vs scalper trust is visible separately. */
+  byMode: {
+    intraday: Omit<PaperStrategyHealthStat, "byMode" | "strategyId"> | null;
+    scalper: Omit<PaperStrategyHealthStat, "byMode" | "strategyId"> | null;
+  };
+};
+
+/** The audit's own trust floor: never judge a strategy below 20 resolved trades. */
+export const STRATEGY_HEALTH_SAMPLE_FLOOR = 20 as const;
+
+export type PaperStrategyHealthReport = {
+  generatedAt: string;
+  resolvedTotal: number;
+  /** Sorted by totalR descending — winners first, losers last. */
+  strategies: PaperStrategyHealthStat[];
+};
+
+function tradeStat(
+  state: string | null | undefined,
+  resultR: number | string | null | undefined,
+): { resolved: number; wins: number; scratches: number; losses: number; expired: number; open: number; totalR: number } {
+  const s = state ?? "open";
+  if (s === "closed_tp2") return { resolved: 1, wins: 1, scratches: 0, losses: 0, expired: 0, open: 0, totalR: toFiniteSafe(resultR) };
+  if (s === "closed_breakeven") return { resolved: 1, wins: 0, scratches: 1, losses: 0, expired: 0, open: 0, totalR: toFiniteSafe(resultR) };
+  if (s === "closed_stop") return { resolved: 1, wins: 0, scratches: 0, losses: 1, expired: 0, open: 0, totalR: toFiniteSafe(resultR) };
+  if (s === "expired") return { resolved: 0, wins: 0, scratches: 0, losses: 0, expired: 1, open: 0, totalR: 0 };
+  return { resolved: 0, wins: 0, scratches: 0, losses: 0, expired: 0, open: 1, totalR: 0 };
+}
+
+function toFiniteSafe(value: number | string | null | undefined): number {
+  if (value == null || value === "") return 0;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function firstTradeRow(join: PaperStrategyHealthRow["paper_trades"]): PaperStrategyHealthTrade | null {
+  if (!join) return null;
+  return Array.isArray(join) ? (join[0] ?? null) : join;
+}
+
+function summarizeOne(strategyId: string, rows: PaperStrategyHealthRow[]): PaperStrategyHealthStat {
+  const empty = { signals: 0, resolved: 0, wins: 0, scratches: 0, losses: 0, expired: 0, open: 0, totalR: 0 };
+  const stat = { ...empty };
+  const modeStat = { intraday: { ...empty }, scalper: { ...empty } };
+  for (const row of rows) {
+    if (!Array.isArray(row.contributing_strategies) || !row.contributing_strategies.includes(strategyId)) continue;
+    const trade = firstTradeRow(row.paper_trades);
+    const mode = row.mode === "scalper" ? "scalper" : "intraday";
+    const bucket = mode === "scalper" ? modeStat.scalper : modeStat.intraday;
+    const add = tradeStat(trade?.state, trade?.result_r);
+    stat.signals += 1; bucket.signals += 1;
+    stat.resolved += add.resolved; bucket.resolved += add.resolved;
+    stat.wins += add.wins; bucket.wins += add.wins;
+    stat.scratches += add.scratches; bucket.scratches += add.scratches;
+    stat.losses += add.losses; bucket.losses += add.losses;
+    stat.expired += add.expired; bucket.expired += add.expired;
+    stat.open += add.open; bucket.open += add.open;
+    stat.totalR += add.totalR; bucket.totalR += add.totalR;
+  }
+  const finish = (s: typeof empty): Omit<PaperStrategyHealthStat, "byMode" | "strategyId"> => ({
+    signals: s.signals,
+    resolved: s.resolved,
+    wins: s.wins,
+    scratches: s.scratches,
+    losses: s.losses,
+    expired: s.expired,
+    open: s.open,
+    winRate: s.resolved > 0 ? +((s.wins / s.resolved) * 100).toFixed(1) : null,
+    totalR: +s.totalR.toFixed(3),
+    expectancyR: s.resolved > 0 ? +(s.totalR / s.resolved).toFixed(3) : null,
+    sampleOk: s.resolved >= STRATEGY_HEALTH_SAMPLE_FLOOR,
+  });
+  return {
+    strategyId,
+    ...finish(stat),
+    byMode: {
+      intraday: modeStat.intraday.resolved > 0 || modeStat.intraday.signals > 0 ? finish(modeStat.intraday) : null,
+      scalper: modeStat.scalper.resolved > 0 || modeStat.scalper.signals > 0 ? finish(modeStat.scalper) : null,
+    },
+  };
+}
+
+/**
+ * Aggregate the canonical paper ledger per contributing strategy. A signal
+ * can carry several strategies, so each row contributes to every strategy it
+ * lists; resolved means a terminal trade (wins + scratches + losses). The
+ * report is sorted winners-first so the league's live verdict is one glance.
+ */
+export function summarizePaperStrategyHealth(
+  rows: PaperStrategyHealthRow[],
+): PaperStrategyHealthReport {
+  const ids = [...new Set(rows.flatMap((row) => row.contributing_strategies ?? []))];
+  const strategies = ids
+    .map((strategyId) => summarizeOne(strategyId, rows))
+    .filter((s) => s.signals > 0)
+    .sort((a, b) => b.totalR - a.totalR);
+  return {
+    generatedAt: new Date().toISOString(),
+    resolvedTotal: strategies.reduce((sum, s) => sum + s.resolved, 0),
+    strategies,
+  };
+}

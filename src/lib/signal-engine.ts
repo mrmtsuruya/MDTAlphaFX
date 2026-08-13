@@ -15,6 +15,7 @@ import {
   type MarketRegime,
   type RegimeRead,
 } from "./regime.ts";
+export type { MarketRegime } from "./regime.ts";
 
 /**
  * Stand-in used only when a caller pins `regimeOverride` on a window too short
@@ -76,6 +77,16 @@ export type StrategyVote = {
   strength: number;
   reason: string;
 };
+
+/**
+ * Trigger strictness for a strategy's detector. `standard` is what the live
+ * worker scans with; `relaxed` loosens one gate (see the per-strategy
+ * comments) and exists ONLY so the backtest harness can measure what firing
+ * more often would do before any change ships. The live path never passes
+ * variants, so production behavior is byte-identical unless the ledger says
+ * a relaxed variant wins.
+ */
+export type StrategyTriggerVariant = "standard" | "relaxed";
 
 /** Minimal macro overlay the news/ai strategies read (no dependency on the
  *  server-only macro module, so the engine stays bundle-safe on the client). */
@@ -484,7 +495,7 @@ function evaluateEmaTrend(candles: SignalEngineCandle[], atr: number, mode: Sign
   return null;
 }
 
-function evaluateSupertrend(candles: SignalEngineCandle[], mode: SignalMode) {
+function evaluateSupertrend(candles: SignalEngineCandle[], mode: SignalMode, relaxed = false) {
   const atrValues = atrSeries(candles, 10);
   // Intraday runs a tighter 2×ATR band (fewer whipsaws on H1); scalps keep the
   // classic 3×ATR so the band trails fast enough for M5/M15 moves.
@@ -529,27 +540,35 @@ function evaluateSupertrend(candles: SignalEngineCandle[], mode: SignalMode) {
 
   const latest = candles.at(-1)!;
   const latestAtrValue = atrValues.at(-1);
+  // Standard: only the exact flip bar votes (fresh directional change).
+  // Relaxed: established direction also votes once price holds a 0.25xATR
+  // margin beyond the band — it fires far more often so the harness can see
+  // whether the flip-only gate is leaving profit on the table.
   if (
     typeof latestAtrValue !== "number" ||
     supertrend === 0 ||
     !currentDirection ||
-    currentDirection === previousDirection
+    (!relaxed && currentDirection === previousDirection)
   ) {
     return null;
   }
   if (currentDirection === "long" && latest.close > supertrend) {
+    const margin = (latest.close - supertrend) / latestAtrValue;
+    if (relaxed && margin < 0.25) return null;
     return vote(
       "supertrend",
       "long",
-      58 + ((latest.close - supertrend) / latestAtrValue) * 6,
+      58 + margin * 6,
       "SuperTrend is bullish above its trailing ATR band.",
     );
   }
   if (currentDirection === "short" && latest.close < supertrend) {
+    const margin = (supertrend - latest.close) / latestAtrValue;
+    if (relaxed && margin < 0.25) return null;
     return vote(
       "supertrend",
       "short",
-      58 + ((supertrend - latest.close) / latestAtrValue) * 6,
+      58 + margin * 6,
       "SuperTrend is bearish below its trailing ATR band.",
     );
   }
@@ -732,7 +751,12 @@ function evaluateCci(candles: SignalEngineCandle[]) {
   return null;
 }
 
-function evaluateBollingerBreakout(candles: SignalEngineCandle[], atr: number, mode: SignalMode) {
+function evaluateBollingerBreakout(
+  candles: SignalEngineCandle[],
+  atr: number,
+  mode: SignalMode,
+  relaxed = false,
+) {
   const closes = candles.map((candle) => candle.close);
   const priorCloses = closes.slice(0, -1);
   const priorStats = rollingStats(priorCloses, 20);
@@ -742,7 +766,11 @@ function evaluateBollingerBreakout(candles: SignalEngineCandle[], atr: number, m
     return (stats.deviation * 4) / Math.max(Math.abs(stats.mean), Number.EPSILON);
   });
   const sortedBandwidths = [...bandwidths].sort((left, right) => left - right);
-  const squeezeThreshold = sortedBandwidths[Math.floor(sortedBandwidths.length * 0.25)];
+  // Standard: bottom-quartile bandwidth squeeze plus a >=1 ATR release bar.
+  // Relaxed: bottom-40% bandwidth and a 0.5 ATR release — the harness measures
+  // whether the strict squeeze gate is over-filtering on M15/H1.
+  const squeezeQuantile = relaxed ? 0.4 : 0.25;
+  const squeezeThreshold = sortedBandwidths[Math.floor(sortedBandwidths.length * squeezeQuantile)];
   const priorBandwidth =
     (priorStats.deviation * 4) / Math.max(Math.abs(priorStats.mean), Number.EPSILON);
   const squeeze = priorBandwidth <= squeezeThreshold * 1.05;
@@ -753,7 +781,7 @@ function evaluateBollingerBreakout(candles: SignalEngineCandle[], atr: number, m
   const range = trueRange(candles.at(-1)!, candles.at(-2)!);
   // Scalps only chase squeezes that are already moving (range >= 1.25 ATR);
   // intraday accepts the standard 1×ATR release on slower bars.
-  const rangeThreshold = mode === "scalper" ? atr * 1.25 : atr;
+  const rangeThreshold = mode === "scalper" ? atr * (relaxed ? 0.75 : 1.25) : atr * (relaxed ? 0.5 : 1);
   if (squeeze && range >= rangeThreshold && latest > priorUpper && prior <= priorUpper) {
     return vote(
       "bollinger_squeeze",
@@ -1173,7 +1201,7 @@ function evaluateHeikenAshiScalp(candles: SignalEngineCandle[], atr: number) {
   return null;
 }
 
-function evaluateQullamaggieBreakout(candles: SignalEngineCandle[], atr: number) {
+function evaluateQullamaggieBreakout(candles: SignalEngineCandle[], atr: number, relaxed = false) {
   const latest = candles.at(-1)!;
   const closes = candles.map((candle) => candle.close);
   const ema50 = emaSeries(closes, 50).at(-1)!;
@@ -1184,16 +1212,20 @@ function evaluateQullamaggieBreakout(candles: SignalEngineCandle[], atr: number)
   const priorLow = Math.min(...prior.map((candle) => candle.low));
   const range = priorHigh - priorLow;
   const averageRange = average(recent.map((candle) => candle.high - candle.low));
-  const compression = range <= averageRange * 1.1; // tight range before the pop
+  // Standard: tight 1.1x compression before the pop. Relaxed: 1.25x, and the
+  // volume-less breakout distance drops to 0.4 ATR — the harness measures
+  // whether the compression + volume double gate is too strict for M15/H1.
+  const compression = range <= averageRange * (relaxed ? 1.25 : 1.1);
   const volume = candles.map((candle) => candle.volume ?? 0);
   const averageVolume = average(volume.slice(-20, -1));
   const latestVolume = volume.at(-1) ?? 0;
   const volumeSurge = averageVolume > 0 && latestVolume >= averageVolume * 1.15;
+  const breakoutDistance = relaxed ? atr * 0.4 : atr * 0.8;
   if (
     compression &&
     latest.close > priorHigh &&
     latest.close > ema50 &&
-    (volumeSurge || latest.close - priorHigh >= atr * 0.8)
+    (volumeSurge || latest.close - priorHigh >= breakoutDistance)
   ) {
     return vote(
       "qullamaggie_breakout",
@@ -1206,7 +1238,7 @@ function evaluateQullamaggieBreakout(candles: SignalEngineCandle[], atr: number)
     compression &&
     latest.close < priorLow &&
     latest.close < ema50 &&
-    (volumeSurge || priorLow - latest.close >= atr * 0.8)
+    (volumeSurge || priorLow - latest.close >= breakoutDistance)
   ) {
     return vote(
       "qullamaggie_breakout",
@@ -1912,6 +1944,7 @@ export function evaluateStrategy(
   atr: number,
   mode: SignalMode = "intraday",
   context?: { pair?: string; macro?: EngineMacroContext; now?: number },
+  variant: StrategyTriggerVariant = "standard",
 ): StrategyVote | null {
   const pair = context?.pair ?? "EURUSD";
   const macro = context?.macro;
@@ -1925,7 +1958,7 @@ export function evaluateStrategy(
     case "ema_trend":
       return evaluateEmaTrend(candles, atr, mode);
     case "supertrend":
-      return evaluateSupertrend(candles, mode);
+      return evaluateSupertrend(candles, mode, variant === "relaxed");
     case "ma_ribbon":
       return evaluateMaRibbon(candles, atr);
     case "ichimoku":
@@ -1939,7 +1972,7 @@ export function evaluateStrategy(
     case "cci_extreme":
       return evaluateCci(candles);
     case "bollinger_squeeze":
-      return evaluateBollingerBreakout(candles, atr, mode);
+      return evaluateBollingerBreakout(candles, atr, mode, variant === "relaxed");
     case "keltner_break":
       return evaluateKeltnerBreak(candles, atr);
     case "donchian_break":
@@ -1965,7 +1998,7 @@ export function evaluateStrategy(
     case "heiken_ashi_scalp":
       return evaluateHeikenAshiScalp(candles, atr);
     case "qullamaggie_breakout":
-      return evaluateQullamaggieBreakout(candles, atr);
+      return evaluateQullamaggieBreakout(candles, atr, variant === "relaxed");
     case "trendline_break":
       return evaluateTrendlineBreak(candles, atr);
     case "fib_retracement":
@@ -2075,6 +2108,7 @@ export function scanCandlesForSignal({
   macro,
   regimeOverride,
   clusterMap = DEFAULT_CLUSTERS,
+  variants,
 }: {
   pair: string;
   mode: SignalMode;
@@ -2106,6 +2140,13 @@ export function scanCandlesForSignal({
    * confluence, which is how the size of this change stays measurable.
    */
   clusterMap?: Record<string, string>;
+  /**
+   * Per-strategy trigger strictness. Absent (the live path) = standard for
+   * every strategy — production behavior is unchanged. The backtest harness
+   * passes `{ supertrend: "relaxed", ... }` to measure whether loosening a
+   * rare strategy's gates would fire more without degrading outcomes.
+   */
+  variants?: Partial<Record<string, StrategyTriggerVariant>>;
 }): SignalEngineResult {
   const resolvedTimeframe: SignalTimeframe = timeframe ?? (mode === "scalper" ? "M5" : "H1");
   const timeframeForGating: SignalTimeframe = resolvedTimeframe;
@@ -2158,7 +2199,8 @@ export function scanCandlesForSignal({
     now: Number.isFinite(lastBarMs) ? lastBarMs : Date.now(),
   };
   const votes = activeStrategyIds.flatMap((strategyId) => {
-    const vote = evaluateStrategy(strategyId, complete, atr, mode, strategyContext);
+    const variant = variants?.[strategyId] ?? "standard";
+    const vote = evaluateStrategy(strategyId, complete, atr, mode, strategyContext, variant);
     if (!vote) return [];
     const weight = strategyWeights?.[strategyId] ?? 1;
     // Regime is a second, independent re-weighting stacked on top of trust:

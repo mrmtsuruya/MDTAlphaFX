@@ -8,6 +8,84 @@ export type Database = {
   };
   public: {
     Tables: {
+      // Added manually (2026-08-14): weekly walk-forward audit runs written
+      // by the xauusd-strategy-audit edge function. Regenerate with
+      // `supabase gen types typescript` once the CLI is linked to refresh
+      // any other drift in this file.
+      strategy_audit_runs: {
+        Row: {
+          id: string;
+          run_id: string;
+          user_id: string;
+          pair: string;
+          timeframe: string;
+          strategy_id: string;
+          segment: string;
+          resolved: number;
+          wins: number;
+          scratches: number;
+          losses: number;
+          open: number;
+          win_rate: number | null;
+          total_r: number;
+          expectancy_r: number | null;
+          window_start: string;
+          window_end: string;
+          generated_at: string;
+          notes: Json;
+        };
+        Insert: {
+          id?: string;
+          run_id: string;
+          user_id: string;
+          pair: string;
+          timeframe: string;
+          strategy_id: string;
+          segment: string;
+          resolved?: number;
+          wins?: number;
+          scratches?: number;
+          losses?: number;
+          open?: number;
+          win_rate?: number | null;
+          total_r?: number;
+          expectancy_r?: number | null;
+          window_start: string;
+          window_end: string;
+          generated_at?: string;
+          notes?: Json;
+        };
+        Update: {
+          id?: string;
+          run_id?: string;
+          user_id?: string;
+          pair?: string;
+          timeframe?: string;
+          strategy_id?: string;
+          segment?: string;
+          resolved?: number;
+          wins?: number;
+          scratches?: number;
+          losses?: number;
+          open?: number;
+          win_rate?: number | null;
+          total_r?: number;
+          expectancy_r?: number | null;
+          window_start?: string;
+          window_end?: string;
+          generated_at?: string;
+          notes?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "strategy_audit_runs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       ai_usage: {
         Row: {
           cost_usd: number;
