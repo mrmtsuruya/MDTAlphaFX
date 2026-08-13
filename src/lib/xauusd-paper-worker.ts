@@ -159,8 +159,17 @@ export async function runXauusdPaperCycle(deps: {
 
   for (const profile of profiles) {
     let enabledStrategyIds: string[];
+    let multiplierByMode: Record<"intraday" | "scalper", Record<string, number>> = {
+      intraday: {},
+      scalper: {},
+    };
     try {
       enabledStrategyIds = await repository.listEnabledStrategyIds(profile.userId);
+      const activeMultipliers = await repository.listActiveMultipliers(profile.userId);
+      for (const entry of activeMultipliers) {
+        multiplierByMode[entry.mode === "scalper" ? "scalper" : "intraday"][entry.strategyId] =
+          entry.multiplier;
+      }
     } catch {
       counts.failures += 1;
       continue;
@@ -262,6 +271,7 @@ export async function runXauusdPaperCycle(deps: {
           candlesByTimeframe,
           newlyCompleted: [timeframe],
           enabledStrategyIds,
+          multipliersByStrategy: multiplierByMode[scanModeFor(timeframe)],
           engineVersion,
           policyVersion,
         });

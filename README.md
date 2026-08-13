@@ -98,6 +98,14 @@ and per-strategy `relaxed` trigger variants (measure whether loosening a rare st
 gates fires more without degrading outcomes) — analysis knobs only, the live worker scans
 with standard triggers.
 
+**Multiplier promotion** (Signal Center → AUTONOMOUS_LEARNING_LOOP) — the learning loop is
+now a real pipeline: candidate trust multipliers from the canonical ledger are reviewed and
+APPROVED/REVERTED per strategy+mode, gated server-side (≥20 resolved trades, boost/cool
+verdict, walk-forward weight ≥ 0.4 re-validated on live candles), written to the
+`strategy_promotions` ledger, and applied by the worker to the walk-forward weights
+(clamped to the same 0.15–1.15 band as the league). The ledger is the audit trail — every
+approve and revert is recorded, and the latest row per strategy+mode wins.
+
 **Backtester** — `REAL_DATA_WALK_FORWARD` on the live feed with the actual 36-strategy
 scanner, side-aware resolution, Level Diagnostics (clears 30+ resolved trades → whether
 TP1 at 1.25R is misplaced on real gold).

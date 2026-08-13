@@ -31,10 +31,12 @@ const SIGNALS = readFileSync(
 const CANONICAL_NOT_DEPLOYED_COPY =
   "Auto-Paper is not deployed yet — paper signals appear once the worker is running.";
 
-// The learning panel's badge: "PAPER ONLY" matches the rest of the app's
-// vocabulary ("PAPER ONLY · 0.01 LOT · NO BROKER CONNECTION"), and
-// "NOT APPLIED TO LIVE" states what the DTO means (applied: false).
-const CANONICAL_LEARNING_BADGE = "PAPER ONLY · NOT APPLIED TO LIVE";
+// The learning panel's badge: "APPLIED TO LIVE" is the applied-state
+// vocabulary — the panel now promotes candidates to the strategy_promotions
+// ledger ("N APPLIED TO LIVE" when active, "REVIEW · NOTHING APPLIED" when
+// not), so the invariant is the applied language, not the retired "NOT
+// APPLIED" disclaimer.
+const CANONICAL_LEARNING_BADGE = "APPLIED TO LIVE";
 
 // Old phrasings that must never return: the panel's former "Schema migration
 // required" toggle reason, the schema-jargon canonical sentence, the Signal

@@ -86,6 +86,77 @@ export type Database = {
           },
         ];
       };
+      // Added manually (2026-08-15): multiplier promotion ledger written by
+      // the approve/revert server functions; the worker reads active rows.
+      strategy_promotions: {
+        Row: {
+          id: string;
+          user_id: string;
+          strategy_id: string;
+          mode: string;
+          action: string;
+          multiplier: number;
+          resolved_samples: number;
+          wins: number;
+          losses: number;
+          total_r: number;
+          verdict: string;
+          walk_weight: number | null;
+          walk_accuracy: number | null;
+          created_at: string;
+          note: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          strategy_id: string;
+          mode: string;
+          action: string;
+          multiplier: number;
+          resolved_samples: number;
+          wins?: number;
+          losses?: number;
+          total_r?: number;
+          verdict: string;
+          walk_weight?: number | null;
+          walk_accuracy?: number | null;
+          created_at?: string;
+          note?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          strategy_id?: string;
+          mode?: string;
+          action?: string;
+          multiplier?: number;
+          resolved_samples?: number;
+          wins?: number;
+          losses?: number;
+          total_r?: number;
+          verdict?: string;
+          walk_weight?: number | null;
+          walk_accuracy?: number | null;
+          created_at?: string;
+          note?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "strategy_promotions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "strategy_promotions_strategy_id_fkey";
+            columns: ["strategy_id"];
+            isOneToOne: false;
+            referencedRelation: "strategies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       ai_usage: {
         Row: {
           cost_usd: number;

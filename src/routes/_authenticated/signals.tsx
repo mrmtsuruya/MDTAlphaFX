@@ -9,6 +9,7 @@ import {
   getXauusdPaperProfile,
   getXauusdShadowLearning,
   listXauusdPaperSignals,
+  promoteStrategyMultiplier,
   setXauusdPaperEnabled,
   type PaperPerformanceReport,
   type PaperShadowLearningReport,
@@ -653,6 +654,27 @@ function LearningPanel({
   report: PaperShadowLearningReport | undefined;
   loading: boolean;
 }) {
+  const promoteFn = useServerFn(promoteStrategyMultiplier);
+  const qc = useQueryClient();
+  const promote = useMutation({
+    mutationFn: (input: { strategyId: string; mode: "intraday" | "scalper"; action: "approve" | "revert" }) =>
+      promoteFn({ data: input }),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ["xauusd-shadow-learning"] });
+      toast.success(
+        result.action === "approve"
+          ? `${result.strategyId} promoted ×${result.multiplier.toFixed(2)} (${result.mode}) — the worker now scans with it`
+          : `${result.strategyId} reverted (${result.mode}) — back to walk-forward weight`,
+      );
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const activeKey = (strategyId: string, mode: string) => `${strategyId}:${mode}`;
+  const active = new Map(
+    (report?.promotions ?? []).map((p) => [`${p.strategyId}:${p.mode}`, p.multiplier]),
+  );
+
   return (
     <section className="rounded-lg border border-neon-accent/20 bg-cyber-surface">
       <div className="px-4 py-3 border-b border-cyber-border flex items-center justify-between gap-3">
@@ -662,11 +684,18 @@ function LearningPanel({
             // AUTONOMOUS_LEARNING_LOOP · CANONICAL
           </div>
           <div className="mt-0.5 text-[11px] text-muted-foreground">
-            Candidate trust multipliers derived from the worker's canonical paper outcomes.
+            Trust multipliers derived from the worker's canonical paper outcomes. Approving one
+            writes the strategy_promotions ledger — the worker scans with it immediately.
           </div>
         </div>
-        <span className="shrink-0 rounded-sm border border-neon-warn/40 bg-neon-warn/5 px-2 py-1 text-[9px] font-mono uppercase tracking-widest text-neon-warn">
-          PAPER ONLY · NOT APPLIED TO LIVE
+        <span
+          className={`shrink-0 rounded-sm border px-2 py-1 text-[9px] font-mono uppercase tracking-widest ${
+            active.size > 0
+              ? "border-neon-long/40 bg-neon-long/5 text-neon-long"
+              : "border-neon-warn/40 bg-neon-warn/5 text-neon-warn"
+          }`}
+        >
+          {active.size > 0 ? `${active.size} APPLIED TO LIVE` : "REVIEW · NOTHING APPLIED"}
         </span>
       </div>
 
@@ -676,7 +705,7 @@ function LearningPanel({
       {!loading && report && report.sampleSize === 0 && (
         <div className="p-4 text-sm text-muted-foreground">
           No canonical paper outcomes yet. Once the worker resolves trades, candidate multipliers
-          appear here for review — nothing is applied to live weights.
+          appear here for review and approval.
         </div>
       )}
       {!loading && report && report.sampleSize > 0 && (
@@ -685,27 +714,86 @@ function LearningPanel({
             SAMPLE_SIZE: {report.sampleSize} terminal canonical trades
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {report.candidates.map((candidate) => (
-              <div
-                key={`${candidate.strategyId}:${candidate.mode}`}
-                className={`rounded-sm border px-2 py-1 font-mono text-[10px] ${VERDICT_TONE[candidate.verdict] ?? "border-cyber-border text-muted-foreground"}`}
-              >
-                <span className="font-bold text-white">{candidate.strategyId}</span>{" "}
-                <span className="text-muted-foreground">
-                  ×{candidate.candidateMultiplier.toFixed(2)} · {candidate.mode}
-                </span>{" "}
-                <span className="text-muted-foreground">
-                  {candidate.wins}W/{candidate.scratches}S/{candidate.losses}L ·{" "}
-                  {candidate.totalR >= 0 ? "+" : ""}
-                  {candidate.totalR}R
-                </span>
-              </div>
-            ))}
+            {report.candidates.map((candidate) => {
+              const isActive = active.has(activeKey(candidate.strategyId, candidate.mode));
+              const gateBlocked =
+                candidate.verdict !== "boost" && candidate.verdict !== "cool"
+                  ? `VERDICT_${candidate.verdict.toUpperCase()}`
+                  : candidate.resolved < 20
+                    ? `NEEDS_20_RESOLVED_HAS_${candidate.resolved}`
+                    : null;
+              return (
+                <div
+                  key={`${candidate.strategyId}:${candidate.mode}`}
+                  className={`rounded-sm border px-2 py-1 font-mono text-[10px] ${
+                    isActive
+                      ? "border-neon-long/40 bg-neon-long/5"
+                      : VERDICT_TONE[candidate.verdict] ?? "border-cyber-border text-muted-foreground"
+                  }`}
+                >
+                  <span className="font-bold text-white">{candidate.strategyId}</span>{" "}
+                  <span className="text-muted-foreground">
+                    ×{candidate.candidateMultiplier.toFixed(2)} · {candidate.mode}
+                  </span>{" "}
+                  <span className="text-muted-foreground">
+                    {candidate.wins}W/{candidate.scratches}S/{candidate.losses}L ·{" "}
+                    {candidate.totalR >= 0 ? "+" : ""}
+                    {candidate.totalR}R
+                  </span>
+                  <span className="ml-1.5 inline-flex items-center gap-1.5 align-middle">
+                    {isActive ? (
+                      <>
+                        <span className="rounded-sm border border-neon-long/40 bg-neon-long/10 px-1 py-0.5 text-[8px] text-neon-long">
+                          APPLIED ×{active.get(activeKey(candidate.strategyId, candidate.mode))!.toFixed(2)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            promote.mutate({
+                              strategyId: candidate.strategyId,
+                              mode: candidate.mode,
+                              action: "revert",
+                            })
+                          }
+                          disabled={promote.isPending}
+                          className="rounded-sm border border-neon-short/40 bg-neon-short/5 px-1 py-0.5 text-[8px] text-neon-short hover:brightness-110 disabled:opacity-50"
+                        >
+                          REVERT
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        title={
+                          gateBlocked ??
+                          "Approval re-validates the walk-forward weight server-side before writing the ledger"
+                        }
+                        onClick={() =>
+                          promote.mutate({
+                            strategyId: candidate.strategyId,
+                            mode: candidate.mode,
+                            action: "approve",
+                          })
+                        }
+                        disabled={promote.isPending || gateBlocked != null}
+                        className={`rounded-sm border px-1 py-0.5 text-[8px] transition disabled:opacity-50 ${
+                          gateBlocked
+                            ? "border-cyber-border text-muted-foreground"
+                            : "border-neon-long/40 bg-neon-long/5 text-neon-long hover:brightness-110"
+                        }`}
+                      >
+                        {gateBlocked ?? "APPROVE"}
+                      </button>
+                    )}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-          <div className="rounded-sm border border-neon-warn/30 bg-neon-warn/5 px-3 py-2 text-[11px] text-neon-warn">
-            These multipliers are candidates for review — nothing is applied to live weights.
-            Promotion needs a later design covering minimum samples, walk-forward validation,
-            approval, and rollback. The engine never writes strategy_settings from this report.
+          <div className="rounded-sm border border-cyber-border bg-cyber-bg px-3 py-2 text-[10px] font-mono text-muted-foreground">
+            APPROVAL GATES — ≥20 RESOLVED TRADES · BOOST/COOL VERDICT · WALK-FORWARD WEIGHT ≥ 0.4.
+            THE WORKER APPLIES THE LEDGER IMMEDIATELY; REVERT CLEARS IT. THE LEDGER IS THE
+            AUDIT TRAIL — EVERY APPROVE AND REVERT IS RECORDED.
           </div>
         </div>
       )}

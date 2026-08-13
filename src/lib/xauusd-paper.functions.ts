@@ -17,10 +17,15 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { formatPhtTimestamp, utcIsoTitle } from "./pht-time.ts";
 import { isMissingSchemaError } from "./xauusd-paper-schema-detection.ts";
+import { fetchMarketCandles } from "./market-data.server.ts";
+import { computeStrategyLearning } from "./signal-learning.ts";
+import { computeStrategyWeights } from "./strategy-weights.ts";
+import { evaluatePromotionGate, activeMultipliers, type PromotionLedgerRow } from "./strategy-promotion.ts";
 import {
   mapPaperSignalDetail,
   mapPaperSignalListItem,
   mapPaperShadowLearningReport,
+  canonicalOutcomes,
   summarizePaperPerformance,
   summarizePaperStrategyHealth,
   type PaperAccountRow,
@@ -355,5 +360,114 @@ export const getXauusdShadowLearning = createServerFn({ method: "GET" })
       if (isMissingSchemaError(error)) throw new Error("migration_required");
       throw new Error(error.message);
     }
-    return mapPaperShadowLearningReport((data ?? []) as unknown as PaperLearningOutcomeRow[]);
+    const report = mapPaperShadowLearningReport((data ?? []) as unknown as PaperLearningOutcomeRow[]);
+    const { data: promoRows, error: promoError } = await supabase
+      .from("strategy_promotions")
+      .select("strategy_id, mode, action, multiplier, created_at")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+    if (promoError) {
+      if (isMissingSchemaError(promoError)) throw new Error("migration_required");
+      throw new Error(promoError.message);
+    }
+    return {
+      ...report,
+      promotions: activeMultipliers((promoRows ?? []) as unknown as PromotionLedgerRow[]),
+    } satisfies PaperShadowLearningReport;
+  });
+
+const PromotionInput = z.object({
+  strategyId: z.string().min(3).max(60),
+  mode: z.enum(["intraday", "scalper"]),
+  action: z.enum(["approve", "revert"]),
+});
+
+/**
+ * Promote (or revert) a learning candidate multiplier onto the LIVE weights.
+ * Approval re-derives the candidate from the canonical ledger exactly like
+ * the shadow report, then enforces the gates server-side — minimum resolved
+ * samples, boost/cool verdict, and walk-forward validation on live candles —
+ * before writing the strategy_promotions ledger row the worker scans with.
+ * A revert always succeeds (it only clears the active multiplier).
+ */
+export const promoteStrategyMultiplier = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) => PromotionInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: rows, error } = await supabase
+      .from("signals")
+      .select(OUTCOME_SELECT)
+      .eq("user_id", userId)
+      .eq("generated_by", "xauusd_paper_worker")
+      .eq("execution_policy_version", "b_single_v1")
+      .eq("mode", data.mode)
+      .order("created_at", { ascending: false })
+      .limit(2000);
+    if (error) {
+      if (isMissingSchemaError(error)) throw new Error("migration_required");
+      throw new Error(error.message);
+    }
+    const outcomes = canonicalOutcomes((rows ?? []) as unknown as PaperLearningOutcomeRow[]);
+    const learned = computeStrategyLearning(outcomes, data.mode).get(data.strategyId) ?? null;
+
+    if (data.action === "revert") {
+      const { error: insertError } = await supabase.from("strategy_promotions").insert({
+        user_id: userId,
+        strategy_id: data.strategyId,
+        mode: data.mode,
+        action: "revert",
+        multiplier: 1,
+        resolved_samples: learned?.resolved ?? 0,
+        wins: learned?.wins ?? 0,
+        losses: learned?.losses ?? 0,
+        total_r: learned?.totalR ?? 0,
+        verdict: "n/a",
+      });
+      if (insertError) throw new Error(insertError.message);
+      return { ok: true, action: "revert", strategyId: data.strategyId, mode: data.mode, multiplier: 1 };
+    }
+
+    // Approve: gates are recomputed here, not trusted from the client.
+    const timeframe: "M15" | "H1" = data.mode === "scalper" ? "M15" : "H1";
+    const marketCandles = await fetchMarketCandles("XAUUSD", timeframe, 220);
+    const candles = marketCandles.map((c) => ({
+      time: c.time,
+      open: c.open,
+      high: c.high,
+      low: c.low,
+      close: c.close,
+      complete: c.complete,
+      volume: c.volume,
+    }));
+    const { weights, report } = computeStrategyWeights(candles, timeframe, data.mode);
+    const walkWeight = weights[data.strategyId] ?? null;
+    const walkEntry = report.entries.find((entry) => entry.strategyId === data.strategyId);
+    const gate = evaluatePromotionGate({ learned, walkWeight });
+    if (!gate.ok || gate.multiplier == null) {
+      throw new Error(`promotion_gate: ${gate.reasons.join(" | ")}`);
+    }
+    if (!learned) throw new Error("promotion_gate: NO_LEARNING_RECORD");
+    const { error: insertError } = await supabase.from("strategy_promotions").insert({
+      user_id: userId,
+      strategy_id: data.strategyId,
+      mode: data.mode,
+      action: "approve",
+      multiplier: gate.multiplier,
+      resolved_samples: learned.resolved,
+      wins: learned.wins,
+      losses: learned.losses,
+      total_r: learned.totalR,
+      verdict: learned.verdict,
+      walk_weight: walkWeight ?? null,
+      walk_accuracy: walkEntry?.accuracy ?? null,
+    });
+    if (insertError) throw new Error(insertError.message);
+    return {
+      ok: true,
+      action: "approve",
+      strategyId: data.strategyId,
+      mode: data.mode,
+      multiplier: gate.multiplier,
+    };
   });

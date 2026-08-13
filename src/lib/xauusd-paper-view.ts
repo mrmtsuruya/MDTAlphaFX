@@ -15,6 +15,7 @@ import { computeStrategyLearning, type ResolvedSignalForLearning } from "./signa
 import { PAPER_LOT_SIZE, type PaperTradeState } from "./paper-trade-state.ts";
 import { PAPER_TIMEFRAMES, type PaperTimeframe } from "./xauusd-market-data.ts";
 import { computePaperPosition } from "./xauusd-paper-pnl.ts";
+import type { ActiveMultiplier } from "./strategy-promotion.ts";
 
 export class PaperViewMappingError extends Error {
   constructor(message: string) {
@@ -394,9 +395,11 @@ export type PaperShadowLearningReport = {
   applied: false;
   sampleSize: number;
   candidates: PaperShadowLearningCandidate[];
+  /** Active promoted multipliers (latest ledger row per strategy+mode). */
+  promotions: ActiveMultiplier[];
 };
 
-function canonicalOutcomes(rows: PaperLearningOutcomeRow[]): ResolvedSignalForLearning[] {
+export function canonicalOutcomes(rows: PaperLearningOutcomeRow[]): ResolvedSignalForLearning[] {
   const outcomes: ResolvedSignalForLearning[] = [];
   for (const row of rows) {
     // Only canonical rows under the CURRENT execution policy enter learning.
@@ -450,6 +453,9 @@ export function mapPaperShadowLearningReport(
     applied: false,
     sampleSize: outcomes.length,
     candidates,
+    // The handler overrides this with the caller's active ledger rows; the
+    // pure mapper stays I/O-free with an empty default.
+    promotions: [],
   };
 }
 

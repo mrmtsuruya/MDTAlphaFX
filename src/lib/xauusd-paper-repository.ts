@@ -15,6 +15,11 @@ import type { Database, Json } from "../integrations/supabase/types";
 import type { PaperTimeframe } from "./xauusd-market-data.ts";
 import type { NativeXauusdQuote, TwoSidedCandle } from "./xauusd-market-data.ts";
 import type { PaperTrade, PaperTradeState } from "./paper-trade-state.ts";
+import {
+  activeMultipliers,
+  type ActiveMultiplier,
+  type PromotionLedgerRow,
+} from "./strategy-promotion.ts";
 
 export type PaperProfile = {
   userId: string;
@@ -107,6 +112,12 @@ export interface PaperWorkerRepository {
   }): Promise<void>;
   listEnabledProfiles(): Promise<PaperProfile[]>;
   listEnabledStrategyIds(userId: string): Promise<string[]>;
+  /**
+   * Active promotion multipliers from the strategy_promotions ledger
+   * (latest row per strategy+mode wins; a revert clears its approve).
+   * Empty when nothing has been promoted.
+   */
+  listActiveMultipliers(userId: string): Promise<ActiveMultiplier[]>;
   claimScan(input: ScanClaim): Promise<{ scanRunId: string; claimed: boolean }>;
   commitSignal(input: CommitPaperSignal): Promise<{
     signalId: string;
@@ -193,6 +204,16 @@ export function createSupabasePaperRepository(
         .eq("enabled", true);
       if (error) throw error;
       return (data ?? []).map((row) => row.strategy_id);
+    },
+
+    async listActiveMultipliers(userId) {
+      const { data, error } = await client
+        .from("strategy_promotions")
+        .select("strategy_id, mode, action, multiplier, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return activeMultipliers((data ?? []) as unknown as PromotionLedgerRow[]);
     },
 
     async claimScan(input) {

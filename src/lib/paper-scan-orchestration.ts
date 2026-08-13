@@ -151,6 +151,13 @@ export async function scanCompletedTimeframes(input: {
   candlesByTimeframe: Partial<Record<PaperTimeframe, TwoSidedCandle[]>>;
   newlyCompleted: PaperTimeframe[];
   enabledStrategyIds: string[];
+  /**
+   * Promoted trust multipliers for THIS timeframe's mode (from the
+   * strategy_promotions ledger). Applied on top of the walk-forward weights,
+   * clamped to the same 0.15..1.15 band the league uses. Absent = weights
+   * exactly as computeStrategyWeights produced them.
+   */
+  multipliersByStrategy?: Record<string, number>;
   engineVersion: string;
   policyVersion: string;
 }): Promise<PaperSignalCandidate[]> {
@@ -163,8 +170,17 @@ export async function scanCompletedTimeframes(input: {
     const mode = modeFor(timeframe);
     // Walk-forward trust weights computed on THIS timeframe and shared with
     // the MTF tide so both layers agree on which strategies are trusted.
-    // Deliberately never multiplied by computeStrategyLearning output.
+    // Promoted multipliers (the approved learning loop) are applied on top,
+    // clamped to the same band as the league's effectiveWeight; with no
+    // promotions this is exactly the raw walk-forward weights.
     const weights = computeStrategyWeights(midCandles, timeframe, mode).weights;
+    if (input.multipliersByStrategy) {
+      for (const strategyId of Object.keys(weights)) {
+        const multiplier = input.multipliersByStrategy[strategyId] ?? 1;
+        if (multiplier === 1) continue;
+        weights[strategyId] = Math.min(1.15, Math.max(0.15, weights[strategyId] * multiplier));
+      }
+    }
     const enabled = input.enabledStrategyIds.filter((id) => !MACRO_DEPENDENT_STRATEGIES.has(id));
     const candleClosedAt = twoSided.at(-1)!.time;
     const engineQuote = toEngineQuote(input.quote);

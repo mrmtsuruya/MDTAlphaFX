@@ -114,6 +114,9 @@ class FakeRepo implements PaperWorkerRepository {
   async listEnabledStrategyIds() {
     return this.enabledIds;
   }
+  async listActiveMultipliers() {
+    return [];
+  }
   async claimScan(input: ScanClaim) {
     const existing = this.claims.find((c) => c.fingerprint === input.scanFingerprint);
     if (existing) return { scanRunId: existing.scanRunId, claimed: false };
