@@ -14,6 +14,7 @@ import { formatPhtTimestamp, utcIsoTitle } from "./pht-time.ts";
 import { computeStrategyLearning, type ResolvedSignalForLearning } from "./signal-learning.ts";
 import { PAPER_LOT_SIZE, type PaperTradeState } from "./paper-trade-state.ts";
 import { PAPER_TIMEFRAMES, type PaperTimeframe } from "./xauusd-market-data.ts";
+import { computePaperPosition } from "./xauusd-paper-pnl.ts";
 
 export class PaperViewMappingError extends Error {
   constructor(message: string) {
@@ -401,4 +402,123 @@ export function summarizePaperPerformance(rows: PaperLearningOutcomeRow[]): Pape
   }
   report.winRate = report.resolved > 0 ? report.wins / report.resolved : 0;
   return report;
+}
+
+// ---------------------------------------------------------------------------
+// Account summary (canonical paper ledger, $ denominated)
+// ---------------------------------------------------------------------------
+
+/** Starting balance of the imaginary paper account. Fixed, not inferred — the
+ *  owner runs a ~$200 balance at a fixed 0.01 lot (see HANDOFF §1). */
+export const PAPER_STARTING_BALANCE_USD = 200 as const;
+
+/** Lean row shape the account query produces — only what a $ ledger needs. */
+export type PaperAccountRow = {
+  id: string;
+  direction: string;
+  entry: number | string;
+  stop_loss: number | string;
+  created_at: string;
+  paper_trades?: PaperTradeJoin;
+};
+
+export type PaperAccountSummary = {
+  startingBalanceUsd: number;
+  /** Balance = starting + realized. Changes only when a trade closes. */
+  balanceUsd: number;
+  /** Sum of open-trade floating P&L at the given mid (0 while the feed is down). */
+  floatingUsd: number;
+  /** Equity = balance + floating. */
+  equityUsd: number;
+  /** Cumulative $ booked by terminal trades (TP2 +2R, SL −1R, BE 0R). */
+  realizedUsd: number;
+  /** Live positions: waiting_entry + open + tp1_protected. */
+  openCount: number;
+  /** Terminal closed trades (TP2/SL/BE). Expired trades never entered. */
+  resolvedCount: number;
+  /** Peak-to-trough drawdown of the realized-equity curve. A lower bound —
+   *  open-trade floating history is not stored, so true drawdown is ≥ this. */
+  maxDrawdownUsd: number;
+};
+
+const ACCOUNT_POSITION_STATES: Record<string, true> = { open: true, tp1_protected: true };
+const ACCOUNT_LIVE_STATES: Record<string, true> = {
+  waiting_entry: true,
+  open: true,
+  tp1_protected: true,
+};
+const ACCOUNT_TERMINAL_STATES: Record<string, true> = {
+  closed_tp2: true,
+  closed_breakeven: true,
+  closed_stop: true,
+};
+
+export function summarizePaperAccount(
+  rows: PaperAccountRow[],
+  mid: number | null,
+): PaperAccountSummary {
+  let realizedUsd = 0;
+  let floatingUsd = 0;
+  let openCount = 0;
+  let resolvedCount = 0;
+  // Realized $ per trade = result_r × risk$, where risk$ = |entry − stop| ×
+  // lot × 100. XAUUSD 0.01 lot = 1 oz, so the ×100 collapses to $1/point and
+  // risk$ is just the entry→stop distance in dollars.
+  const closed: { at: number; realizedUsd: number }[] = [];
+
+  for (const row of rows) {
+    const direction = row.direction === "short" ? "short" : "long";
+    const entry = toFinite(row.entry, "entry");
+    const stopLoss = toFinite(row.stop_loss, "stop_loss");
+    const trade = firstTrade(row.paper_trades);
+    if (!trade) continue;
+
+    if (ACCOUNT_LIVE_STATES[trade.state]) {
+      openCount += 1;
+      if (ACCOUNT_POSITION_STATES[trade.state]) {
+        const actualEntry = toNullableFinite(trade.entry_price, "entry_price") ?? entry;
+        if (mid != null && Number.isFinite(mid)) {
+          floatingUsd +=
+            computePaperPosition({
+              direction,
+              entry: actualEntry,
+              stopLoss,
+              lotSize: PAPER_LOT_SIZE,
+              current: mid,
+            })?.usd ?? 0;
+        }
+      }
+    } else if (ACCOUNT_TERMINAL_STATES[trade.state]) {
+      resolvedCount += 1;
+      const resultR = toNullableFinite(trade.result_r, "result_r") ?? 0;
+      const riskUsd = Math.abs(entry - stopLoss) * PAPER_LOT_SIZE * 100;
+      const realized = resultR * riskUsd;
+      realizedUsd += realized;
+      const at = trade.exit_time ? Date.parse(trade.exit_time) : Date.parse(row.created_at);
+      if (Number.isFinite(at)) closed.push({ at, realizedUsd: realized });
+    }
+    // expired: never entered, contributes nothing to the ledger.
+  }
+
+  closed.sort((a, b) => a.at - b.at);
+  let equity: number = PAPER_STARTING_BALANCE_USD;
+  let peak: number = equity;
+  let maxDrawdownUsd = 0;
+  for (const c of closed) {
+    equity += c.realizedUsd;
+    if (equity > peak) peak = equity;
+    maxDrawdownUsd = Math.max(maxDrawdownUsd, peak - equity);
+  }
+
+  const balanceUsd = PAPER_STARTING_BALANCE_USD + realizedUsd;
+  return {
+    startingBalanceUsd: PAPER_STARTING_BALANCE_USD,
+    balanceUsd,
+    floatingUsd,
+    equityUsd: balanceUsd + floatingUsd,
+    realizedUsd,
+    openCount,
+    resolvedCount,
+    maxDrawdownUsd,
+  };
 }

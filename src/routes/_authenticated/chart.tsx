@@ -2,10 +2,17 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { listXauusdPaperSignals, type PaperSignalListItem } from "@/lib/xauusd-paper.functions";
+import {
+  getXauusdPaperAccount,
+  listXauusdPaperSignals,
+  type PaperSignalListItem,
+} from "@/lib/xauusd-paper.functions";
 import { getMarketCandles, getMarketQuotes } from "@/lib/market-data.functions";
 import { MARKET_TIMEFRAMES } from "@/lib/market-data.server";
 import { classifyOrder, summarizeSignal, type OrderTicket } from "@/lib/order-ticket";
+import { computePaperPosition } from "@/lib/xauusd-paper-pnl";
+import { summarizePaperAccount, type PaperAccountSummary } from "@/lib/xauusd-paper-view";
+import { PAPER_LOT_SIZE } from "@/lib/paper-trade-state";
 import {
   buildLocationOverlay,
   buildOverlays,
@@ -139,6 +146,7 @@ type ScanSignal = {
   contributing_strategies: string[];
   rationale: string | null;
   news_context: unknown;
+  trade: PaperSignalListItem["trade"] | null;
 };
 
 type Granularity = (typeof MARKET_TIMEFRAMES)[number];
@@ -188,6 +196,14 @@ const CANDLE_POLL_MS: Record<Granularity, number> = {
 // chart is honestly reporting that rather than pretending to be live.
 const STALE_TICK_MS = 90_000;
 
+// Paper states that mean the trade is still live (armed, filled, or
+// breakeven-protected). Closed/expired trades are history, not a position.
+const ACTIVE_PAPER_STATES: Record<string, true> = {
+  waiting_entry: true,
+  open: true,
+  tp1_protected: true,
+};
+
 function toScanSignal(dto: PaperSignalListItem): ScanSignal {
   return {
     id: dto.id,
@@ -204,6 +220,7 @@ function toScanSignal(dto: PaperSignalListItem): ScanSignal {
     contributing_strategies: dto.contributingStrategies,
     rationale: dto.rationale,
     news_context: null,
+    trade: dto.trade,
   };
 }
 
@@ -247,6 +264,24 @@ function Chart() {
   });
   const liveQuote = chartQuotes.data?.quotes?.[0] ?? null;
 
+  const mid = liveQuote ? (liveQuote.bid + liveQuote.ask) / 2 : null;
+
+  // Account rows (every worker signal, archived included) folded into the $
+  // terminal-bar summary. Fetched separately from paperSignalsQ because that
+  // list filters archived_at IS NULL — realized P&L would otherwise drop every
+  // closed trade the archive job has moved out.
+  const accountFn = useServerFn(getXauusdPaperAccount);
+  const accountQ = useQuery({
+    queryKey: ["xauusd-paper-account"],
+    queryFn: () => accountFn(),
+    refetchInterval: 60_000,
+    retry: false,
+  });
+  const account = useMemo(
+    () => summarizePaperAccount(accountQ.data ?? [], mid),
+    [accountQ.data, mid],
+  );
+
   const filteredPairs = PAIRS.filter((p) =>
     p.toLowerCase().includes(pairQuery.trim().toLowerCase()),
   );
@@ -268,16 +303,20 @@ function Chart() {
     setResult(null);
   }, [symbol]);
 
-  // Auto-select the newest canonical signal for the current pair + timeframe
-  // once it arrives, so the chart draws the latest paper trade's levels without
-  // a manual click. Only fires while nothing is selected yet.
-  const newestForChart = paperSignalsQ.data
-    ?.filter((s) => s.pair === symbol && s.timeframe === timeframe)
-    .sort((a, b) => Date.parse(b.timestampUtc) - Date.parse(a.timestampUtc))[0];
+  // Auto-select the live position for the current pair + timeframe once it
+  // arrives, so the chart draws the open trade's levels without a manual
+  // click. Falls back to the newest signal (any state) when nothing is live.
+  // Only fires while nothing is selected yet.
+  const chartSignals =
+    paperSignalsQ.data
+      ?.filter((s) => s.pair === symbol && s.timeframe === timeframe)
+      .sort((a, b) => Date.parse(b.timestampUtc) - Date.parse(a.timestampUtc)) ?? [];
+  const pinnedForChart =
+    chartSignals.find((s) => ACTIVE_PAPER_STATES[s.trade.state]) ?? chartSignals[0];
   useEffect(() => {
-    if (newestForChart && !result) setResult(toScanSignal(newestForChart));
+    if (pinnedForChart && !result) setResult(toScanSignal(pinnedForChart));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [newestForChart?.id]);
+  }, [pinnedForChart?.id]);
 
   return (
     <div className="p-6 space-y-4 h-[calc(100vh-3.5rem)] flex flex-col">
@@ -404,6 +443,7 @@ function Chart() {
           </div>
         </div>
       </header>
+      <AccountBar account={account} />
 
       <div className="flex-1 grid gap-4 lg:grid-cols-[1fr_380px] min-h-0">
         {/* Only the left panel swaps. PairScanner stays mounted in both views,
@@ -1047,9 +1087,11 @@ function drawLevels(
     );
   }
 
-  // Entry marker at the last (current) bar, plus any structure markers the
-  // overlay layer produced. One setMarkers call — the plugin replaces the whole
-  // set each time, so they have to go in together.
+  // Entry + exit markers. One setMarkers call — the plugin replaces the whole
+  // set each time, so they have to go in together. Entry sits at the actual
+  // fill time when the trade carries one (else the newest loaded bar); a closed
+  // trade also draws its exit arrow at the resolved bar so a TP2 winner and a
+  // stop-out are visually distinct, not just two rows in a list.
   const markers: SeriesMarker<UTCTimestamp>[] = overlayMarkers.map((marker) => ({
     time: marker.time as UTCTimestamp,
     position: marker.position,
@@ -1057,16 +1099,41 @@ function drawLevels(
     shape: marker.shape,
     text: marker.text,
   }));
+  const trade = result.trade;
   const last = bars[bars.length - 1];
-  if (last) {
+
+  const entryTime = (() => {
+    if (trade?.entryTime) {
+      const sec = Math.floor(Date.parse(trade.entryTime) / 1000);
+      if (Number.isFinite(sec)) return sec as UTCTimestamp;
+    }
+    return last?.time ?? null;
+  })();
+  if (entryTime != null) {
     markers.push({
-      time: last.time,
+      time: entryTime,
       position: result.direction === "long" ? "belowBar" : "aboveBar",
       color: result.direction === "long" ? UP : DOWN,
       shape: result.direction === "long" ? "arrowUp" : "arrowDown",
       text: `${result.direction.toUpperCase()} ${result.confluence}%`,
     });
   }
+
+  if (trade?.exitTime && trade.exitPrice != null) {
+    const exitSec = Math.floor(Date.parse(trade.exitTime) / 1000);
+    if (Number.isFinite(exitSec)) {
+      const isWin = trade.state === "closed_tp2";
+      const isLoss = trade.state === "closed_stop";
+      markers.push({
+        time: exitSec as UTCTimestamp,
+        position: result.direction === "long" ? "aboveBar" : "belowBar",
+        color: isWin ? UP : isLoss ? DOWN : SOFT_GREEN,
+        shape: result.direction === "long" ? "arrowDown" : "arrowUp",
+        text: isWin ? "EXIT TP2" : isLoss ? "EXIT SL" : "EXIT BE",
+      });
+    }
+  }
+
   markers.sort((a, b) => (a.time as number) - (b.time as number));
   markersRef.current?.setMarkers(markers);
 
@@ -1120,6 +1187,24 @@ function ChartLegend({
   // Re-derived every legend repaint, so the ticket flips to TOO LATE or
   // INVALIDATED live as the candle moves through TP1 / SL.
   const ticket = result ? classifyOrder(result, price) : null;
+  // Live-position read: the selected signal's canonical trade state, plus its
+  // floating P&L when the engine has actually filled it (open / tp1_protected).
+  const tradeState = result?.trade?.state ?? null;
+  const stateMeta = tradeState ? PAPER_STATE_LABEL[tradeState] : null;
+  const floating = (() => {
+    if (!result) return null;
+    if (tradeState !== "open" && tradeState !== "tp1_protected") return null;
+    const current = lastPrice ?? (quote ? (quote.bid + quote.ask) / 2 : null);
+    const entryPrice = result.trade?.entryPrice ?? result.entry;
+    if (current == null) return null;
+    return computePaperPosition({
+      direction: result.direction,
+      entry: entryPrice,
+      stopLoss: result.stop_loss,
+      lotSize: PAPER_LOT_SIZE,
+      current,
+    });
+  })();
   return (
     <div className="pointer-events-none absolute left-3 top-3 z-10 space-y-1 font-mono">
       <div className="flex items-center gap-2 rounded-sm border border-cyber-border bg-cyber-bg/80 px-2 py-1 text-[10px] backdrop-blur">
@@ -1154,6 +1239,25 @@ function ChartLegend({
             <LegendItem color={UP} label="TP1" value={result.take_profit_1} />
             <LegendItem color={SOFT_GREEN} label="TP2" value={result.take_profit_2} />
           </div>
+          {stateMeta && (
+            <div className="mt-1 flex items-center gap-2 border-t border-cyber-border pt-1">
+              <span className={stateMeta.tone}>{stateMeta.text}</span>
+              {floating && (
+                <span
+                  className={
+                    floating.usd > 0
+                      ? "text-neon-long"
+                      : floating.usd < 0
+                        ? "text-neon-short"
+                        : "text-muted-foreground"
+                  }
+                >
+                  {fmtUsd(floating.usd)} · {floating.r > 0 ? "+" : ""}
+                  {floating.r.toFixed(2)}R
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -1166,6 +1270,65 @@ function LegendItem({ color, label, value }: { color: string; label: string; val
       <span className="inline-block size-1.5 rounded-full" style={{ backgroundColor: color }} />
       <span className="text-muted-foreground">{label}</span>
       <span className="text-white">{value}</span>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AccountBar — the MT5 terminal strip for the imaginary paper account.
+// ---------------------------------------------------------------------------
+
+function fmtUsd(value: number): string {
+  const sign = value > 0 ? "+" : "";
+  return `${sign}$${value.toFixed(2)}`;
+}
+
+function AccountStat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "long" | "short" | "accent" | "muted";
+}) {
+  const color =
+    tone === "long"
+      ? "text-neon-long"
+      : tone === "short"
+        ? "text-neon-short"
+        : tone === "accent"
+          ? "text-neon-accent"
+          : "text-white";
+  return (
+    <div className="flex flex-col">
+      <span className="text-[8px] uppercase tracking-widest text-muted-foreground">{label}</span>
+      <span className={`font-mono text-[11px] ${color}`}>{value}</span>
+    </div>
+  );
+}
+
+function AccountBar({ account }: { account: PaperAccountSummary }) {
+  const floatingTone =
+    account.floatingUsd > 0 ? "long" : account.floatingUsd < 0 ? "short" : "muted";
+  const realizedTone =
+    account.realizedUsd > 0 ? "long" : account.realizedUsd < 0 ? "short" : "muted";
+  const equityTone = account.equityUsd >= account.startingBalanceUsd ? "long" : "short";
+  return (
+    <div className="flex flex-wrap items-center gap-5 rounded-lg border border-cyber-border bg-cyber-surface px-4 py-2">
+      <span className="font-mono text-[8px] uppercase tracking-widest text-neon-accent">
+        // PAPER_ACCOUNT
+      </span>
+      <AccountStat label="BALANCE" value={fmtUsd(account.balanceUsd)} />
+      <AccountStat label="EQUITY" value={fmtUsd(account.equityUsd)} tone={equityTone} />
+      <AccountStat label="FLOATING" value={fmtUsd(account.floatingUsd)} tone={floatingTone} />
+      <AccountStat label="OPEN" value={String(account.openCount)} tone="accent" />
+      <AccountStat label="REALIZED" value={fmtUsd(account.realizedUsd)} tone={realizedTone} />
+      <AccountStat
+        label="MAX DD"
+        value={fmtUsd(-account.maxDrawdownUsd)}
+        tone={account.maxDrawdownUsd > 0 ? "short" : "muted"}
+      />
     </div>
   );
 }

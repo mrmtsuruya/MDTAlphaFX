@@ -21,6 +21,7 @@ const AUTHENTICATED_FUNCTIONS = [
   "listXauusdPaperSignals",
   "getXauusdPaperPerformance",
   "getXauusdShadowLearning",
+  "getXauusdPaperAccount",
 ];
 
 function functionBlock(name: string): string {
@@ -93,6 +94,7 @@ test("schema-missing branches never surface raw PostgREST text", () => {
     "listXauusdPaperSignals",
     "getXauusdPaperPerformance",
     "getXauusdShadowLearning",
+    "getXauusdPaperAccount",
   ]) {
     assert.match(
       functionBlock(name),

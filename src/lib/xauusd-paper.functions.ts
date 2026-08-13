@@ -21,6 +21,7 @@ import {
   mapPaperSignalListItem,
   mapPaperShadowLearningReport,
   summarizePaperPerformance,
+  type PaperAccountRow,
   type PaperLearningOutcomeRow,
   type PaperPerformanceReport,
   type PaperShadowLearningReport,
@@ -28,7 +29,7 @@ import {
   type PaperSignalListItem,
 } from "./xauusd-paper-view.ts";
 
-export type { PaperPerformanceReport, PaperShadowLearningReport, PaperSignalListItem };
+export type { PaperAccountRow, PaperPerformanceReport, PaperShadowLearningReport, PaperSignalListItem };
 
 // market_snapshots has TWO relationships to signals (the FK via
 // market_snapshot_id AND the many-to-many via signal_market_snapshots), so
@@ -45,6 +46,10 @@ const SIGNAL_VIEW_SELECT =
 const OUTCOME_SELECT =
   "id, pair, direction, mode, timeframe, confluence, contributing_strategies, " +
   "created_at, archived_at, execution_policy_version, generated_by, paper_trades(state)";
+
+const ACCOUNT_SELECT =
+  "id, direction, entry, stop_loss, created_at, " +
+  "paper_trades(state, entry_price, exit_time, result_r)";
 
 const DISABLED_PROFILE = {
   enabled: false,
@@ -242,6 +247,28 @@ export const getXauusdPaperPerformance = createServerFn({ method: "GET" })
     }
     return summarizePaperPerformance((data ?? []) as unknown as PaperLearningOutcomeRow[]);
   });
+
+export const getXauusdPaperAccount = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    // No archive filter: realized P&L must include closed trades the archive
+    // job has already soft-archived (30-day window). Returns lean rows only —
+    // the client folds them into the account summary with its live mid.
+    const { data, error } = await supabase
+      .from("signals")
+      .select(ACCOUNT_SELECT)
+      .eq("user_id", userId)
+      .eq("generated_by", "xauusd_paper_worker")
+      .order("created_at", { ascending: false })
+      .limit(2000);
+    if (error) {
+      if (isMissingSchemaError(error)) throw new Error("migration_required");
+      throw new Error(error.message);
+    }
+    return (data ?? []) as unknown as PaperAccountRow[];
+  });
+
 
 export const getXauusdShadowLearning = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
