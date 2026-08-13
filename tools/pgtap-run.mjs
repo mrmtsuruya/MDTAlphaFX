@@ -132,6 +132,10 @@ function tapLine(value) {
 async function main() {
   const db = new PGlite();
 
+  // Supabase runs Postgres in UTC; pin the session so date-part assertions
+  // (e.g. archived_at::date) are deterministic regardless of host timezone.
+  await db.exec("SET timezone TO 'UTC'");
+
   console.log("== scaffold ==");
   await db.exec(SCAFFOLD);
   await db.exec(pgtapSql());
