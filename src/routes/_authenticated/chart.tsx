@@ -4,15 +4,23 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import {
   getXauusdPaperAccount,
+  getXauusdPaperSignalDetail,
   listXauusdPaperSignals,
+  type PaperSignalDetail,
   type PaperSignalListItem,
 } from "@/lib/xauusd-paper.functions";
 import { getMarketCandles, getMarketQuotes } from "@/lib/market-data.functions";
-import { MARKET_TIMEFRAMES } from "@/lib/market-data.server";
+import { MARKET_TIMEFRAMES, type MarketCandle } from "@/lib/market-data.server";
 import { classifyOrder, summarizeSignal, type OrderTicket } from "@/lib/order-ticket";
 import { computePaperPosition } from "@/lib/xauusd-paper-pnl";
 import { summarizePaperAccount, type PaperAccountSummary } from "@/lib/xauusd-paper-view";
 import { PAPER_LOT_SIZE } from "@/lib/paper-trade-state";
+import {
+  simulateExitPolicies,
+  EXIT_POLICY_LABEL,
+  type PolicySimResult,
+} from "@/lib/paper-policy-sim";
+import { computeHoldStats, openTradeMeters } from "@/lib/paper-proximity";
 import {
   buildLocationOverlay,
   buildOverlays,
@@ -1119,6 +1127,19 @@ function drawLevels(
     });
   }
 
+  if (trade?.tp1ArmedAt) {
+    const tp1Sec = Math.floor(Date.parse(trade.tp1ArmedAt) / 1000);
+    if (Number.isFinite(tp1Sec)) {
+      markers.push({
+        time: tp1Sec as UTCTimestamp,
+        position: result.direction === "long" ? "belowBar" : "aboveBar",
+        color: SOFT_GREEN,
+        shape: "circle",
+        text: "TP1 · BE ARMED",
+      });
+    }
+  }
+
   if (trade?.exitTime && trade.exitPrice != null) {
     const exitSec = Math.floor(Date.parse(trade.exitTime) / 1000);
     if (Number.isFinite(exitSec)) {
@@ -1423,11 +1444,20 @@ function PairScanner({
         <>
           <DisabledScanNotice />
           {result ? (
-            <ResearchCard
-              signal={result}
-              dto={rows.find((r) => r.entry === result.entry)}
-              mid={quote ? (quote.bid + quote.ask) / 2 : null}
-            />
+            <>
+              <ResearchCard
+                signal={result}
+                dto={rows.find((r) => r.entry === result.entry)}
+                mid={quote ? (quote.bid + quote.ask) / 2 : null}
+              />
+              <AutopsyCard
+                signal={result}
+                pair={pair}
+                timeframe={timeframe}
+                quote={quote}
+                paperSignals={paperSignals}
+              />
+            </>
           ) : (
             <p className="font-mono text-[10px] leading-relaxed text-muted-foreground">
               Select a signal from the SIGNAL view to inspect its order ticket, technical read and
@@ -1755,6 +1785,405 @@ function ResearchCard({
             </div>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AutopsyCard — the signal autopsy. For the selected canonical signal this
+// answers, with the owner's own ledger and the chart's candles:
+//   1. What actually happened (state, R, journey: peak MFE / trough MAE,
+//      bars held, ambiguity) and the exact event sequence the worker recorded.
+//   2. If the trade is open: how far TP1 and SL are, live, in R and $, and
+//      what fraction of resolved trades at this proximity actually reached
+//      TP1 (the ledger's own "will it hold?" estimate).
+//   3. If it resolved: what each alternative exit policy WOULD have done on
+//      the same candles (close at TP1 / trail 1.0xATR after TP1 / early BE at
+//      +0.5R), against the CURRENT B-single control.
+// The policy comparison is analysis only — the live worker keeps b_single_v1
+// until the ledger says a policy wins.
+// ---------------------------------------------------------------------------
+
+const EVENT_LABEL: Record<string, string> = {
+  market_observed: "OBSERVED",
+  entry_filled: "ENTRY FILL",
+  tp1_protected: "TP1 · BE ARMED",
+  closed_tp2: "TP2 HIT",
+  closed_breakeven: "BE EXIT",
+  closed_stop: "SL HIT",
+  expired: "EXPIRED",
+};
+
+const SIM_STATE_LABEL: Record<PolicySimResult["state"], { text: string; tone: string }> = {
+  closed_tp2: { text: "TP2 +2R", tone: "text-neon-long" },
+  closed_tp1: { text: "TP1", tone: "text-neon-long" },
+  closed_breakeven: { text: "BE 0R", tone: "text-muted-foreground" },
+  closed_stop: { text: "SL -1R", tone: "text-neon-short" },
+  trail_exit: { text: "TRAIL EXIT", tone: "text-neon-accent" },
+  still_open: { text: "STILL OPEN", tone: "text-muted-foreground" },
+};
+
+function fmtR(value: number | null): string {
+  if (value == null) return "—";
+  return `${value > 0 ? "+" : ""}${value.toFixed(2)}R`;
+}
+
+function durationLabel(fromIso: string | null, toIso: string | null): string {
+  if (!fromIso || !toIso) return "—";
+  const minutes = Math.max(0, Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 60_000));
+  if (minutes < 60) return `${minutes}m`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}
+
+function evidencePrice(evidence: Record<string, string | number | boolean | null>): string | null {
+  const price =
+    typeof evidence.entryPrice === "number" ? evidence.entryPrice : typeof evidence.exitPrice === "number" ? evidence.exitPrice : null;
+  return price == null ? null : price.toFixed(2);
+}
+
+function AutopsyCard({
+  signal,
+  pair,
+  timeframe,
+  quote,
+  paperSignals,
+}: {
+  signal: ScanSignal;
+  pair: string;
+  timeframe: Granularity;
+  quote: LiveQuote;
+  paperSignals: PaperSignalListItem[];
+}) {
+  const detailFn = useServerFn(getXauusdPaperSignalDetail);
+  const candlesFn = useServerFn(getMarketCandles);
+
+  const detailQ = useQuery({
+    queryKey: ["paper-signal-detail", signal.id],
+    queryFn: () => detailFn({ data: { signalId: signal.id } }),
+    enabled: !!signal.id,
+    retry: false,
+  });
+  const detail: PaperSignalDetail | null = detailQ.data?.detail ?? null;
+  const trade = detail?.trade ?? null;
+  const mid = quote ? (quote.bid + quote.ask) / 2 : null;
+  const resolved = trade != null && trade.resultR != null;
+  const active = trade != null && ACTIVE_PAPER_STATES[trade.state] === true;
+
+  const candlesQ = useQuery({
+    queryKey: ["market-candles", pair, timeframe],
+    queryFn: () => candlesFn({ data: { pair, granularity: timeframe, count: 300 } }),
+    enabled: !!detail && !!trade?.entryTime && detail.timeframe === timeframe,
+    refetchInterval: CANDLE_POLL_MS[timeframe],
+    retry: false,
+  });
+
+  const holdStats = useMemo(() => computeHoldStats(paperSignals, pair, timeframe), [
+    paperSignals,
+    pair,
+    timeframe,
+  ]);
+
+  const meters = useMemo(
+    () => (active && detail ? openTradeMeters(detail, mid) : null),
+    [active, detail, mid],
+  );
+
+  const sims = useMemo<PolicySimResult[] | null>(() => {
+    if (!detail || !trade || !resolved || !trade.entryTime || detail.timeframe !== timeframe) {
+      return null;
+    }
+    const candles = (candlesQ.data?.candles ?? [])
+      .filter((c) => c.time != null)
+      .map((c) => ({ time: c.time, open: c.open, high: c.high, low: c.low, close: c.close }));
+    if (candles.length === 0) return null;
+    if (Date.parse(candles[0].time) > Date.parse(trade.entryTime)) return null; // no coverage
+    return simulateExitPolicies({
+      direction: detail.direction,
+      entry: trade.entryPrice ?? detail.entry,
+      stopLoss: detail.stopLoss,
+      takeProfit1: detail.takeProfit1,
+      takeProfit2: detail.takeProfit2,
+      atr: detail.atr,
+      entryTime: trade.entryTime,
+      candles,
+    });
+  }, [detail, trade, resolved, timeframe, candlesQ.data]);
+
+  if (!signal.id) return null;
+  if (detailQ.isLoading) {
+    return (
+      <div className="rounded-sm border border-cyber-border bg-cyber-surface px-3 py-2 font-mono text-[9px] text-muted-foreground">
+        // AUTOPSY — LOADING…
+      </div>
+    );
+  }
+  if (detailQ.isError || !detail) {
+    return (
+      <div className="rounded-sm border border-cyber-border bg-cyber-surface px-3 py-2 font-mono text-[9px] text-muted-foreground">
+        // AUTOPSY — UNAVAILABLE
+      </div>
+    );
+  }
+  if (!trade) return null; // canonical rows always carry a trade (mapper enforces)
+
+  const stateMeta = PAPER_STATE_LABEL[trade.state] ?? { text: trade.state.toUpperCase(), tone: "text-muted-foreground" };
+  const tp1DistR = Math.abs(detail.takeProfit1 - detail.entry) / Math.max(1e-9, Math.abs(detail.entry - detail.stopLoss));
+  const peakProgressPct = trade.mfeR != null ? Math.round(Math.min(100, (trade.mfeR / tp1DistR) * 100)) : null;
+
+  return (
+    <div className="rounded-sm border border-neon-accent/40 bg-cyber-bg p-3 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[10px] font-bold tracking-widest text-neon-accent">
+          // AUTOPSY
+        </span>
+        <span className={`rounded-sm border px-1.5 py-0.5 font-mono text-[8px] uppercase ${stateMeta.tone}`}>
+          {stateMeta.text}
+        </span>
+      </div>
+
+      {/* Journey — what actually happened */}
+      <div className="rounded-sm border border-cyber-border bg-cyber-surface px-2.5 py-2 font-mono text-[10px] space-y-1">
+        <div className="flex items-baseline justify-between">
+          <span className="text-[8px] uppercase tracking-widest text-muted-foreground">
+            {resolved ? "RESOLVED" : active ? "LIVE" : "EXPIRED"}
+          </span>
+          <span
+            className={
+              trade.resultR != null
+                ? trade.resultR > 0
+                  ? "text-neon-long"
+                  : trade.resultR < 0
+                    ? "text-neon-short"
+                    : "text-muted-foreground"
+                : "text-neon-accent"
+            }
+          >
+            {fmtR(trade.resultR)}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+          <div>
+            <span className="text-muted-foreground">PEAK </span>
+            <span className="text-neon-long">{fmtR(trade.mfeR)}</span>
+          </div>
+          <div>
+            <span className="text-muted-foreground">TROUGH </span>
+            <span className="text-neon-short">{fmtR(trade.maeR)}</span>
+          </div>
+          <div>
+            <span className="text-muted-foreground">BARS </span>
+            <span className="text-white">{trade.barsHeld}</span>
+          </div>
+          <div>
+            <span className="text-muted-foreground">DURATION </span>
+            <span className="text-white">{durationLabel(trade.entryTime, trade.exitTime)}</span>
+          </div>
+        </div>
+        {resolved && peakProgressPct != null && (
+          <p className="text-[9px] text-muted-foreground">
+            {trade.mfeR != null && trade.mfeR >= tp1DistR
+              ? "REACHED TP1 — " +
+                (trade.state === "closed_tp2"
+                  ? "THE RUNNER CONTINUED TO TP2"
+                  : "THEN THE STOP TOOK IT BACK")
+              : `REACHED ${peakProgressPct}% OF THE WAY TO TP1 — NEVER TOUCHED IT`}
+          </p>
+        )}
+        {trade.ambiguousIntrabar && (
+          <p className="text-[9px] text-neon-warn">
+            AMBIGUOUS INTRABAR — STOP AND TARGET TOUCHED IN THE SAME CANDLE, RESOLVED ADVERSARIALLY
+            TO THE STOP
+          </p>
+        )}
+      </div>
+
+      {/* Live meters — will it still hold until TP1? */}
+      {active && (
+        <div className="rounded-sm border border-cyber-border bg-cyber-surface px-2.5 py-2 font-mono text-[10px] space-y-1.5">
+          <div className="text-[8px] uppercase tracking-widest text-muted-foreground">
+            LIVE · HOLD-TO-TP1 METERS
+          </div>
+          {meters ? (
+            <div className="grid grid-cols-3 gap-x-3 gap-y-0.5">
+              <div>
+                <span className="text-muted-foreground">TO_TP1 </span>
+                <span className="text-neon-long">{fmtR(meters.toTp1R)}</span>
+                <span className="block text-[8px] text-muted-foreground">
+                  ${meters.toTp1Usd.toFixed(2)}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">TO_SL </span>
+                <span className="text-neon-accent">{fmtR(meters.toSlR)}</span>
+                <span className="block text-[8px] text-muted-foreground">
+                  {meters.progressPct != null ? `${Math.round(meters.progressPct)}% TO TP1` : "—"}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">BE </span>
+                <span className="text-white">
+                  {trade.state === "tp1_protected" ? "ARMED" : "AT TP1 ONLY"}
+                </span>
+                <span className="block text-[8px] text-muted-foreground">
+                  {trade.tp1ArmedAt ? "PROTECTED" : "NOT YET"}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-[9px] text-muted-foreground">NO QUOTE — WAITING FOR THE TAPE</p>
+          )}
+          <HoldOdds holdStats={holdStats} progressPct={meters?.progressPct ?? null} timeframe={timeframe} />
+        </div>
+      )}
+
+      {/* Ledger hold-odds (resolved context too) */}
+      {resolved && <HoldOdds holdStats={holdStats} progressPct={peakProgressPct} timeframe={timeframe} />}
+
+      {/* Event timeline */}
+      <div className="space-y-1">
+        <div className="text-[8px] font-mono uppercase tracking-widest text-muted-foreground">
+          EVENT LEDGER
+        </div>
+        <div className="max-h-44 space-y-0.5 overflow-y-auto pr-1">
+          {detail.events.length === 0 && (
+            <p className="font-mono text-[9px] text-muted-foreground">NO EVENTS RECORDED</p>
+          )}
+          {detail.events.map((event) => (
+            <div
+              key={event.sequence}
+              className="flex items-baseline justify-between gap-2 font-mono text-[9px]"
+            >
+              <span className="shrink-0 text-muted-foreground">
+                {event.sequence}.{" "}
+                <span className="text-white">{EVENT_LABEL[event.type] ?? event.type}</span>
+              </span>
+              <span className="shrink-0 text-muted-foreground">
+                {event.beforeState && event.beforeState !== event.afterState
+                  ? `${event.beforeState.toUpperCase()}→${event.afterState?.toUpperCase()}`
+                  : event.afterState
+                    ? event.afterState.toUpperCase()
+                    : ""}
+              </span>
+              <span className="shrink-0 text-neon-accent">
+                {evidencePrice(event.evidence) ?? ""}
+              </span>
+              <span className="ml-auto shrink-0 text-muted-foreground">{event.workerTimePht}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Policy what-if */}
+      <div className="space-y-1">
+        <div className="text-[8px] font-mono uppercase tracking-widest text-muted-foreground">
+          WHAT-IF · EXIT POLICIES
+        </div>
+        {!resolved && (
+          <p className="font-mono text-[9px] text-muted-foreground">
+            RESOLVED TRADES ONLY — THE OPEN TRADE IS SIMULATED BY THE LIVE WORKER
+          </p>
+        )}
+        {resolved && !sims && (
+          <p className="font-mono text-[9px] text-muted-foreground">
+            NEED CANDLES FROM {trade.entryTime ? new Date(trade.entryTime).toISOString() : "ENTRY"} —
+            SHOW {timeframe} ON THE CHART OR SCROLL BACK
+          </p>
+        )}
+        {resolved && sims && (
+          <div className="space-y-1">
+            {sims.map((sim) => {
+              const meta = SIM_STATE_LABEL[sim.state];
+              const isCurrent = sim.policy === "b_single_v1";
+              const bestR = Math.max(...sims.map((s) => s.resultR ?? -999));
+              const isBest = sim.resultR != null && sim.resultR === bestR && !isCurrent;
+              return (
+                <div
+                  key={sim.policy}
+                  className={`flex items-baseline justify-between gap-2 rounded-sm border px-2 py-1 font-mono text-[9px] ${
+                    isCurrent
+                      ? "border-neon-accent/50 bg-neon-accent/5"
+                      : "border-cyber-border bg-cyber-surface"
+                  }`}
+                >
+                  <span className="shrink-0 text-muted-foreground">
+                    {EXIT_POLICY_LABEL[sim.policy]}
+                    {isCurrent && <span className="ml-1 text-neon-accent">← ACTUAL</span>}
+                    {isBest && <span className="ml-1 text-neon-long">← BEST</span>}
+                  </span>
+                  <span className={`shrink-0 font-bold ${meta.tone}`}>
+                    {meta.text}
+                    {sim.resultR != null && !["closed_tp1", "closed_tp2", "closed_stop", "closed_breakeven"].includes(sim.state) && (
+                      <span className="ml-1 font-normal text-muted-foreground">
+                        {fmtR(sim.resultR)}
+                      </span>
+                    )}
+                  </span>
+                  <span className="shrink-0 text-muted-foreground">
+                    {sim.barsHeld}b{sim.ambiguousIntrabar ? " · ?" : ""}
+                  </span>
+                </div>
+              );
+            })}
+            <p className="text-[8px] font-mono leading-snug text-muted-foreground">
+              MID-CANDLE RE-SIMULATION ON RE-FETCHED CHART CANDLES — SPREAD IGNORED. THE WORKER
+              KEEPS B_SINGLE UNTIL THE LEDGER SAYS OTHERWISE.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Ledger hold-odds: of resolved {timeframe} trades at this proximity to TP1,
+ *  how many actually reached it? Answers "will it hold?" with data, not vibes. */
+function HoldOdds({
+  holdStats,
+  progressPct,
+  timeframe,
+}: {
+  holdStats: ReturnType<typeof computeHoldStats>;
+  progressPct: number | null;
+  timeframe: Granularity;
+}) {
+  const applicable = progressPct != null
+    ? [...holdStats].reverse().find((bucket) => progressPct >= bucket.thresholdPct) ?? null
+    : null;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        {holdStats.map((bucket) => (
+          <div key={bucket.thresholdPct} className="flex-1">
+            <div className="flex justify-between font-mono text-[8px] text-muted-foreground">
+              <span>&gt;={bucket.thresholdPct}%</span>
+              <span>{bucket.reached > 0 ? `${Math.round((bucket.hitRate ?? 0) * 100)}%` : "—"}</span>
+            </div>
+            <div className="mt-0.5 h-1 rounded-sm bg-cyber-border">
+              <div
+                className="h-1 rounded-sm bg-neon-long/70"
+                style={{ width: `${bucket.reached > 0 ? Math.round((bucket.hitRate ?? 0) * 100) : 0}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      {applicable && applicable.reached > 0 ? (
+        <p className="font-mono text-[9px] text-muted-foreground">
+          AT {Math.round(progressPct ?? 0)}% TOWARD TP1: OF{" "}
+          <span className="text-white">{applicable.reached}</span> RESOLVED {timeframe} TRADES AT
+          THIS PROXIMITY,{" "}
+          <span className={applicable.hitRate! >= 0.5 ? "text-neon-long" : "text-neon-warn"}>
+            {Math.round(applicable.hitRate! * 100)}%
+          </span>{" "}
+          REACHED TP1
+        </p>
+      ) : (
+        <p className="font-mono text-[9px] text-muted-foreground">
+          {progressPct != null && progressPct < 50
+            ? `BELOW 50% TOWARD TP1 (${Math.round(progressPct)}%) — BELOW THE LEDGER'S FIRST BUCKET`
+            : "NO RESOLVED TRADES AT THIS PROXIMITY YET — THE LEDGER IS STILL YOUNG"}
+        </p>
       )}
     </div>
   );

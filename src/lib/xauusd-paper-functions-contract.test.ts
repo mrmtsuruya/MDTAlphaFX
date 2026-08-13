@@ -19,6 +19,7 @@ const AUTHENTICATED_FUNCTIONS = [
   "setXauusdPaperEnabled",
   "getXauusdPaperHealth",
   "listXauusdPaperSignals",
+  "getXauusdPaperSignalDetail",
   "getXauusdPaperPerformance",
   "getXauusdShadowLearning",
   "getXauusdPaperAccount",

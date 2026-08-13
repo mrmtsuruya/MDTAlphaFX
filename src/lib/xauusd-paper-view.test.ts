@@ -75,6 +75,11 @@ const ARCHIVED_ROW: PaperSignalJoinRow = {
     exit_price: "3406.10",
     exit_time: "2026-08-11T06:30:00.000Z",
     result_r: "2",
+    mae_r: "-0.4",
+    mfe_r: "1.9",
+    bars_held: 14,
+    ambiguous_intrabar: false,
+    expires_at: "2026-08-11T07:00:00.000Z",
   },
 };
 
@@ -129,6 +134,11 @@ describe("mapPaperSignalListItem", () => {
       exitPrice: null,
       exitTime: null,
       resultR: null,
+      maeR: null,
+      mfeR: null,
+      barsHeld: 0,
+      ambiguousIntrabar: false,
+      expiresAtUtc: "",
     });
     assert.deepEqual(item.provider, {
       name: "TV_OANDA_FEED",
@@ -174,6 +184,11 @@ describe("mapPaperSignalListItem", () => {
       exitPrice: 3406.1,
       exitTime: "2026-08-11T06:30:00.000Z",
       resultR: 2,
+      maeR: -0.4,
+      mfeR: 1.9,
+      barsHeld: 14,
+      ambiguousIntrabar: false,
+      expiresAtUtc: "2026-08-11T07:00:00.000Z",
     });
   });
 

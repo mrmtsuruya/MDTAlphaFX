@@ -45,6 +45,11 @@ export type PaperTradeJoin =
       exit_price: number | string | null;
       exit_time?: string | null;
       result_r: number | string | null;
+      mae_r?: number | string | null;
+      mfe_r?: number | string | null;
+      bars_held?: number | null;
+      ambiguous_intrabar?: boolean | null;
+      expires_at?: string | null;
     }
   | {
       state: string;
@@ -54,6 +59,11 @@ export type PaperTradeJoin =
       exit_price: number | string | null;
       exit_time?: string | null;
       result_r: number | string | null;
+      mae_r?: number | string | null;
+      mfe_r?: number | string | null;
+      bars_held?: number | null;
+      ambiguous_intrabar?: boolean | null;
+      expires_at?: string | null;
     }[]
   | null;
 
@@ -116,6 +126,11 @@ export type PaperSignalListItem = {
     exitPrice: number | null;
     exitTime: string | null;
     resultR: number | null;
+    maeR: number | null;
+    mfeR: number | null;
+    barsHeld: number;
+    ambiguousIntrabar: boolean;
+    expiresAtUtc: string;
   };
   provider: {
     name: typeof PAPER_PROVIDER;
@@ -246,6 +261,12 @@ export function mapPaperSignalListItem(row: PaperSignalJoinRow): PaperSignalList
       exitPrice: toNullableFinite(trade.exit_price, "exit_price"),
       exitTime: "exit_time" in trade ? (trade.exit_time ?? null) : null,
       resultR: toNullableFinite(trade.result_r, "result_r"),
+      maeR: "mae_r" in trade ? toNullableFinite(trade.mae_r, "mae_r") : null,
+      mfeR: "mfe_r" in trade ? toNullableFinite(trade.mfe_r, "mfe_r") : null,
+      barsHeld: "bars_held" in trade ? (Number(trade.bars_held) || 0) : 0,
+      ambiguousIntrabar: "ambiguous_intrabar" in trade ? !!trade.ambiguous_intrabar : false,
+      expiresAtUtc:
+        "expires_at" in trade && trade.expires_at ? (trade.expires_at as string) : "",
     },
     provider: {
       name: PAPER_PROVIDER,
@@ -258,6 +279,74 @@ export function mapPaperSignalListItem(row: PaperSignalJoinRow): PaperSignalList
       accounting: parseAccounting(row.scan_runs?.engine_accounting),
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Signal autopsy detail (canonical row + trade event ledger)
+// ---------------------------------------------------------------------------
+
+/** Evidence values the worker writes are JSON primitives only. */
+export type PaperEvidence = Record<string, string | number | boolean | null>;
+
+/** Raw paper_trade_events row from the PostgREST nested embed. */
+export type PaperTradeEventRow = {
+  id: string;
+  sequence_no: number;
+  event_key: string;
+  event_type: string;
+  provider_timestamp: string | null;
+  worker_timestamp: string;
+  before_state: string | null;
+  after_state: string | null;
+  evidence: PaperEvidence;
+};
+
+/** Raw signal row carrying the trade's event ledger (autopsy detail). */
+export type PaperSignalDetailRow = PaperSignalJoinRow & {
+  paper_trades?:
+    | (SingleTradeJoin & { paper_trade_events?: PaperTradeEventRow[] | null })
+    | null;
+};
+
+/** One step of the trade's life, as the worker recorded it. */
+export type PaperSignalDetailEvent = {
+  sequence: number;
+  eventKey: string;
+  type: string;
+  providerTimeUtc: string | null;
+  workerTimePht: string;
+  beforeState: string | null;
+  afterState: string | null;
+  evidence: PaperEvidence;
+};
+
+export type PaperSignalDetail = PaperSignalListItem & {
+  events: PaperSignalDetailEvent[];
+};
+
+/**
+ * Detail view for one canonical signal: the list item plus the trade's full
+ * event ledger (entry fill, TP1 arming, exits, expiry) in sequence order.
+ */
+export function mapPaperSignalDetail(row: PaperSignalDetailRow): PaperSignalDetail {
+  const item = mapPaperSignalListItem(row);
+  const trade = firstTrade(row.paper_trades);
+  const rawEvents =
+    trade && "paper_trade_events" in trade ? (trade.paper_trade_events ?? []) : [];
+  const events: PaperSignalDetailEvent[] = (Array.isArray(rawEvents) ? rawEvents : [])
+    .filter((e): e is PaperTradeEventRow => !!e && typeof e === "object")
+    .sort((a, b) => a.sequence_no - b.sequence_no)
+    .map((e) => ({
+      sequence: e.sequence_no,
+      eventKey: e.event_key,
+      type: e.event_type,
+      providerTimeUtc: e.provider_timestamp ?? null,
+      workerTimePht: formatPhtTimestamp(e.worker_timestamp),
+      beforeState: e.before_state ?? null,
+      afterState: e.after_state ?? null,
+      evidence: (e.evidence ?? {}) as PaperEvidence,
+    }));
+  return { ...item, events };
 }
 
 // ---------------------------------------------------------------------------

@@ -18,6 +18,7 @@ import { z } from "zod";
 import { formatPhtTimestamp, utcIsoTitle } from "./pht-time.ts";
 import { isMissingSchemaError } from "./xauusd-paper-schema-detection.ts";
 import {
+  mapPaperSignalDetail,
   mapPaperSignalListItem,
   mapPaperShadowLearningReport,
   summarizePaperPerformance,
@@ -25,11 +26,13 @@ import {
   type PaperLearningOutcomeRow,
   type PaperPerformanceReport,
   type PaperShadowLearningReport,
+  type PaperSignalDetail,
+  type PaperSignalDetailRow,
   type PaperSignalJoinRow,
   type PaperSignalListItem,
 } from "./xauusd-paper-view.ts";
 
-export type { PaperAccountRow, PaperPerformanceReport, PaperShadowLearningReport, PaperSignalListItem };
+export type { PaperAccountRow, PaperPerformanceReport, PaperShadowLearningReport, PaperSignalDetail, PaperSignalListItem };
 
 // market_snapshots has TWO relationships to signals (the FK via
 // market_snapshot_id AND the many-to-many via signal_market_snapshots), so
@@ -39,9 +42,17 @@ const SIGNAL_VIEW_SELECT =
   "id, pair, direction, mode, timeframe, entry, stop_loss, take_profit_1, " +
   "take_profit_2, atr, confluence, contributing_strategies, rationale, created_at, archived_at, " +
   "engine_version, policy_version, execution_policy_version, generated_by, scan_fingerprint, " +
-  "paper_trades(state, entry_price, entry_time, tp1_armed_at, exit_price, exit_time, result_r), " +
+  "paper_trades(state, entry_price, entry_time, tp1_armed_at, exit_price, exit_time, result_r, " +
+  "mae_r, mfe_r, bars_held, ambiguous_intrabar, expires_at), " +
   "market_snapshots!signals_market_snapshot_id_fkey(provider, instrument, provider_time), " +
   "scan_runs(engine_accounting)";
+
+// Autopsy detail: the list view plus the trade's full event ledger. PostgREST
+// nests the embed under the already-pinned paper_trades embed.
+const SIGNAL_DETAIL_SELECT =
+  SIGNAL_VIEW_SELECT +
+  ", paper_trades.paper_trade_events(id, sequence_no, event_key, event_type, " +
+  "provider_timestamp, worker_timestamp, before_state, after_state, evidence)";
 
 const OUTCOME_SELECT =
   "id, pair, direction, mode, timeframe, confluence, contributing_strategies, " +
@@ -227,6 +238,32 @@ export const listXauusdPaperSignals = createServerFn({ method: "POST" })
       throw new Error(error.message);
     }
     return (rows ?? []).map((row) => mapPaperSignalListItem(row as unknown as PaperSignalJoinRow));
+  });
+
+/**
+ * Autopsy detail for one canonical signal: the list item plus the trade's
+ * full event ledger. Scoped to the caller's own rows (RLS + explicit user
+ * filter). Returns `{ detail: null }` for a foreign or missing signal rather
+ * than leaking existence.
+ */
+export const getXauusdPaperSignalDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) => z.object({ signalId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: row, error } = await supabase
+      .from("signals")
+      .select(SIGNAL_DETAIL_SELECT)
+      .eq("id", data.signalId)
+      .eq("user_id", userId)
+      .eq("generated_by", "xauusd_paper_worker")
+      .maybeSingle();
+    if (error) {
+      if (isMissingSchemaError(error)) throw new Error("migration_required");
+      throw new Error(error.message);
+    }
+    if (!row) return { detail: null };
+    return { detail: mapPaperSignalDetail(row as unknown as PaperSignalDetailRow) };
   });
 
 export const getXauusdPaperPerformance = createServerFn({ method: "GET" })

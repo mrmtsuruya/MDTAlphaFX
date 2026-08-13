@@ -78,6 +78,15 @@ walk-forward backtester, and an MT5 bridge surface.
 **Live chart & quotes** — real-time XAUUSD chart with strategy overlays; live FX quotes
 from the keyless feed (verified rendering EURUSD/GBPUSD/USDJPY/XAUUSD etc. on 2026-08-13).
 
+**Signal autopsy** (chart → ANALYSIS) — for any canonical signal, the trade's full story:
+event ledger (entry fill → TP1/BE arming → exit), peak MFE / trough MAE in R, bars held,
+ambiguity flags, and — for open trades — live hold-to-TP1 meters (distance in R and $,
+progress, and the ledger's own "will it hold?" odds: what fraction of resolved trades at
+this proximity actually reached TP1). Resolved trades get a **policy what-if table**:
+close-at-TP1, trail 1.0×ATR after TP1, and early-BE-at-+0.5R are re-simulated on the chart
+candles against the live B-single control, so an exit-policy change is promoted only when
+the ledger says it wins. Analysis only — the worker keeps `b_single_v1`.
+
 **Backtester** — `REAL_DATA_WALK_FORWARD` on the live feed with the actual 36-strategy
 scanner, side-aware resolution, Level Diagnostics (clears 30+ resolved trades → whether
 TP1 at 1.25R is misplaced on real gold).
